@@ -1,14 +1,20 @@
-import React from "react";
+import React, { type ComponentProps } from "react";
 
-interface ButtonProps {
+interface ButtonProps extends ComponentProps<"button"> {
   children: string;
   variant?: "primary" | "secondary";
 }
 
-const Button: React.FC<ButtonProps> = ({ children, variant = "primary" }) => {
+const Button: React.FC<ButtonProps> = ({
+  children,
+  variant = "primary",
+  className = "text-lg",
+  ...props
+}) => {
   return (
     <button
-      className={`group relative cursor-pointer ${variant === "primary" ? "font-semibold" : "font-medium"} text-lg transition-colors duration-300 ${variant === "primary" ? "hover:text-brand-accent" : "hover:text-brand-pink"}`}
+      className={` ${className} group relative cursor-pointer ${variant === "primary" ? "font-semibold" : "font-medium"} transition-colors duration-300 ${variant === "primary" ? "hover:text-brand-accent" : "hover:text-brand-pink"}`}
+      {...props}
     >
       {children}
       <span

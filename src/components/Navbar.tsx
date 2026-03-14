@@ -1,10 +1,10 @@
-import { Flame, Play, ArrowRight } from "lucide-react";
+import { Flame } from "lucide-react";
 import React from "react";
 import Button from "./Button";
 
 const Navbar: React.FC = () => {
   return (
-    <header className="p-2 flex justify-between items-center max-w-7xl mx-auto">
+    <header className="p-2 flex justify-between items-center max-w-7xl mx-auto w-full">
       <span className="flex font-bold text-2xl items-center gap-2">
         PinicoFit <Flame size={28} color="#aa3bff" />
       </span>
