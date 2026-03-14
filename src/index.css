@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui;
+  
+  --color-brand-accent: #aa3bff;
+  --color-brand-pink: #ff85b2;
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply font-extrabold tracking-tighter;
+  }
+}
