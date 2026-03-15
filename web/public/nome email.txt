@@ -1,0 +1,8 @@
+nome email
+senha senha
+
+idade
+sexo
+objetivo -emagrecer, manter peso, ganhar massa
+peso
+altura
