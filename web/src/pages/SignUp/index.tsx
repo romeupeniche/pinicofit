@@ -2,12 +2,19 @@ import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signUpSchema, type SignUpFormData } from "../../schemas/Auth";
+import { signUpSchema, type SignUpFormData } from "../../schemas/Auth.ts";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore.ts";
+import type { AxiosError } from "axios";
+import api from "../../services/api.ts";
 
 const SignUp: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -17,8 +24,33 @@ const SignUp: React.FC = () => {
     resolver: zodResolver(signUpSchema),
   });
 
-  const onSubmitForm = (data: SignUpFormData) => {
-    console.log("Dados prontos para o cálculo científico:", data);
+  const onSubmitForm = async (data: SignUpFormData) => {
+    setIsLoading(true);
+    try {
+      const response = await api.post("/users", {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      });
+
+      console.log("RESPOSTA API SIGNUP:", response.data);
+
+      const { access_token, user } = response.data;
+
+      if (!access_token || !user) {
+        console.error("ERRO: API não retornou token ou user!");
+        return;
+      }
+
+      setAuth(user, access_token);
+
+      // navigate("/onboarding");
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      alert(err.response?.data?.message || "Erro ao criar conta");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -185,6 +217,7 @@ const SignUp: React.FC = () => {
           <div className="relative group inline-block w-[80%] xl:w-[50%]">
             <button
               type="submit"
+              disabled={isLoading}
               className="relative inline-block p-px font-semibold leading-6  shadow-2xl cursor-pointer rounded-xl transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95 w-full"
             >
               <span className="absolute inset-0 rounded-xl bg-linear-to-r from-brand-accent/10 via-brand-pink/30 to-brand-accent/50 p-0.5 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></span>
@@ -192,7 +225,7 @@ const SignUp: React.FC = () => {
               <span className="relative z-10 block px-6 py-3 rounded-xl">
                 <div className="relative z-10 flex items-center justify-center space-x-2">
                   <span className="transition-all duration-500 group-hover:translate-x-1 tracking-normal group-hover:tracking-wide text-neutral-900">
-                    Vamos começar
+                    {isLoading ? "Criando conta..." : "Vamos começar"}
                   </span>
                   <svg
                     className="w-5 h-5 transition-transform duration-500 group-hover:translate-x-1 text-neutral-900"

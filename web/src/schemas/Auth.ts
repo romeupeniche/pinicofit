@@ -15,7 +15,7 @@ export const signUpSchema = z
 export type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export const loginSchema = z.object({
-  email: z.string().email("Email inválido"),
+  email: z.email("Email inválido"),
   password: z.string().min(1, "Senha é obrigatória"),
 });
 
@@ -34,9 +34,18 @@ export const completeProfileSchema = z.object({
     .number()
     .min(100, "Altura mínima 100cm")
     .max(250, "Altura inválida"),
-  gender: z.enum(["male", "female", "other"], {
-    errorMap: () => ({ message: "Selecione um gênero" }),
-  }),
+  gender: z
+    .string()
+    .min(1, "Selecione um gênero")
+    .refine((val) => ["male", "female", "other"].includes(val), {
+      message: "Selecione um gênero válido",
+    }) as z.ZodType<"male" | "female" | "other">,
+  goal: z
+    .string()
+    .min(1, "Defina sua meta")
+    .refine((val) => ["bulk", "cut", "maintain"].includes(val), {
+      message: "Selecione um gênero válido",
+    }) as z.ZodType<"bulk" | "cut" | "mantain">,
 });
 
 export type CompleteProfileFormData = z.infer<typeof completeProfileSchema>;

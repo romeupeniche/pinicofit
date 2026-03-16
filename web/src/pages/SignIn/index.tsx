@@ -2,11 +2,18 @@ import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, type LoginFormData } from "../../schemas/Auth";
+import { loginSchema, type LoginFormData } from "../../schemas/Auth.ts";
+import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
+import { useAuthStore } from "../../store/authStore.ts";
+import type { AxiosError } from "axios";
 
 const SignIn: React.FC = () => {
+  const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [showPassword, setShowPassword] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -16,8 +23,28 @@ const SignIn: React.FC = () => {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmitForm = (data: LoginFormData) => {
-    console.log("Tentativa de login com:", data);
+  const onSubmitForm = async (data: LoginFormData) => {
+    setIsLoading(true);
+    try {
+      const response = await api.post("/auth/login", data);
+      const { access_token, user } = response.data;
+
+      setAuth(user, access_token);
+
+      if (!user.isProfileComplete) {
+        navigate("/onboarding");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      const message =
+        err.response?.data?.message || "Erro ao conectar com o servidor";
+      alert(`Falha no login: ${message}`);
+      console.error("Erro no login:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -104,6 +131,7 @@ const SignIn: React.FC = () => {
           <div className="relative group inline-block w-[80%] xl:w-[50%]">
             <button
               type="submit"
+              disabled={isLoading}
               className="relative inline-block p-px font-semibold leading-6  shadow-2xl cursor-pointer rounded-xl transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95 w-full"
             >
               <span className="absolute inset-0 rounded-xl bg-linear-to-r from-brand-accent/10 via-brand-pink/30 to-brand-accent/50 p-0.5 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></span>
@@ -111,7 +139,7 @@ const SignIn: React.FC = () => {
               <span className="relative z-10 block px-6 py-3 rounded-xl">
                 <div className="relative z-10 flex items-center justify-center space-x-2">
                   <span className="transition-all duration-500 group-hover:translate-x-1 tracking-normal group-hover:tracking-wide">
-                    Vamos continuar
+                    {isLoading ? "Entrando..." : "Vamos continuar"}
                   </span>
                   <svg
                     className="w-5 h-5 transition-transform duration-500 group-hover:translate-x-1"
