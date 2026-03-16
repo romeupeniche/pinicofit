@@ -21,4 +21,10 @@ export const es = {
       goal_reached: "Meta alcanzada hoy",
     },
   },
+  navbar: {
+    sign_in: "Entrar",
+    sign_up: "Registrarse",
+    sign_out: "Salir de la cuenta",
+    account: "Mi cuenta",
+  },
 };

@@ -9,11 +9,13 @@ import {
 } from "../../schemas/Auth.ts";
 import type { AxiosError } from "axios";
 import { useEffect, useState } from "react";
+import { useSettingsStore } from "../../store/settingsStore.ts";
 
 export function Onboarding() {
   const { user, token, _hasHydrated, updateProfile, logout } = useAuthStore();
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useSettingsStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (_hasHydrated) {
@@ -74,20 +76,18 @@ export function Onboarding() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <div className="w-full max-w-md bg-brand-pink/10 p-8 rounded-2xl shadow-sm border border-white">
+      <div className="w-full max-w-md bg-white/20 p-8 rounded-2xl shadow-sm border border-white">
         <header className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-neutral-900">
-            Só mais alguns detalhes...
+            {t("onboarding.title")}
           </h1>
-          <p className="text-neutral-500 mt-2">
-            Precisamos dessas informações para calcular suas metas.
-          </p>
+          <p className="text-neutral-500 mt-2">{t("onboarding.subtitle")}</p>
         </header>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Idade
+              {t("onboarding.age")}
             </label>
             <input
               type="number"
@@ -96,13 +96,15 @@ export function Onboarding() {
               className="w-full p-2.5 bg-neutral-50 border border-neutral-300 rounded-lg outline-none focus:border-brand-accent transition-all"
             />
             {errors.age && (
-              <p className="text-red-500 text-xs mt-1">{errors.age.message}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {t(errors.age.message)}
+              </p>
             )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Peso (kg)
+              {t("onboarding.weight")} (kg)
             </label>
             <input
               type="number"
@@ -113,14 +115,14 @@ export function Onboarding() {
             />
             {errors.weight && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.weight.message}
+                {t(errors.weight.message)}
               </p>
             )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Altura (cm)
+              {t("onboarding.height")} (cm)
             </label>
             <input
               type="number"
@@ -130,46 +132,56 @@ export function Onboarding() {
             />
             {errors.height && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.height.message}
+                {t(errors.height.message)}
               </p>
             )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Gênero
+              {t("onboarding.gender")}
             </label>
             <select
               {...register("gender")}
-              className="w-full p-2.5 bg-neutral-50 border border-neutral-300 rounded-lg outline-none focus:border-brand-accent transition-all"
+              className="cursor-pointer w-full p-2.5 bg-neutral-50 border border-neutral-300 rounded-lg outline-none focus:border-brand-accent transition-all"
             >
-              <option value="">Selecione...</option>
-              <option value="male">Masculino</option>
-              <option value="female">Feminino</option>
-              <option value="other">Outro</option>
+              <option value="">{t("onboarding.select_placeholder")}</option>
+              <option value="male">
+                {t("onboarding.gender_options.male")}
+              </option>
+              <option value="female">
+                {t("onboarding.gender_options.female")}
+              </option>
+              <option value="other">
+                {t("onboarding.gender_options.other")}
+              </option>
             </select>
             {errors.gender && (
               <p className="text-red-500 text-xs mt-1">
-                {errors.gender.message}
+                {t(errors.gender.message)}
               </p>
             )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-brand-accent mb-1">
-              Qual a sua meta?
+              {t("onboarding.goal")}
             </label>
             <select
               {...register("goal")}
-              className="w-full p-2.5 bg-neutral-50 border border-brand-accent/50 rounded-lg outline-none focus:border-brand-accent transition-all"
+              className="cursor-pointer w-full p-2.5 bg-neutral-50 border border-brand-accent/50 rounded-lg outline-none focus:border-brand-accent text-brand-accent transition-all"
             >
-              <option value="">Selecione...</option>
-              <option value="bulk">Ganhar massa</option>
-              <option value="cut">Perder massa</option>
-              <option value="maintain">Manter peso</option>
+              <option value="">{t("onboarding.select_placeholder")}</option>
+              <option value="bulk">{t("onboarding.goal_options.bulk")}</option>
+              <option value="cut">{t("onboarding.goal_options.cut")}</option>
+              <option value="maintain">
+                {t("onboarding.goal_options.maintain")}
+              </option>
             </select>
             {errors.goal && (
-              <p className="text-red-500 text-xs mt-1">{errors.goal.message}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {t(errors.goal.message)}
+              </p>
             )}
           </div>
 
@@ -179,7 +191,9 @@ export function Onboarding() {
               disabled={isLoading}
               className="w-full bg-brand-accent hover:bg-brand-accent/90 text-white p-3 rounded-xl font-bold transition-colors shadow-lg shadow-brand-accent/20 cursor-pointer"
             >
-              {isLoading ? "Salvando Informações..." : "Finalizar Perfil"}
+              {isLoading
+                ? t("onboarding.loading")
+                : t("onboarding.finalize_button")}
             </button>
 
             <button
@@ -187,7 +201,7 @@ export function Onboarding() {
               onClick={() => logout()}
               className="text-neutral-400 text-sm hover:text-red-500 transition-colors py-2 cursor-pointer"
             >
-              Entrou na conta errada? Sair
+              {t("onboarding.logout_button")}
             </button>
           </div>
         </form>

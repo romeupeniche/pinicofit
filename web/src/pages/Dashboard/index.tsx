@@ -58,7 +58,7 @@ const Dashboard: React.FC = () => {
       <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-brand-accent/20 rounded-full blur-[120px] -z-10"></div>
       <div className="absolute bottom-[10%] right-[-5%] w-80 h-80 bg-brand-pink/20 rounded-full blur-[100px] -z-10"></div>
 
-      <header className="flex justify-between items-end mb-12">
+      <header className="flex justify-between  items-center sm:items-end mb-12 flex-col-reverse sm:flex-row gap-4 sm:gap-0">
         <div>
           <h1 className="text-4xl font-bold tracking-tight">
             {t("dashboard.title")}
@@ -81,7 +81,7 @@ const Dashboard: React.FC = () => {
       </header>
 
       <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <section className="lg:col-span-2 bg-white/40 backdrop-blur-xl border border-white/20 rounded-4xl p-8 shadow-xl flex items-center justify-around relative overflow-hidden">
+        <section className="lg:col-span-2 bg-white/40 backdrop-blur-xl border border-white/20 rounded-4xl p-8 shadow-xl flex flex-col md:flex-row md:gap-0 gap-4 items-center justify-around relative overflow-hidden">
           <div className="relative flex items-center justify-center">
             <svg className="w-64 h-64 transform -rotate-90">
               <circle

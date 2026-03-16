@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, type LoginFormData } from "../../schemas/Auth.ts";
+import { signInSchema, type signInFormData } from "../../schemas/Auth.ts";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { useAuthStore } from "../../store/authStore.ts";
 import type { AxiosError } from "axios";
+import { useSettingsStore } from "../../store/settingsStore.ts";
+import type { TranslationKeys } from "../../types/i18n.ts";
 
 const SignIn: React.FC = () => {
   const navigate = useNavigate();
@@ -14,19 +16,21 @@ const SignIn: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const { t } = useSettingsStore();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<signInFormData>({
+    resolver: zodResolver(signInSchema),
   });
 
-  const onSubmitForm = async (data: LoginFormData) => {
+  const onSubmitForm = async (data: signInFormData) => {
     setIsLoading(true);
     try {
-      const response = await api.post("/auth/login", data);
+      const response = await api.post("/auth/signin", data);
       const { access_token, user } = response.data;
 
       setAuth(user, access_token);
@@ -39,9 +43,10 @@ const SignIn: React.FC = () => {
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;
       const message =
-        err.response?.data?.message || "Erro ao conectar com o servidor";
-      alert(`Falha no login: ${message}`);
-      console.error("Erro no login:", err);
+        t(err.response?.data.message as TranslationKeys) ||
+        t("sign_in.serverError");
+      setErrorMsg(`${t("sign_in.error")} ${message}`);
+      console.error("Login error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -51,11 +56,12 @@ const SignIn: React.FC = () => {
     <div className="flex-1 flex items-center gap-4">
       <section className="flex-1 flex flex-col justify-center h-full">
         <header className="p-4 flex flex-col">
-          <h1 className="text-3xl">Bem-vindo de volta.</h1>
-          <p>Entre para continuar sua evolução e bater as metas de hoje.</p>
+          <h1 className="text-3xl">{t("sign_in.title")}</h1>
+          <p>{t("sign_in.subtitle")}</p>
         </header>
         <form
           onSubmit={handleSubmit(onSubmitForm)}
+          onFocus={() => setErrorMsg("")}
           className="flex flex-col gap-8 justify-center items-center p-4 xl:px-16"
         >
           <div className="w-full">
@@ -75,20 +81,20 @@ const SignIn: React.FC = () => {
             </div>
             {errors.email && (
               <p className="text-red-500 text-xs mt-1 ml-4">
-                {errors.email.message}
+                {t(errors.email.message)}
               </p>
             )}
           </div>
           <div className="w-full">
             <label htmlFor="password" className="font-semibold text-lg">
-              Senha
+              {t("sign_in.password")}
             </label>
             <div className="relative w-full h-12 rounded-full overflow-hidden group">
               <div className="absolute -right-2 -top-4 w-16 h-16 bg-brand-accent/20 rounded-full blur-lg pointer-events-none z-0"></div>
               <div className="absolute right-6 -bottom-4 w-16 h-16 bg-brand-pink/20 rounded-full blur-lg pointer-events-none z-0"></div>
               <input
                 {...register("password")}
-                placeholder="senha123"
+                placeholder={t("sign_in.pass_placeholder")}
                 type={showPassword ? "text" : "password"}
                 className="absolute inset-0 z-10 bg-transparent border border-neutral-300 text-neutral-900 placeholder-neutral-500 text-md rounded-full pl-5 pr-12 py-2.5 outline-none focus:border-brand-accent transition-all"
               />
@@ -124,11 +130,12 @@ const SignIn: React.FC = () => {
             </div>
             {errors.password && (
               <p className="text-red-500 text-xs mt-1 ml-4">
-                {errors.password.message}
+                {t(errors.password.message)}
               </p>
             )}
           </div>
           <div className="relative group inline-block w-[80%] xl:w-[50%]">
+            <div className="text-red-500 text-sm text-center">{errorMsg}</div>
             <button
               type="submit"
               disabled={isLoading}
@@ -139,7 +146,9 @@ const SignIn: React.FC = () => {
               <span className="relative z-10 block px-6 py-3 rounded-xl">
                 <div className="relative z-10 flex items-center justify-center space-x-2">
                   <span className="transition-all duration-500 group-hover:translate-x-1 tracking-normal group-hover:tracking-wide">
-                    {isLoading ? "Entrando..." : "Vamos continuar"}
+                    {isLoading
+                      ? t("sign_in.loading")
+                      : t("sign_in.sign_in_button")}
                   </span>
                   <svg
                     className="w-5 h-5 transition-transform duration-500 group-hover:translate-x-1"
@@ -159,15 +168,17 @@ const SignIn: React.FC = () => {
         </form>
         <div className="flex xl:flex-rowflex-col justify-between px-16 mt-4">
           <span className="text-sm text-slate-600">
-            Não tem uma conta?{" "}
+            {t("sign_in.sign_up_button").split("?")[0]}
+            {"? "}
             <a href="/sign-up" className="text-brand-accent">
-              Cadastrar
+              {t("sign_in.sign_up_button").split("?")[1]}
             </a>
           </span>
           <span className="text-sm text-slate-600">
-            Esqueceu sua senha?{" "}
+            {t("sign_in.forgot_password").split("?")[0]}
+            {"? "}
             <a href="" className="text-brand-accent">
-              Recuperar
+              {t("sign_in.forgot_password").split("?")[1]}
             </a>
           </span>
         </div>
@@ -177,7 +188,7 @@ const SignIn: React.FC = () => {
           <div className="absolute w-full h-full bg-purple-200 rounded-full blur-3xl opacity-80 animate-pulse" />
           <img
             src="/hero_signin_tiny.webp"
-            alt="Carregando..."
+            alt="Loading..."
             className={`
               absolute inset-0 w-full h-full object-contain
               transition-opacity duration-500

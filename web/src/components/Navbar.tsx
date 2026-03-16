@@ -1,24 +1,21 @@
-import { Flame, User, LayoutDashboard, LogOut } from "lucide-react";
+import { Flame, User } from "lucide-react";
 import React from "react";
 import Button from "./Button";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import { useSettingsStore } from "../store/settingsStore";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useSettingsStore();
 
-  const { user, token, logout } = useAuthStore();
+  const { user, token } = useAuthStore();
 
   const isAuthPage =
     location.pathname === "/sign-up" || location.pathname === "/sign-in";
   const isOnboarding = location.pathname === "/onboarding";
   const isHomePage = location.pathname === "/";
-
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
 
   const handleLogoRedirect = () => {
     if (token && user) navigate("/dashboard");
@@ -41,37 +38,25 @@ const Navbar: React.FC = () => {
             {token && user ? (
               <div className="flex items-center gap-6">
                 <Link
-                  to="/dashboard"
-                  className="flex items-center gap-2 text-zinc-400 hover:text-brand-accent transition-colors"
-                >
-                  <LayoutDashboard size={20} />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </Link>
-
-                <Link
                   to="/account"
                   className="flex items-center gap-2 text-zinc-400 hover:text-brand-accent transition-colors"
                 >
                   <User size={20} />
-                  <span className="hidden sm:inline">Minha Conta</span>
+                  <span className="hidden sm:inline">
+                    {t("navbar.account")}
+                  </span>
                 </Link>
-
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 text-zinc-400 hover:text-red-500 transition-colors ml-4 cursor-pointer"
-                >
-                  <LogOut size={20} />
-                  <span className="hidden sm:inline">Sair</span>
-                </button>
               </div>
             ) : (
               <div className="gap-4 flex">
-                <Button onClick={() => navigate("/sign-in")}>Entrar</Button>
+                <Button onClick={() => navigate("/sign-in")}>
+                  {t("navbar.sign_in")}
+                </Button>
                 <Button
                   variant="secondary"
                   onClick={() => navigate("/sign-up")}
                 >
-                  Cadastrar
+                  {t("navbar.sign_up")}
                 </Button>
               </div>
             )}
