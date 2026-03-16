@@ -23,7 +23,7 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('Token não encontrado.');
+      throw new UnauthorizedException('server.errors.auth.token_not_found');
     }
 
     try {
@@ -33,7 +33,7 @@ export class AuthGuard implements CanActivate {
 
       request['user'] = payload;
     } catch {
-      throw new UnauthorizedException('Token inválido ou expirado.');
+      throw new UnauthorizedException('server.errors.auth.token_invalid');
     }
     return true;
   }

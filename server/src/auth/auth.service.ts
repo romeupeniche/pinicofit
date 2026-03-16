@@ -33,13 +33,13 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
-      throw new UnauthorizedException('E-mail não encontrado.');
+      throw new UnauthorizedException('server.errors.auth.email_not_found');
     }
 
     const isMatch = await bcrypt.compare(pass, user.password);
 
     if (!isMatch) {
-      throw new UnauthorizedException('Senha incorreta.');
+      throw new UnauthorizedException('server.errors.auth.incorrect_password');
     }
 
     return this.generateJwt(user);

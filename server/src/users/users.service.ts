@@ -13,7 +13,7 @@ export class UsersService {
     const userExists = await this.findByEmail(data.email);
 
     if (userExists) {
-      throw new ConflictException('Este e-mail já está cadastrado');
+      throw new ConflictException('server.errors.users.email_exists');
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
