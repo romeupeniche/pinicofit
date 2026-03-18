@@ -113,6 +113,31 @@ export const br = {
     loading: "Salvando Informações...",
     logout_button: "Entrou na conta errada? Sair",
   },
+  goals: {
+    water: {
+      title: "Água",
+      goal: "Meta",
+      remaining: "Faltam ? pra bater a meta!",
+      start: "Hora de hidratar!",
+      done: "Meta diária batida!",
+      beaten: "Superou a meta em",
+      today_history: {
+        title: "Hoje",
+        empty_state: "Nenhum registro hoje",
+      },
+      week_history: {
+        title: "Semana",
+        consumed: "consumidos",
+      },
+      month_history: {
+        title: "Mês",
+        average: "Média",
+        day: "dia",
+        beaten: "Batidas",
+        graph_title: "Visão Mensal",
+      },
+    },
+  },
   zod: {
     sign_in: {
       email: "E-mail inválido",

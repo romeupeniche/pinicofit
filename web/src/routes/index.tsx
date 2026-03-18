@@ -8,6 +8,11 @@ import Account from "../pages/Account";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { Onboarding } from "../pages/Onboarding";
 import { PublicRoute } from "./PublicRoute";
+import Goals from "../pages/Goals";
+import WaterGoal from "../pages/WaterGoal";
+import SleepGoal from "../pages/SleepGoal";
+import WorkoutGoal from "../pages/WorkoutGoal";
+import StepsGoal from "../pages/StepsGoal";
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +35,16 @@ export const router = createBrowserRouter([
         children: [
           { path: "dashboard", element: <Dashboard /> },
           { path: "account", element: <Account /> },
+          {
+            path: "goals",
+            children: [
+              { index: true, element: <Goals /> },
+              { path: "water", element: <WaterGoal /> },
+              { path: "sleep", element: <SleepGoal /> },
+              { path: "workout", element: <WorkoutGoal /> },
+              { path: "steps", element: <StepsGoal /> },
+            ],
+          },
         ],
       },
 

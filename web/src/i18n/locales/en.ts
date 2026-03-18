@@ -113,6 +113,31 @@ export const en = {
     loading: "Saving Information...",
     logout_button: "Wrong account? Sign out",
   },
+  goals: {
+    water: {
+      title: "Water",
+      goal: "Goal",
+      remaining: "? left to reach your goal!",
+      start: "Time to hydrate!",
+      done: "Daily goal reached!",
+      beaten: "Surpassed goal by",
+      today_history: {
+        title: "Today",
+        empty_state: "No logs today",
+      },
+      week_history: {
+        title: "Week",
+        consumed: "consumed",
+      },
+      month_history: {
+        title: "Month",
+        average: "Average",
+        day: "day",
+        beaten: "Goals Hit",
+        graph_title: "Monthly View",
+      },
+    },
+  },
   zod: {
     sign_in: {
       email: "Invalid email",

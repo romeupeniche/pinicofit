@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useSettingsStore } from "../../store/settingsStore";
 import type { TranslationKeys } from "../../types/i18n";
+import { useNavigate } from "react-router-dom";
 
 const userStats = {
   caloriesMeta: 2200,
@@ -49,16 +50,14 @@ const cardGoals: { id: string; titleId: TranslationKeys; icon: LucideIcon }[] =
 
 const Dashboard: React.FC = () => {
   const { t } = useSettingsStore();
+  const navigate = useNavigate();
   const caloriesLeft = userStats.caloriesMeta - userStats.caloriesConsumed;
   const progressPercent =
     (userStats.caloriesConsumed / userStats.caloriesMeta) * 100;
 
   return (
-    <div className="min-h-screen p-8 text-neutral-900 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-brand-accent/20 rounded-full blur-[120px] -z-10"></div>
-      <div className="absolute bottom-[10%] right-[-5%] w-80 h-80 bg-brand-pink/20 rounded-full blur-[100px] -z-10"></div>
-
-      <header className="flex justify-between  items-center sm:items-end mb-12 flex-col-reverse sm:flex-row gap-4 sm:gap-0">
+    <div className="min-h-screen px-8 text-neutral-900 relative overflow-hidden">
+      <header className="flex justify-between items-center sm:items-end mb-12 flex-col-reverse sm:flex-row gap-4 sm:gap-0">
         <div>
           <h1 className="text-4xl font-bold tracking-tight">
             {t("dashboard.title")}
@@ -68,7 +67,7 @@ const Dashboard: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-4">
-          <div className="bg-white/50 backdrop-blur-md border border-neutral-200 p-3 rounded-2xl flex items-center gap-3">
+          <div className="bg-white/50 border border-neutral-200 p-3 rounded-2xl flex items-center gap-3">
             <Target className="text-brand-accent" />
             <div>
               <p className="text-xs text-neutral-500 uppercase font-bold">
@@ -81,7 +80,7 @@ const Dashboard: React.FC = () => {
       </header>
 
       <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <section className="lg:col-span-2 bg-white/40 backdrop-blur-xl border border-white/20 rounded-4xl p-8 shadow-xl flex flex-col md:flex-row md:gap-0 gap-4 items-center justify-around relative overflow-hidden">
+        <section className="lg:col-span-2 bg-white/40 border border-white/20 rounded-4xl p-8 shadow-xl flex flex-col md:flex-row md:gap-0 gap-4 items-center justify-around relative overflow-hidden">
           <div className="relative flex items-center justify-center">
             <svg className="w-64 h-64 transform -rotate-90">
               <circle
@@ -186,7 +185,8 @@ const Dashboard: React.FC = () => {
         {cardGoals.map(({ icon: Icon, id, titleId }) => (
           <div
             key={id}
-            className="bg-white/60 backdrop-blur-md border border-neutral-200 p-6 rounded-3xl hover:border-brand-accent transition-all cursor-pointer group"
+            className="bg-white/60 border border-neutral-200 p-6 rounded-3xl hover:border-brand-accent transition-all cursor-pointer group"
+            onClick={() => navigate(`/goals/${id}`)}
           >
             <div className="flex justify-between items-start">
               <div className="p-2 bg-neutral-100 rounded-lg group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition-colors">
