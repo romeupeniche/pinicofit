@@ -1,13 +1,16 @@
 import React from "react";
 import type { User } from "../../types/auth";
-import { Camera } from "lucide-react";
+import { Camera, Save, User as UserIcon } from "lucide-react";
 import { useSettingsStore } from "../../store/settingsStore";
 
 const Profile: React.FC<{ user: User }> = ({ user }) => {
   const { t } = useSettingsStore();
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <h2 className="text-xl font-bold mb-6">{t("account.profile.title")}</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">{t("account.profile.title")}</h2>
+        <UserIcon className="text-neutral-300" size={30} />
+      </div>
 
       <section className="flex flex-col md:flex-row items-start md:items-center gap-8 mb-8 pb-8 border-b border-neutral-100">
         <div className="relative group">
@@ -51,7 +54,11 @@ const Profile: React.FC<{ user: User }> = ({ user }) => {
             className="w-full px-4 py-2 rounded-xl border border-neutral-200 bg-white/50 focus:border-brand-accent outline-none transition-all h-24"
           />
         </div>
-        <button className="w-fit px-8 py-3 bg-neutral-900 text-white rounded-xl font-bold hover:bg-brand-accent transition-all cursor-pointer">
+        <button className="w-fit mt-4 px-8 py-3 bg-neutral-900 text-white rounded-xl font-bold hover:bg-brand-accent transition-all cursor-pointer flex items-center gap-2 group">
+          <Save
+            size={18}
+            className="group-hover:scale-110 transition-transform"
+          />
           {t("account.profile.save_updates")}
         </button>
       </div>

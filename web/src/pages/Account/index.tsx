@@ -47,9 +47,6 @@ const Account: React.FC = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-8 text-neutral-900 relative overflow-hidden">
-      <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-brand-pink/10 rounded-full blur-[120px] -z-10"></div>
-      <div className="absolute bottom-[5%] left-[-5%] w-80 h-80 bg-brand-accent/10 rounded-full blur-[100px] -z-10"></div>
-
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8">
         <aside className="space-y-6">
           <div className="px-4">
@@ -80,7 +77,7 @@ const Account: React.FC = () => {
           </nav>
         </aside>
 
-        <main className="bg-white/60 backdrop-blur-2xl border border-white/40 rounded-3xl p-8 shadow-sm min-h-[600px]">
+        <main className="bg-white/60 border border-white/40 rounded-3xl p-8 shadow-sm min-h-[600px]">
           {menuItems.find((item) => item.id === activeTab)?.component}
         </main>
       </div>

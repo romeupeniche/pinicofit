@@ -1,15 +1,17 @@
 import React from "react";
 import { useSettingsStore } from "../../store/settingsStore";
 import type { Language } from "../../types/i18n";
+import { Globe } from "lucide-react";
 
 const Preferences: React.FC = () => {
   const { lang, setLang, t } = useSettingsStore();
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <h2 className="text-xl font-bold mb-6">
-        {t("account.preferences.title")}
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">{t("account.preferences.title")}</h2>
+        <Globe className="text-neutral-300" size={30} />
+      </div>
       <div className="space-y-4">
         <div className="flex items-center justify-between p-4 bg-white rounded-2xl border-neutral-200 hover:border-brand-accent/50 transition-colors border">
           <div>
