@@ -13,15 +13,12 @@ export const ProtectedRoute = () => {
     );
 
   if (!token) {
-    console.log("ACESSO NEGADO: Sem token encontrado.");
     return <Navigate to="/sign-in" state={{ from: location }} replace />;
   }
 
   if (user && !user.isProfileComplete) {
-    console.log("ACESSO PARCIAL: Perfil incompleto.");
     return <Navigate to="/onboarding" replace />;
   }
 
-  console.log("ACESSO PERMITIDO: Bem-vindo!");
   return <Outlet />;
 };

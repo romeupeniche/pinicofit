@@ -46,7 +46,7 @@ const monthLogsMock = [
   },
 ];
 
-const dateLocale = {
+const dateLocales = {
   en: enUS,
   br: ptBR,
   es,
@@ -121,7 +121,6 @@ const WaterGoal: React.FC = () => {
               {t("goals.water.title")}
             </h1>
           </header>
-
           <section className="border border-neutral-200/50 flex-1 flex flex-col justify-center items-center bg-white/40 rounded-3xl p-8 text-center">
             <div className="relative inline-flex items-center justify-center mb-6">
               <svg className="w-48 h-48 transform -rotate-90">
@@ -267,159 +266,178 @@ const WaterGoal: React.FC = () => {
               </div>
             </div>
 
-<div className={`space-y-4 flex-1 overflow-y-auto pr-2 h-full ${activeTab === "month" ? "flex flex-col" : ""}`}>
-  {activeTab === "today" && (
-    <>
-      {logs.map((log) => (
-        <div
-          key={log.id}
-          className="flex items-center justify-between p-4 bg-white/30 rounded-2xl border border-white/20 transition-all hover:bg-white/40"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-2 bg-brand-accent/10 text-brand-accent rounded-lg">
-              <Droplets size={18} />
-            </div>
-            <div>
-              <p className="font-bold text-sm">+{log.amount}ml</p>
-              <div className="flex items-center gap-1">
-                <Clock size={10} className="text-neutral-400" />
-                <p className="text-[10px] text-neutral-400 font-medium">
-                  {capitalize(
-                    formatDistanceToNow(log.createdAt, {
-                      addSuffix: true,
-                      locale: dateLocale[lang],
-                    }),
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-          <button
-            className="p-2 text-neutral-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
-            onClick={() => handleRemoveLog(log.id)}
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      ))}
-      {logs.length === 0 && (
-        <div className="flex flex-col items-center justify-center h-full text-neutral-400 opacity-50 py-10">
-          <Droplets size={40} strokeWidth={1} />
-          <p className="text-xs mt-2 font-medium">
-            {t("goals.water.today_history.empty_state")}
-          </p>
-        </div>
-      )}
-    </>
-  )}
-
-  {activeTab === "week" && (
-    <div className="space-y-3">
-      {waterHistoryMock.week.map((item) => (
-        <div
-          key={item.id}
-          className="flex items-center justify-between p-4 bg-white/20 rounded-2xl border border-white/10 opacity-80 hover:opacity-100 transition-opacity"
-        >
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-neutral-400 font-bold">
-              {item.time}
-            </span>
-            <span className="font-bold text-neutral-700">
-              {item.amount}ml {t("goals.water.week_history.consumed")}
-            </span>
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            <span className="text-[10px] font-bold text-neutral-400">
-              {Math.round((item.amount / item.goal) * 100)}%
-            </span>
-            <div className="h-2 w-24 bg-neutral-900/5 rounded-full overflow-hidden border border-white/20">
-              <div
-                className={`h-full transition-all duration-1000 ease-out rounded-full ${
-                  item.amount >= item.goal ? "bg-emerald-500" : "bg-brand-accent"
-                }`}
-                style={{
-                  width: `${Math.min((item.amount / item.goal) * 100, 100)}%`,
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )}
-
-  {activeTab === "month" &&
-    (() => {
-      const totalDays = monthLogsMock.length;
-      const totalAmount = monthLogsMock.reduce((acc, item) => acc + item.amount, 0);
-      const averageAmount = totalAmount / totalDays;
-      const goalsMet = monthLogsMock.filter((item) => item.amount >= item.goal).length;
-
-      return (
-        /* MUDANÇA AQUI: Adicionado flex-1 para o container do Month ocupar o espaço do pai */
-        <div className="flex flex-col flex-1 h-full overflow-hidden">
-          <div className="flex justify-between items-end mb-4 shrink-0">
-            <div>
-              <p className="text-[9px] uppercase text-neutral-400 font-black tracking-widest leading-none mb-1">
-                {t("goals.water.month_history.average")}
-              </p>
-              <h4 className="text-lg font-black text-neutral-800 italic leading-none">
-                {(averageAmount / 1000).toFixed(1)}L{" "}
-                <span className="text-[10px] text-neutral-400">
-                  / {t("goals.water.month_history.day")}
-                </span>
-              </h4>
-            </div>
-            <div className="text-right">
-              <p className="text-[9px] uppercase text-emerald-500 font-black tracking-widest leading-none mb-1">
-                {t("goals.water.month_history.beaten")}
-              </p>
-              <h4 className="text-lg font-black text-emerald-500 italic leading-none">
-                {goalsMet}{" "}
-                <span className="text-[10px] text-neutral-400">
-                  / {totalDays}
-                </span>
-              </h4>
-            </div>
-          </div>
-
-          <div className="flex-1 min-h-0 relative flex flex-col justify-end bg-neutral-900/5 p-2 rounded-2xl border border-white/20">
-            <div className="flex items-end justify-between gap-px h-full w-full">
-              {monthLogsMock.map((item) => {
-                const percentage = Math.min((item.amount / item.goal) * 100, 100);
-                const isGoalMet = item.amount >= item.goal;
-                return (
-                  <div key={item.day} className="flex-1 h-full flex items-end group relative">
+            <div
+              className={`space-y-4 flex-1 overflow-y-auto pr-2 h-full ${activeTab === "month" ? "flex flex-col" : ""}`}
+            >
+              {activeTab === "today" && (
+                <>
+                  {logs.map((log) => (
                     <div
-                      className={`w-full rounded-t-[1px] transition-all duration-700 ease-out ${
-                        isGoalMet
-                          ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.2)]"
-                          : "bg-brand-accent/40"
-                      }`}
-                      style={{ height: `${Math.max(percentage, 4)}%` }}
-                    />
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-neutral-900 text-white text-[8px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 font-bold">
-                      {item.amount}ml
+                      key={log.id}
+                      className="flex items-center justify-between p-4 bg-white/30 rounded-2xl border border-white/20 transition-all hover:bg-white/40"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-brand-accent/10 text-brand-accent rounded-lg">
+                          <Droplets size={18} />
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm">+{log.amount}ml</p>
+                          <div className="flex items-center gap-1">
+                            <Clock size={10} className="text-neutral-400" />
+                            <p className="text-[10px] text-neutral-400 font-medium">
+                              {capitalize(
+                                formatDistanceToNow(log.createdAt, {
+                                  addSuffix: true,
+                                  locale: dateLocales[lang],
+                                }),
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        className="p-2 text-neutral-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
+                        onClick={() => handleRemoveLog(log.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+                  ))}
+                  {logs.length === 0 && (
+                    <div className="flex flex-col items-center justify-center h-full text-neutral-400 opacity-50 py-10">
+                      <Droplets size={40} strokeWidth={1} />
+                      <p className="text-xs mt-2 font-medium">
+                        {t("goals.water.today_history.empty_state")}
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
 
-          <div className="flex justify-between mt-2 px-1 shrink-0">
-            <span className="text-[8px] font-black text-neutral-400 uppercase">D01</span>
-            <span className="text-[8px] font-black text-neutral-400 uppercase text-center opacity-50 italic">
-              {t("goals.water.month_history.graph_title")}
-            </span>
-            <span className="text-[8px] font-black text-neutral-400 uppercase">
-              D{totalDays < 10 ? `0${totalDays}` : totalDays}
-            </span>
-          </div>
-        </div>
-      );
-    })()}
-</div>
+              {activeTab === "week" && (
+                <div className="space-y-3">
+                  {waterHistoryMock.week.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-4 bg-white/20 rounded-2xl border border-white/10 opacity-80 hover:opacity-100 transition-opacity"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase text-neutral-400 font-bold">
+                          {item.time}
+                        </span>
+                        <span className="font-bold text-neutral-700">
+                          {item.amount}ml{" "}
+                          {t("goals.water.week_history.consumed")}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-[10px] font-bold text-neutral-400">
+                          {Math.round((item.amount / item.goal) * 100)}%
+                        </span>
+                        <div className="h-2 w-24 bg-neutral-900/5 rounded-full overflow-hidden border border-white/20">
+                          <div
+                            className={`h-full transition-all duration-1000 ease-out rounded-full ${
+                              item.amount >= item.goal
+                                ? "bg-emerald-500"
+                                : "bg-brand-accent"
+                            }`}
+                            style={{
+                              width: `${Math.min((item.amount / item.goal) * 100, 100)}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activeTab === "month" &&
+                (() => {
+                  const totalDays = monthLogsMock.length;
+                  const totalAmount = monthLogsMock.reduce(
+                    (acc, item) => acc + item.amount,
+                    0,
+                  );
+                  const averageAmount = totalAmount / totalDays;
+                  const goalsMet = monthLogsMock.filter(
+                    (item) => item.amount >= item.goal,
+                  ).length;
+
+                  return (
+                    <div className="flex flex-col flex-1 h-full overflow-hidden">
+                      <div className="flex justify-between items-end mb-4 shrink-0">
+                        <div>
+                          <p className="text-[9px] uppercase text-neutral-400 font-black tracking-widest leading-none mb-1">
+                            {t("goals.water.month_history.average")}
+                          </p>
+                          <h4 className="text-lg font-black text-neutral-800 italic leading-none">
+                            {(averageAmount / 1000).toFixed(1)}L{" "}
+                            <span className="text-[10px] text-neutral-400">
+                              / {t("goals.water.month_history.day")}
+                            </span>
+                          </h4>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[9px] uppercase text-emerald-500 font-black tracking-widest leading-none mb-1">
+                            {t("goals.water.month_history.beaten")}
+                          </p>
+                          <h4 className="text-lg font-black text-emerald-500 italic leading-none">
+                            {goalsMet}{" "}
+                            <span className="text-[10px] text-neutral-400">
+                              / {totalDays}
+                            </span>
+                          </h4>
+                        </div>
+                      </div>
+
+                      <div className="flex-1 min-h-0 relative flex flex-col justify-end bg-neutral-900/5 p-2 rounded-2xl border border-white/20">
+                        <div className="flex items-end justify-between gap-px h-full w-full">
+                          {monthLogsMock.map((item) => {
+                            const percentage = Math.min(
+                              (item.amount / item.goal) * 100,
+                              100,
+                            );
+                            const isGoalMet = item.amount >= item.goal;
+                            return (
+                              <div
+                                key={item.day}
+                                className="flex-1 h-full flex items-end group relative"
+                              >
+                                <div
+                                  className={`w-full rounded-t-[1px] transition-all duration-700 ease-out ${
+                                    isGoalMet
+                                      ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.2)]"
+                                      : "bg-brand-accent/40"
+                                  }`}
+                                  style={{
+                                    height: `${Math.max(percentage, 4)}%`,
+                                  }}
+                                />
+                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-neutral-900 text-white text-[8px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 font-bold">
+                                  {item.amount}ml
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between mt-2 px-1 shrink-0">
+                        <span className="text-[8px] font-black text-neutral-400 uppercase">
+                          D01
+                        </span>
+                        <span className="text-[8px] font-black text-neutral-400 uppercase text-center opacity-50 italic">
+                          {t("goals.water.month_history.graph_title")}
+                        </span>
+                        <span className="text-[8px] font-black text-neutral-400 uppercase">
+                          D{totalDays < 10 ? `0${totalDays}` : totalDays}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
+            </div>
           </section>
         </div>
       </div>

@@ -24,29 +24,52 @@ const userStats = {
   },
 };
 
-const cardGoals: { id: string; titleId: TranslationKeys; icon: LucideIcon }[] =
-  [
-    {
-      id: "water",
-      titleId: "dashboard.cards.water",
-      icon: GlassWater,
-    },
-    {
-      id: "workout",
-      titleId: "dashboard.cards.workout",
-      icon: Dumbbell,
-    },
-    {
-      id: "steps",
-      titleId: "dashboard.cards.steps",
-      icon: Footprints,
-    },
-    {
-      id: "sleep",
-      titleId: "dashboard.cards.sleep",
-      icon: BedDouble,
-    },
-  ];
+const cardGoals: {
+  id: string;
+  titleId: TranslationKeys;
+  icon: LucideIcon;
+  progress: string;
+  progressPercentage: number;
+  remaining: string;
+  postfix: string;
+}[] = [
+  {
+    id: "water",
+    titleId: "dashboard.cards.water",
+    icon: GlassWater,
+    progress: "1200ml",
+    progressPercentage: 40,
+    remaining: "1800",
+    postfix: "ml",
+  },
+  {
+    id: "workout",
+    titleId: "dashboard.cards.workout",
+    icon: Dumbbell,
+    progress: "1/5",
+    progressPercentage: 20,
+    remaining: "4",
+    postfix: "dashboard.cards.workout_postfix",
+  },
+  {
+    id: "steps",
+    titleId: "dashboard.cards.steps",
+    icon: Footprints,
+    progress: "200",
+    progressPercentage: 75,
+    remaining: "800",
+    postfix: "dashboard.cards.steps_postfix",
+  },
+  {
+    id: "sleep",
+    titleId: "dashboard.cards.sleep",
+    icon: BedDouble,
+    progress: "8h",
+    progressPercentage: 100,
+    remaining: "0",
+    postfix: "h",
+  },
+];
 
 const Dashboard: React.FC = () => {
   const { t } = useSettingsStore();
@@ -57,7 +80,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen px-8 text-neutral-900 relative overflow-hidden">
-      <header className="flex justify-between items-center sm:items-end mb-12 flex-col-reverse sm:flex-row gap-4 sm:gap-0">
+      <header className="flex justify-between items-center md:items-end mb-12 flex-col md:flex-row gap-4 md:gap-0">
         <div>
           <h1 className="text-4xl font-bold tracking-tight">
             {t("dashboard.title")}
@@ -67,9 +90,25 @@ const Dashboard: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-4">
+          {cardGoals.map((card) => (
+            <div
+              key={card.id}
+              className={`border ${card.progressPercentage === 100 ? "bg-green-100 border-green-300" : "bg-white/50 border-neutral-200"} p-3 rounded-2xl flex items-center gap-3`}
+            >
+              <card.icon
+                className={`${card.progressPercentage === 100 ? "text-green-500" : "text-brand-accent"}`}
+              />
+              <div className="hidden lg:block">
+                <p className="text-xs text-neutral-500 uppercase font-bold">
+                  {t(card.titleId)}
+                </p>
+                <p className="font-semibold">{card.progress}</p>
+              </div>
+            </div>
+          ))}
           <div className="bg-white/50 border border-neutral-200 p-3 rounded-2xl flex items-center gap-3">
             <Target className="text-brand-accent" />
-            <div>
+            <div className="hidden lg:block">
               <p className="text-xs text-neutral-500 uppercase font-bold">
                 {t("dashboard.meta_label")}
               </p>
@@ -182,24 +221,84 @@ const Dashboard: React.FC = () => {
       </main>
 
       <footer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-        {cardGoals.map(({ icon: Icon, id, titleId }) => (
-          <div
-            key={id}
-            className="bg-white/60 border border-neutral-200 p-6 rounded-3xl hover:border-brand-accent transition-all cursor-pointer group"
-            onClick={() => navigate(`/goals/${id}`)}
-          >
-            <div className="flex justify-between items-start">
-              <div className="p-2 bg-neutral-100 rounded-lg group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition-colors">
-                <Icon size={20} />
+        {cardGoals.map(
+          ({
+            icon: Icon,
+            id,
+            titleId,
+            progress,
+            progressPercentage,
+            remaining,
+            postfix,
+          }) => {
+            return (
+              <div
+                key={id}
+                className="bg-white/60 border border-neutral-200 p-6 rounded-3xl hover:border-brand-accent transition-all cursor-pointer group flex items-center justify-between"
+                onClick={() => navigate(`/goals/${id}`)}
+              >
+                <div className="flex flex-col">
+                  <div className="p-2 w-fit bg-neutral-100 rounded-lg group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition-colors">
+                    <Icon size={20} />
+                  </div>
+
+                  <div className="mt-4">
+                    <h4 className="font-bold text-lg leading-tight">
+                      {t(titleId)}
+                    </h4>
+                    <p className="text-neutral-500 text-xs mt-1">
+                      {progressPercentage === 100 ? (
+                        t("dashboard.cards.goal_reached")
+                      ) : (
+                        <>
+                          {t("dashboard.cards.remaining")}
+                          <span className="text-brand-accent font-bold">
+                            {remaining}
+                          </span>{" "}
+                          {t(postfix as TranslationKeys)}
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="relative flex items-center justify-center w-20 h-20">
+                  <svg
+                    className="w-full h-full transform -rotate-90"
+                    viewBox="0 0 32 32"
+                  >
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="14"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      fill="transparent"
+                      className="text-neutral-100"
+                    />
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="14"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      fill="transparent"
+                      strokeDasharray="88"
+                      strokeDashoffset={88 - (88 * progressPercentage) / 100}
+                      strokeLinecap="round"
+                      className={`${progressPercentage === 100 ? "text-green-500" : "text-brand-accent"} transition-all duration-700`}
+                    />
+                  </svg>
+
+                  <span
+                    className={`absolute text-[10px] font-black ${progressPercentage === 100 ? "text-green-500" : "text-neutral-800"}`}
+                  >
+                    {progress}
+                  </span>
+                </div>
               </div>
-              <span className="text-xs font-bold text-green-500">+12%</span>
-            </div>
-            <h4 className="mt-4 font-bold text-lg">{t(titleId)}</h4>
-            <p className="text-neutral-500 text-sm">
-              {t("dashboard.cards.goal_reached")}
-            </p>
-          </div>
-        ))}
+            );
+          },
+        )}
       </footer>
     </div>
   );

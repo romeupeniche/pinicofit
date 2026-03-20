@@ -77,7 +77,7 @@ const Account: React.FC = () => {
           </nav>
         </aside>
 
-        <main className="bg-white/60 border border-white/40 rounded-3xl p-8 shadow-sm min-h-[600px]">
+        <main className="bg-white/60 border border-white/40 rounded-3xl p-8 shadow-sm min-h-150">
           {menuItems.find((item) => item.id === activeTab)?.component}
         </main>
       </div>
