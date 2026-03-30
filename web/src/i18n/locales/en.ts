@@ -379,7 +379,7 @@ export const en = {
         cardio_steady: "Steady-state Cardio",
         other: "Others",
       },
-      summary_story: {
+      summary_modal: {
         change_theme: "Change theme",
         saving: "Saving...",
         saving_error: "Saving error",

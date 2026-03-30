@@ -384,7 +384,7 @@ export const br = {
         cardio_steady: "Cardio Moderado",
         other: "Outros",
       },
-      summary_story: {
+      summary_modal: {
         change_theme: "Mudar tema",
         saving: "Salvando...",
         saving_error: "Erro ao salvar",

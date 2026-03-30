@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { saveAs } from "file-saver";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import type { Summary } from "../../utils/processPendingSummaries";
 import { useSettingsStore } from "../../store/settingsStore";
 import {
@@ -24,7 +24,6 @@ import { KG_TO_LBS_RATIO } from "../../utils/weightUnitConverter";
 const THEMES = [
   {
     id: "dark",
-    name: "Deep Purple",
     bg: "#080808",
     accent: "#AA3BFF",
     text: "#FFFFFF",
@@ -32,7 +31,6 @@ const THEMES = [
   },
   {
     id: "light",
-    name: "Clean White",
     bg: "#F5F5F5",
     accent: "#2563EB",
     text: "#0F172A",
@@ -40,7 +38,6 @@ const THEMES = [
   },
   {
     id: "ghost",
-    name: "Ghost",
     bg: "transparent",
     accent: "#fff",
     text: "#FFFFFF",
@@ -48,7 +45,6 @@ const THEMES = [
   },
   {
     id: "fire",
-    name: "Hell Mode",
     bg: "#1a0505",
     accent: "#FF4500",
     text: "#FFFFFF",
@@ -56,7 +52,7 @@ const THEMES = [
   },
 ];
 
-const AchievementModal = ({
+const SummaryModal = ({
   summary,
   onClose,
   workoutLength,
@@ -70,7 +66,6 @@ const AchievementModal = ({
   const [themeIndex, setThemeIndex] = useState(0);
   const { t, lang, weightUnit } = useSettingsStore();
   const { user } = useAuthStore();
-
   const currentTheme = THEMES[themeIndex];
 
   const nextTheme = () => setThemeIndex((prev) => (prev + 1) % THEMES.length);
@@ -222,7 +217,7 @@ const AchievementModal = ({
         <button
           onClick={nextTheme}
           className="cursor-pointer hover:scale-105 transition-transform duration-200 border-2 border-white/20 rounded-xl overflow-hidden group"
-          title={t("goals.workout.summary_story.change_theme")}
+          title={t("goals.workout.summary_modal.change_theme")}
           style={{ width: "36px", height: "36px" }}
         >
           <div className="relative w-full h-full rounded-lg overflow-hidden">
@@ -257,10 +252,10 @@ const AchievementModal = ({
           className="cursor-pointer px-6 py-3 bg-purple-600 text-white rounded-xl font-bold uppercase text-xs tracking-widest flex items-center gap-2"
         >
           {loading ? (
-            t("goals.workout.summary_story.saving")
+            t("goals.workout.summary_modal.saving")
           ) : (
             <>
-              <Download size={18} /> {t("goals.workout.summary_story.share")}
+              <Download size={18} /> {t("goals.workout.summary_modal.share")}
             </>
           )}
         </button>
@@ -354,7 +349,7 @@ const AchievementModal = ({
                     margin: 0,
                   }}
                 >
-                  {format(new Date(), "dd MMM yyyy")}
+                  {format(parseISO(summary.date), "dd MMM yyyy")}
                 </p>
                 <p
                   style={{
@@ -398,7 +393,7 @@ const AchievementModal = ({
                     letterSpacing: "5px",
                   }}
                 >
-                  {t("goals.workout.summary_story.total_volume")}
+                  {t("goals.workout.summary_modal.total_volume")}
                 </span>
                 <div
                   style={{
@@ -466,7 +461,7 @@ const AchievementModal = ({
                     textTransform: "uppercase",
                   }}
                 >
-                  {t("goals.workout.summary_story.calories_burned")}
+                  {t("goals.workout.summary_modal.calories_burned")}
                 </span>
                 <p
                   style={{
@@ -493,7 +488,7 @@ const AchievementModal = ({
                     textTransform: "uppercase",
                   }}
                 >
-                  {t("goals.workout.summary_story.intensity")}
+                  {t("goals.workout.summary_modal.intensity")}
                 </span>
                 <div
                   style={{
@@ -527,7 +522,7 @@ const AchievementModal = ({
                     <small
                       style={{ color: currentTheme.accent, fontSize: "30px" }}
                     >
-                      {t("goals.workout.summary_story.exercises_abrev")}
+                      {t("goals.workout.summary_modal.exercises_abrev")}
                     </small>
                   </span>
                 </div>
@@ -560,7 +555,7 @@ const AchievementModal = ({
                     marginBottom: "10px",
                   }}
                 >
-                  {t("goals.workout.summary_story.workout_focus")}
+                  {t("goals.workout.summary_modal.workout_focus")}
                 </span>
                 {stats.sortedGroups.map((groupName, index) => (
                   <div
@@ -615,7 +610,7 @@ const AchievementModal = ({
                     marginBottom: "10px",
                   }}
                 >
-                  {t("goals.workout.summary_story.general_performance")}
+                  {t("goals.workout.summary_modal.general_performance")}
                 </span>
                 <div
                   style={{
@@ -749,14 +744,14 @@ const AchievementModal = ({
                       textAlign: "center",
                     }}
                   >
-                    {t("goals.workout.summary_story.surpassed_plan.0")}
+                    {t("goals.workout.summary_modal.surpassed_plan.0")}
                     <span
                       style={{ fontWeight: "bold", color: currentTheme.accent }}
                     >
                       {stats.progressionDiff.toFixed(0)}
                       {stats.unitLabel}
                     </span>
-                    {t("goals.workout.summary_story.surpassed_plan.1")}
+                    {t("goals.workout.summary_modal.surpassed_plan.1")}
                   </p>
                 </>
               ) : (
@@ -800,4 +795,4 @@ const AchievementModal = ({
   );
 };
 
-export default AchievementModal;
+export default SummaryModal;

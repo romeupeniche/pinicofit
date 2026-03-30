@@ -27,13 +27,13 @@ import { useAuthStore } from "../../store/authStore";
 import WorkoutList from "./WorkoutList";
 import { convertFromKg } from "../../utils/weightUnitConverter";
 import type { Summary } from "../../utils/processPendingSummaries";
-import AchievementModal from "./AchievementModal";
+import SummaryModal from "./SummaryModal";
 
 const dateLocales = { en: enUS, br: ptBR, es };
 
 const WorkoutOverview: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showAchievement, setShowAchievement] = useState(false);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [todaySummary, setTodaySummary] = useState<Summary | null>(null);
   const today = startOfDay(new Date());
   const dateKey = format(selectedDate, "yyyy-MM-dd");
@@ -238,7 +238,7 @@ const WorkoutOverview: React.FC = () => {
                 </div>
                 <button
                   disabled={!todaySummary}
-                  onClick={() => setShowAchievement(true)}
+                  onClick={() => setShowSummaryModal(true)}
                   className={`
                     px-6 py-3 rounded-2xl
                     font-black uppercase md:tracking-[0.2em] text-xs
@@ -281,10 +281,10 @@ const WorkoutOverview: React.FC = () => {
           />
         </div>
       )}
-      {showAchievement && todaySummary && activeWorkoutStep && (
-        <AchievementModal
+      {showSummaryModal && todaySummary && activeWorkoutStep && (
+        <SummaryModal
           summary={todaySummary}
-          onClose={() => setShowAchievement(false)}
+          onClose={() => setShowSummaryModal(false)}
           workoutLength={activeWorkoutStep.exercises.length}
         />
       )}
