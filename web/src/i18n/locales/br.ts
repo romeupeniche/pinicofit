@@ -187,7 +187,11 @@ export const br = {
         cicle_start_label: "Inicio do Ciclo Atual",
         synchronized: "Sincronizado",
         pending: "Alterações Pendentes",
-        changes_apply_today: "As alterações serão aplicadas a partir de hoje",
+        changes_apply: {
+          0: "Atualize o progresso atual",
+          or: " ou ",
+          1: "inicie um novo ciclo hoje",
+        },
         explore_presets: "Explorar Presets",
         saving: "Salvando...",
         cycle_structure: {
@@ -197,12 +201,13 @@ export const br = {
           configure: "Configurar",
           workout_add: "Treino",
           actions: {
-            save: "Salvar Alterações do Ciclo",
-            mobile_save: "Salvar",
-            configure: "Configure todos os treinos",
+            quick_edit: "Atualizar (Manter Ciclo)",
+            quick_edit_mobile: "Atualizar",
+            new_cycle: "Aplicar como Novo Ciclo",
+            new_cycle_mobile: "Novo",
+            configure: "Configurar Todos os Treinos",
             mobile_configure: "Configurar",
             discard: "Descartar Alterações",
-            mobile_discard: "Descartar",
           },
         },
         monthly_projection: {

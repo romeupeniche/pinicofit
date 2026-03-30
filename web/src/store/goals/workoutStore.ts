@@ -59,7 +59,7 @@ interface WorkoutState {
   setStartDate: (date: string) => void;
   addPreset: (preset: IWorkoutPreset) => void;
   removePreset: (index: number) => void;
-  saveChanges: () => Promise<void>;
+  saveChanges: (resetCycle?: boolean) => Promise<void>;
   rollbackChanges: () => void;
   getWorkoutForDate: (date: Date) => ICycleStep | null;
   checkAndMarkFailed: () => void;
@@ -764,26 +764,40 @@ export const useWorkoutStore = create<WorkoutState>()(
         return false;
       },
 
-      saveChanges: async () => {
+      saveChanges: async (resetCycle = false) => {
         set({ isLoading: true });
 
         await new Promise((resolve) => setTimeout(resolve, 800));
 
-        const { cycle, startDate, history, lastSavedCycle } = get();
+        const {
+          cycle,
+          startDate,
+          history,
+          lastSavedCycle,
+          lastSavedStartDate,
+        } = get();
 
         const today = startOfDay(new Date());
         const todayIso = today.toISOString();
         const yesterdayIso = subDays(today, 1).toISOString();
 
-        const newHistoryItem: IWorkoutHistory = {
-          startDate: startDate,
-          endDate: yesterdayIso,
-          cycle: JSON.parse(lastSavedCycle),
-        };
+        const finalStartDate = resetCycle ? todayIso : startDate;
+
+        const newHistory = resetCycle
+          ? [
+              ...history,
+              {
+                startDate: lastSavedStartDate,
+                endDate: yesterdayIso,
+                cycle: JSON.parse(lastSavedCycle),
+              },
+            ]
+          : history;
+
         set({
-          history: [...history, newHistoryItem],
-          startDate: todayIso,
-          lastSavedStartDate: todayIso,
+          history: newHistory,
+          startDate: finalStartDate,
+          lastSavedStartDate: finalStartDate,
           lastSavedCycle: JSON.stringify(cycle),
           isLoading: false,
         });

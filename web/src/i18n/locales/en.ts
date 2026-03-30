@@ -186,7 +186,11 @@ export const en = {
         rest_label: "Rest",
         synchronized: "Synchronized",
         pending: "Pending Changes",
-        changes_apply_today: "Changes apply starting today",
+        changes_apply: {
+          0: "Update current progress",
+          or: " or ",
+          1: "start a fresh cycle today",
+        },
         explore_presets: "Explore Presets",
         saving: "Saving...",
         cycle_structure: {
@@ -196,12 +200,13 @@ export const en = {
           configure: "Configure",
           workout_add: "Workout",
           actions: {
-            save: "Save Cycle Changes",
-            mobile_save: "Save",
+            quick_edit: "Quick Edit (Keep Cycle)",
+            quick_edit_mobile: "Update",
+            new_cycle: "Apply as New Cycle",
+            new_cycle_mobile: "New",
             configure: "Configure All Workouts",
             mobile_configure: "Configure",
             discard: "Discard Changes",
-            mobile_discard: "Discard",
           },
         },
         monthly_projection: {

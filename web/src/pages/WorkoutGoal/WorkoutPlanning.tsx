@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Plus,
   Moon,
-  Save,
   CheckCircle2,
   Loader2,
   AlertCircle,
@@ -10,6 +9,7 @@ import {
   LayoutList,
   Library,
   RotateCcw,
+  Edit3,
 } from "lucide-react";
 import {
   format,
@@ -144,10 +144,26 @@ const WorkoutPlanning: React.FC = () => {
     setCycle(updatedCycle);
   };
 
+  const getSaveButtonLabel = () => {
+    if (isLoading) return t("goals.workout.plan_window.saving");
+
+    if (!allWorkoutsConfigured) {
+      return isMobile
+        ? t(
+            "goals.workout.plan_window.cycle_structure.actions.mobile_configure",
+          )
+        : t("goals.workout.plan_window.cycle_structure.actions.configure");
+    }
+
+    return isMobile
+      ? t("goals.workout.plan_window.cycle_structure.actions.new_cycle_mobile")
+      : t("goals.workout.plan_window.cycle_structure.actions.new_cycle");
+  };
+
   return (
     <div className="space-y-12 pb-32 overflow-x-hidden">
       <section className="space-y-6">
-        <div className="max-w-md mx-auto flex flex-col gap-6 p-8 items-center justify-center text-center">
+        <div className="max-w-xl mx-auto flex flex-col gap-6 p-8 items-center justify-center text-center">
           <div className="space-y-2">
             {!hasChanges() && !isLoading ? (
               <div className="h-5 flex items-center justify-center gap-2 text-emerald-500">
@@ -167,7 +183,29 @@ const WorkoutPlanning: React.FC = () => {
               </div>
             )}
             <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">
-              {t("goals.workout.plan_window.changes_apply_today")}
+              <span
+                className={`${hasChanges() && allWorkoutsConfigured ? "relative text-blue-500 animate-pulse text-xs font-black" : ""}`}
+              >
+                {t("goals.workout.plan_window.changes_apply.0")}
+                {hasChanges() && allWorkoutsConfigured && (
+                  <Edit3
+                    size={35}
+                    className="md:block hidden absolute -top-3 opacity-30 mx-auto w-full"
+                  />
+                )}
+              </span>
+              {t("goals.workout.plan_window.changes_apply.or")}
+              <span
+                className={`${hasChanges() && allWorkoutsConfigured ? "relative text-brand-accent animate-pulse text-xs font-black" : ""}`}
+              >
+                {t("goals.workout.plan_window.changes_apply.1")}
+                {hasChanges() && allWorkoutsConfigured && (
+                  <Plus
+                    size={50}
+                    className="md:block hidden absolute -top-5 opacity-30 w-full right-0"
+                  />
+                )}
+              </span>
             </p>
           </div>
 
@@ -237,7 +275,7 @@ const WorkoutPlanning: React.FC = () => {
                 }`}
               >
                 <Plus
-                  size={16}
+                  size={18}
                   className={`${!isLoading && "group-hover:rotate-90"} transition-transform`}
                 />
                 <span className="text-[10px] font-black uppercase">
@@ -263,14 +301,14 @@ const WorkoutPlanning: React.FC = () => {
       </section>
 
       {(hasChanges() || isLoading) && (
-        <div className="flex flex-1 justify-center gap-4 items-center fixed bottom-10 left-1/2 -translate-x-1/2 z-60">
+        <div className="flex flex-row flex-1 justify-center gap-3 items-center fixed bottom-10 left-1/2 -translate-x-1/2 z-60 w-full px-4">
           <button
-            onClick={() => saveChanges()}
+            onClick={() => saveChanges(true)}
             disabled={isLoading || !allWorkoutsConfigured}
             className={`flex items-center gap-3 px-8 py-4 rounded-full shadow-2xl border transition-all active:scale-95 group ${
               allWorkoutsConfigured
-                ? "bg-neutral-900 text-brand-accent border-brand-accent/20 hover:scale-105 cursor-pointer"
-                : "bg-neutral-100 text-neutral-400 border-neutral-200 cursor-not-allowed"
+                ? "border border-brand-accent/10 bg-brand-accent/20 backdrop-blur-md text-brand-accent/70 hover:text-white hover:bg-brand-accent hover:scale-105 cursor-pointer"
+                : "bg-neutral-800 text-neutral-500 border-neutral-700 cursor-not-allowed"
             } ${isLoading ? "opacity-80" : ""}`}
           >
             {isLoading ? (
@@ -278,49 +316,48 @@ const WorkoutPlanning: React.FC = () => {
             ) : !allWorkoutsConfigured ? (
               <AlertCircle size={18} />
             ) : (
-              <Save
+              <Plus
+                size={18}
+                className="group-hover:rotate-90 transition-transform fill-brand-accent/20"
+              />
+            )}
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+              {getSaveButtonLabel()}
+            </span>
+          </button>
+
+          {!isLoading && allWorkoutsConfigured && (
+            <button
+              onClick={() => saveChanges(false)}
+              className="flex items-center gap-3 px-6 py-4 rounded-full shadow-2xl border border-blue-500/10 bg-blue-500/20 backdrop-blur-md text-blue-500/70 hover:text-white hover:bg-blue-500 hover:scale-105 transition-all active:scale-95 cursor-pointer group"
+            >
+              <Edit3
                 size={18}
                 className="group-hover:rotate-12 transition-transform"
               />
-            )}
-            <span className="text-xs font-black uppercase tracking-widest">
-              {isLoading
-                ? t("goals.workout.plan_window.saving")
-                : isMobile
-                  ? !allWorkoutsConfigured
-                    ? t(
-                        "goals.workout.plan_window.cycle_structure.actions.mobile_configure",
-                      )
-                    : t(
-                        "goals.workout.plan_window.cycle_structure.actions.mobile_save",
-                      )
-                  : !allWorkoutsConfigured
-                    ? t(
-                        "goals.workout.plan_window.cycle_structure.actions.configure",
-                      )
-                    : t(
-                        "goals.workout.plan_window.cycle_structure.actions.save",
-                      )}
-            </span>
-          </button>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                {isMobile
+                  ? t(
+                      "goals.workout.plan_window.cycle_structure.actions.quick_edit_mobile",
+                    )
+                  : t(
+                      "goals.workout.plan_window.cycle_structure.actions.quick_edit",
+                    )}
+              </span>
+            </button>
+          )}
 
           {!isLoading && (
             <button
               onClick={rollbackChanges}
-              className="flex items-center gap-3 px-8 py-4 rounded-full shadow-2xl border transition-all active:scale-95 group border-red-500 text-white bg-neutral-900 hover:scale-105 cursor-pointer"
+              className="cursor-pointer flex items-center gap-3 px-6 py-4 rounded-full backdrop-blur-md shadow-xl border border-red-500/20 bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 group order-3"
             >
               <RotateCcw
-                size={18}
-                className="text-red-500 transition-transform group-hover:-rotate-360 duration-300"
+                size={16}
+                className="transition-transform group-hover:-rotate-180 duration-300"
               />
-              <span className="text-xs font-black uppercase tracking-widest text-red-500">
-                {isMobile
-                  ? t(
-                      "goals.workout.plan_window.cycle_structure.actions.mobile_discard",
-                    )
-                  : t(
-                      "goals.workout.plan_window.cycle_structure.actions.discard",
-                    )}
+              <span className="md:block hidden text-[10px] font-black uppercase tracking-[0.2em]">
+                {t("goals.workout.plan_window.cycle_structure.actions.discard")}
               </span>
             </button>
           )}
@@ -380,7 +417,7 @@ const WorkoutPlanning: React.FC = () => {
                         : workoutStep?.type === "rest"
                           ? "bg-neutral-100 text-neutral-500 border border-dashed border-neutral-300"
                           : workoutStep
-                            ? `bg-neutral-900 text-brand-accent shadow-lg hover:scale-110 ${isToday ? "cursor-pointer" : "cursor-not-allowed"}`
+                            ? `bg-neutral-900 text-brand-accent shadow-lg hover:scale-110 ${isPastDay ? "cursor-not-allowed" : "cursor-pointer"}`
                             : "bg-neutral-50 text-neutral-200"
                     }`}
                   >
