@@ -214,7 +214,10 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
 
-          <button className="mt-8 w-full py-4 bg-white text-black rounded-2xl font-bold hover:bg-brand-pink transition-colors cursor-pointer">
+          <button
+            onClick={() => navigate("/meals")}
+            className="mt-8 w-full py-4 bg-white text-black rounded-2xl font-bold hover:bg-brand-pink transition-colors cursor-pointer"
+          >
             {t("dashboard.add_meal")}
           </button>
         </section>

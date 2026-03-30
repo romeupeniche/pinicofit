@@ -13,6 +13,7 @@ import WaterGoal from "../pages/WaterGoal";
 import SleepGoal from "../pages/SleepGoal";
 import WorkoutGoal from "../pages/WorkoutGoal";
 import StepsGoal from "../pages/StepsGoal";
+import Meals from "../pages/Meals";
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +46,7 @@ export const router = createBrowserRouter([
               { path: "steps", element: <StepsGoal /> },
             ],
           },
+          { path: "meals", element: <Meals /> },
         ],
       },
 
