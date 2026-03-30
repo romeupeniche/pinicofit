@@ -58,6 +58,10 @@ export const br = {
         title: "Idioma do App",
         subtitle: "Escolha seu idioma preferido",
       },
+      weight_unit: {
+        title: "Unidade de Peso",
+        subtitle: "Escolha sua unidade de peso preferida",
+      },
     },
   },
   home: {
@@ -141,6 +145,7 @@ export const br = {
       },
     },
     workout: {
+      workout_label: "Treino {{letter}}",
       workout_window: {
         badge_title: "Treinar",
         title: "Treino",
@@ -150,8 +155,16 @@ export const br = {
         focus: "Foco atual",
         calories: "Calorias",
         time: "Tempo",
+        total_volume: "Volume Total",
         exercise_order: "Ordem de Execução",
         exercises: "Exercícios",
+        rest: "Descanso",
+        rest_day: "Dia de Descanso - Recuperação Muscular",
+        rest_msg: "O descanso é onde a evolução acontece.",
+        see_summary: "Explorar Sumário",
+        locked_summary: "Conclua para Desbloquear",
+        next_round: "Próximo Round",
+        next_round_msg: "{{workout}} • em {{distance}}",
         details_modal: {
           standard: "Padrão",
           warmup: "Aquecimento",
@@ -169,14 +182,217 @@ export const br = {
       plan_window: {
         badge_title: "Planejar",
         title: "Planejamento",
-        week_days: {
-          monday: "Segunda",
-          tuesday: "Terça",
-          wednesday: "Quarta",
-          thursday: "Quinta",
-          friday: "Sexta",
-          saturday: "Sábado",
-          sunday: "Domingo",
+        week_days: "DSTQQSS",
+        rest_label: "Descanso",
+        cicle_start_label: "Inicio do Ciclo Atual",
+        synchronized: "Sincronizado",
+        pending: "Alterações Pendentes",
+        changes_apply_today: "As alterações serão aplicadas a partir de hoje",
+        explore_presets: "Explorar Presets",
+        saving: "Salvando...",
+        cycle_structure: {
+          title: "Estrutura do Ciclo",
+          subtitle: "Segure e arraste para reordenar",
+          length: "Dias",
+          configure: "Configurar",
+          workout_add: "Treino",
+          actions: {
+            save: "Salvar Alterações do Ciclo",
+            mobile_save: "Salvar",
+            configure: "Configure todos os treinos",
+            mobile_configure: "Configurar",
+            discard: "Descartar Alterações",
+            mobile_discard: "Descartar",
+          },
+        },
+        monthly_projection: {
+          title: "Projeção Mensal",
+          recover_yourself: "Se Recupere",
+          exercises: "Exercícios",
+        },
+        edit_workout_modal: {
+          title: "Editando {{workout}}",
+          workout_name: "Nome do Treino",
+          save_to_library: "Salvar na Biblioteca",
+          same_name_error: "Já existe um treino com esse nome",
+          exercise: "Exercício",
+          inputs: {
+            name: "Nome",
+            group: "Grupo",
+            group_ph: "Selecione o grupo...",
+            sets: "Séries",
+            reps: "Repeticões",
+            weight: "Carga",
+            rest: "Descanso",
+            obs: "Observações",
+            type: {
+              title: "Tipo",
+              warmup: "Aquecimento",
+              exercise: "Exercício",
+            },
+            technique: {
+              title: "Técnica",
+              standard: "Padrão",
+            },
+            apply: "Aplicar ao Ciclo",
+          },
+        },
+        presets_modal: {
+          title: "Biblioteca",
+          subtitle: "Meus Treinos",
+          no_workouts: "Nenhum treino salvo",
+          exercises: "{{qty}} Exercícios",
+        },
+        confirm_exit_modal: {
+          title: "Alterações não salvas!",
+          subtitle:
+            "Se você sair agora, todo o progresso do seu treino será perdido. Quer mesmo sair?",
+          actions: {
+            discard: "Sair e descartar",
+            cancel: "Continuar editando",
+          },
+        },
+      },
+      presets: {
+        "preset-chest-triceps": {
+          title: "Peito e Tríceps",
+          "preset-supino-reto-barra":
+            "Supino Reto com Barra;Foco em progressão de carga, descida controlada",
+          "preset-supino-inclinado-halteres":
+            "Supino Inclinado com Halteres;Inclinação de 30º a 45º",
+          "preset-crucifixo-maquina":
+            "Crucifixo Máquina (Peck Deck);Pico de contração de 1s no meio",
+          "preset-crossover-polia-alta":
+            "Crossover Polia Alta;Foco na parte inferior do peitoral",
+          "preset-triceps-pulley-corda":
+            "Tríceps Pulley Corda;Abrir a corda no final do movimento",
+          "preset-triceps-testa-barra-ez":
+            "Tríceps Testa Barra EZ;Cuidado com os cotovelos, manter fechados",
+          "preset-triceps-frances-halter":
+            "Tríceps Francês Bilateral;Máximo alongamento da fibra",
+        },
+        "preset-back-biceps": {
+          title: "Costas e Bíceps",
+          "preset-puxada-pulley-frente":
+            "Puxada Aberta no Pulley;Foco na expansão das dorsais",
+          "preset-remada-curvada-barra":
+            "Remada Curvada com Barra;Pegada supinada para maior ativação",
+          "preset-remada-unilateral-serrote":
+            "Remada Unilateral (Serrote);Manter o tronco paralelo ao banco",
+          "preset-pull-down-corda":
+            "Pull Down com Corda;Braços quase esticados, foco no lats",
+          "preset-rosca-direta-barra-ez":
+            "Rosca Direta Barra EZ;Sem balançar o corpo, cotovelos fixos",
+          "preset-rosca-martelo-halteres":
+            "Rosca Martelo com Halteres;Foco no braquiorradial e braquial",
+          "preset-rosca-concentrada-halter":
+            "Rosca Concentrada Unilateral;Pico de contração no topo",
+        },
+        "preset-legs-shoulders": {
+          title: "Perna e Ombros",
+          "preset-agachamento-livre-barra":
+            "Agachamento Livre com Barra;Descida controlada, foco na amplitude máxima",
+          "preset-leg-press-45":
+            "Leg Press 45º;Pés na largura dos ombros, sem travar o joelho",
+          "preset-extensora-maquina":
+            "Cadeira Extensora;Pico de contração de 2s no topo",
+          "preset-mesa-flexora":
+            "Mesa Flexora (Posterior);Foco no alongamento do posterior",
+          "preset-stiff-com-halteres":
+            "Stiff com Halteres;Coluna reta, sentir alongar o posterior",
+          "preset-desenvolvimento-ombros-halter":
+            "Desenvolvimento com Halteres;Sentado, foco no deltoide anterior",
+          "preset-elevacao-lateral-polia":
+            "Elevação Lateral na Polia;Cabo passando por trás do corpo",
+        },
+        "preset-abs-core": {
+          title: "Abdômen & Core",
+          "preset-abd-infra-paralela":
+            "Abdominal Infra na Paralela;Foco na elevação da pelve",
+          "preset-abd-crunches-polia":
+            "Abdominal Supra na Polia;Carga moderada, foco na contração",
+          "preset-abd-obliquo-polia":
+            "Abdominal Oblíquo na Polia;Giro de tronco controlado",
+          "preset-core-plancha":
+            "Prancha Abdominal;Manter contração máxima por 1 min",
+          "preset-lombar-extensao-banco":
+            "Extensão Lombar no Banco 45º;Subida controlada, não hiperestender demais",
+          "preset-lombar-superman":
+            "Superman (Solo);Foco na contração isométrica de 2s no topo",
+        },
+        "preset-fb-performance": {
+          title: "Full Body Performance",
+          "preset-fb-agachamento":
+            "Agachamento Livre;Composto base de membros inferiores",
+          "preset-fb-supino-reto": "Supino Reto com Barra;Foco em força",
+          "preset-fb-puxada-frente": "Puxada Aberta Pulley;Foco em largura",
+          "preset-fb-desenvolvimento-halter":
+            "Desenvolvimento de Ombros;Sentado com halteres",
+          "preset-fb-stiff": "Stiff com Halteres;Foco em posterior de coxa",
+          "preset-fb-rosca-martelo": "Rosca Martelo;Trabalho de braço",
+          "preset-fb-triceps-corda": "Tríceps Corda;Finalização de braço",
+        },
+        "preset-fb-calisthenics-pro": {
+          title: "Full Body Calistenia Pro",
+          "preset-cali-barra-fixa-pronada":
+            "Barra Fixa (Pull Ups);Pegada aberta, peito na barra",
+          "preset-cali-paralelas-peito":
+            "Dips nas Paralelas;Inclinar o tronco para frente para focar no peito",
+          "preset-cali-agachamento-bulgaro":
+            "Agachamento Búlgaro;Uma perna de cada vez, foco em profundidade",
+          "preset-cali-flexao-arqueiro":
+            "Flexão Arqueiro (Archer Pushups);Alternando os lados para aumentar a carga unilateral",
+          "preset-cali-chin-ups":
+            "Chin-Ups (Barra Supinada);Foco na contração máxima do bíceps no topo",
+          "preset-cali-flexao-diamante":
+            "Flexão Diamante;Mãos juntas formando um diamante",
+          "preset-cali-elevacao-pernas-barra":
+            "Elevação de Pernas na Barra;Sem balanço (momentum), subida explosiva",
+        },
+        "preset-cardio-burn-hiit": {
+          title: "Cardio Burn & HIIT",
+          "preset-cardio-bike-hiit":
+            "Bike HIIT (Intervalado);30s sprint máximo / 30s leve",
+          "preset-cardio-esteira-incl":
+            "Esteira Inclinada;15 min / Inclinação 12% / 5.0km/h",
+          "preset-cardio-burpees": "Burpees;45 segundos de execução",
+          "preset-cardio-corda": "Pular Corda;2 min constantes",
+          "preset-cardio-mountain-climber":
+            "Mountain Climber;Foco em ritmo cardíaco alto",
+          "preset-cardio-polichinelos":
+            "Polichinelos;Execução rápida para finalizar",
+        },
+      },
+      metrics: {
+        legs_compound: "Pernas (Multiarticular)",
+        legs_isolated: "Pernas (Isolado)",
+        back_compound: "Costas (Multiarticular)",
+        chest_compound: "Peito (Multiarticular)",
+        shoulders: "Ombros",
+        biceps_isolated: "Bíceps (Isolado)",
+        triceps_isolated: "Tríceps (Isolado)",
+        abs_core: "Abdômen/Core",
+        cali_upper_compound: "Calistenia Superior",
+        cali_lower_compound: "Calistenia Inferior",
+        cali_core_advanced: "Calistenia Core",
+        cardio_hiit: "Cardio HIIT",
+        cardio_steady: "Cardio Moderado",
+        other: "Outros",
+      },
+      summary_story: {
+        change_theme: "Mudar tema",
+        saving: "Salvando...",
+        saving_error: "Erro ao salvar",
+        share: "Compartilhar",
+        total_volume: "Volume Total",
+        calories_burned: "Gasto Calórico",
+        intensity: "Intensidade",
+        exercises_abrev: "EXERC.",
+        workout_focus: "Foco do Treino",
+        general_performance: "Performance Geral",
+        surpassed_plan: {
+          0: "Você superou o planejado em ",
+          1: " totais de volume.",
         },
       },
     },

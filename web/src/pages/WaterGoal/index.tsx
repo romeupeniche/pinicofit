@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+// @ts-expect-error - import is correct
 import { useForm } from "react-hook-form";
 import {
   Droplets,

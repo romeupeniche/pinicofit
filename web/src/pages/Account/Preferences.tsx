@@ -1,10 +1,43 @@
 import React from "react";
-import { useSettingsStore } from "../../store/settingsStore";
-import type { Language } from "../../types/i18n";
+import { useSettingsStore, type WeightUnit } from "../../store/settingsStore";
+import type { Language, TranslationKeys } from "../../types/i18n";
 import { Globe } from "lucide-react";
+import PreferenceSelect from "./PreferenceSelect";
 
 const Preferences: React.FC = () => {
-  const { lang, setLang, t } = useSettingsStore();
+  const { lang, setLang, t, setWeightUnit, weightUnit } = useSettingsStore();
+
+  const preferences: {
+    title: TranslationKeys;
+    subtitle: TranslationKeys;
+    options: { label: string; value: string }[];
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  }[] = [
+    {
+      title: "account.preferences.language.title",
+      subtitle: "account.preferences.language.subtitle",
+      options: [
+        { label: "English (US)", value: "en" },
+        { label: "Português (BR)", value: "br" },
+        // { label: "Español", value: "es" },
+      ],
+      value: lang,
+      onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
+        setLang(e.target.value as Language),
+    },
+    {
+      title: "account.preferences.weight_unit.title",
+      subtitle: "account.preferences.weight_unit.subtitle",
+      options: [
+        { label: "KG", value: "kg" },
+        { label: "LBS", value: "lbs" },
+      ],
+      value: weightUnit,
+      onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
+        setWeightUnit(e.target.value as WeightUnit),
+    },
+  ];
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -13,28 +46,9 @@ const Preferences: React.FC = () => {
         <Globe className="text-neutral-300" size={30} />
       </div>
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 bg-white rounded-2xl border-neutral-200 hover:border-brand-accent/50 transition-colors border">
-          <div>
-            <p className="font-bold">
-              {t("account.preferences.language.title")}
-            </p>
-            <p className="text-sm text-neutral-500">
-              {t("account.preferences.language.subtitle")}
-            </p>
-          </div>
-          <select
-            value={lang}
-            onChange={(e) => setLang(e.target.value as Language)}
-            className="bg-white border border-neutral-200 rounded-lg px-3 py-1 outline-none cursor-pointer hover:border-brand-accent transition-colors"
-          >
-            <option className="cursor-pointer" value="br">
-              Português (BR)
-            </option>
-            <option className="cursor-pointer" value="en">
-              English (US)
-            </option>
-          </select>
-        </div>
+        {preferences.map((preference) => (
+          <PreferenceSelect key={preference.title} {...preference} />
+        ))}
       </div>
     </div>
   );

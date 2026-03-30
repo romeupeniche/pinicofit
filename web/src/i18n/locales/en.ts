@@ -58,6 +58,10 @@ export const en = {
         title: "App Language",
         subtitle: "Choose your preferred language",
       },
+      weight_unit: {
+        title: "Weight Unit",
+        subtitle: "Choose your preferred weight unit",
+      },
     },
   },
   home: {
@@ -141,7 +145,7 @@ export const en = {
       },
     },
     workout: {
-      standard: "Standard",
+      workout_label: "Workout {{letter}}",
       workout_window: {
         title: "Workout",
         badge_title: "Workout",
@@ -151,8 +155,16 @@ export const en = {
         focus: "Focus",
         calories: "Calories",
         time: "Time",
+        total_volume: "Total Volume",
         exercise_order: "Exercise Order",
         exercises: "Exercises",
+        rest: "Rest",
+        rest_day: "Rest Day - Muscle Recovery",
+        rest_msg: "Rest is where evolution happens.",
+        see_summary: "Explore Summary",
+        locked_summary: "Complete to Unlock",
+        next_round: "Next Round",
+        next_round_msg: "{{workout}} • in {{distance}}",
         details_modal: {
           standard: "Standard",
           warmup: "Warm-up",
@@ -170,14 +182,212 @@ export const en = {
       plan_window: {
         badge_title: "Plan",
         title: "Planning",
-        week_days: {
-          monday: "Monday",
-          tuesday: "Tuesday",
-          wednesday: "Wednesday",
-          thursday: "Thursday",
-          friday: "Friday",
-          saturday: "Saturday",
-          sunday: "Sunday",
+        week_days: "SMTWTFS",
+        rest_label: "Rest",
+        synchronized: "Synchronized",
+        pending: "Pending Changes",
+        changes_apply_today: "Changes apply starting today",
+        explore_presets: "Explore Presets",
+        saving: "Saving...",
+        cycle_structure: {
+          title: "Cycle Structure",
+          subtitle: "Hold and drag to reorder",
+          length: "Days",
+          configure: "Configure",
+          workout_add: "Workout",
+          actions: {
+            save: "Save Cycle Changes",
+            mobile_save: "Save",
+            configure: "Configure All Workouts",
+            mobile_configure: "Configure",
+            discard: "Discard Changes",
+            mobile_discard: "Discard",
+          },
+        },
+        monthly_projection: {
+          title: "Monthly Projection",
+          recover_yourself: "Recover Yourself",
+          exercises: "Exercises",
+        },
+        edit_workout_modal: {
+          title: "Editing {{workout}}",
+          workout_name: "Workout Name",
+          save_to_library: "Save to Library",
+          same_name_error: "There is already a workout with this name",
+          exercise: "Exercise",
+          inputs: {
+            name: "Name",
+            group: "Group",
+            group_ph: "Select group...",
+            sets: "Sets",
+            reps: "Reps",
+            weight: "Weight",
+            rest: "Rest",
+            obs: "Observations",
+            type: {
+              title: "Type",
+              warmup: "Warmup",
+              exercise: "Exercise",
+            },
+            technique: {
+              title: "Technique",
+              standard: "Standard",
+            },
+            apply: "Apply to Cycle",
+          },
+        },
+        presets_modal: {
+          title: "Library",
+          subtitle: "My Workouts",
+          no_workouts: "No workouts saved",
+          exercises: "{{qty}} Exercises",
+        },
+        confirm_exit_modal: {
+          title: "Unsaved changes!",
+          subtitle:
+            "If you leave now, all your workout progress will be lost. Are you sure you want to exit?",
+          actions: {
+            discard: "Exit and discard",
+            cancel: "Keep editing",
+          },
+        },
+      },
+      presets: {
+        "preset-chest-triceps": {
+          title: "Chest & Triceps",
+          "preset-supino-reto-barra":
+            "Barbell Bench Press;Focus on progressive overload and controlled eccentric",
+          "preset-supino-inclinado-halteres":
+            "Incline Dumbbell Press;30º to 45º incline",
+          "preset-crucifixo-maquina":
+            "Machine Fly (Peck Deck);1s peak contraction at the top",
+          "preset-crossover-polia-alta":
+            "High Cable Cross-over;Focus on lower chest",
+          "preset-triceps-pulley-corda":
+            "Triceps Rope Pushdown;Flaring the rope at the bottom",
+          "preset-triceps-testa-barra-ez":
+            "EZ-Bar Triceps Extension;Keep elbows tucked in",
+          "preset-triceps-frances-halter":
+            "Overhead Dumbbell Extension;Maximum fiber stretch",
+        },
+        "preset-back-biceps": {
+          title: "Back & Biceps",
+          "preset-puxada-pulley-frente": "Lat Pulldown;Focus on lat width",
+          "preset-remada-curvada-barra":
+            "Bent Over Barbell Row;Supinated grip for better activation",
+          "preset-remada-unilateral-serrote":
+            "Single-Arm Dumbbell Row;Keep torso parallel to the bench",
+          "preset-pull-down-corda":
+            "Straight Arm Lat Pulldown;Arms nearly straight, focus on lats",
+          "preset-rosca-direta-barra-ez":
+            "EZ-Bar Curl;No body swinging, keep elbows fixed",
+          "preset-rosca-martelo-halteres":
+            "Dumbbell Hammer Curl;Focus on brachioradialis and brachialis",
+          "preset-rosca-concentrada-halter":
+            "Concentration Curl;Peak contraction at the top",
+        },
+        "preset-legs-shoulders": {
+          title: "Legs & Shoulders",
+          "preset-agachamento-livre-barra":
+            "Barbell Back Squat;Controlled descent, focus on full range of motion",
+          "preset-leg-press-45":
+            "45º Leg Press;Shoulder-width feet, do not lock knees",
+          "preset-extensora-maquina":
+            "Leg Extension;2s peak contraction at the top",
+          "preset-mesa-flexora": "Lying Leg Curl;Focus on hamstring stretch",
+          "preset-stiff-com-halteres":
+            "Dumbbell Stiff-Leg Deadlift;Keep back straight, feel the hamstrings stretch",
+          "preset-desenvolvimento-ombros-halter":
+            "Dumbbell Shoulder Press;Seated, focus on anterior deltoid",
+          "preset-elevacao-lateral-polia":
+            "Cable Lateral Raise;Cable passing behind the body",
+        },
+        "preset-abs-core": {
+          title: "Abs & Core",
+          "preset-abd-infra-paralela":
+            "Hanging Knee Raise;Focus on posterior pelvic tilt",
+          "preset-abd-crunches-polia":
+            "Cable Crunch;Moderate weight, focus on contraction",
+          "preset-abd-obliquo-polia":
+            "Cable Woodchopper;Controlled torso rotation",
+          "preset-core-plancha": "Plank;Hold maximum contraction for 1 min",
+          "preset-lombar-extensao-banco":
+            "Hyperextension (45º Back Extension);Controlled ascent, do not overextend",
+          "preset-lombar-superman":
+            "Superman;2s isometric contraction at the top",
+        },
+        "preset-fb-performance": {
+          title: "Full Body Performance",
+          "preset-fb-agachamento":
+            "Back Squat;Primary lower body compound move",
+          "preset-fb-supino-reto": "Barbell Bench Press;Focus on strength",
+          "preset-fb-puxada-frente": "Lat Pulldown;Focus on width",
+          "preset-fb-desenvolvimento-halter":
+            "Dumbbell Press;Seated with dumbbells",
+          "preset-fb-stiff": "Dumbbell Stiff-Leg Deadlift;Focus on hamstrings",
+          "preset-fb-rosca-martelo": "Hammer Curl;Arm work",
+          "preset-fb-triceps-corda": "Triceps Rope Pushdown;Arm finisher",
+        },
+        "preset-fb-calisthenics-pro": {
+          title: "Full Body Calisthenics Pro",
+          "preset-cali-barra-fixa-pronada": "Pull Ups;Wide grip, chest to bar",
+          "preset-cali-paralelas-peito":
+            "Chest Dips;Lean forward to target the chest",
+          "preset-cali-agachamento-bulgaro":
+            "Bulgarian Split Squat;One leg at a time, focus on depth",
+          "preset-cali-flexao-arqueiro":
+            "Archer Pushups;Alternating sides for unilateral load",
+          "preset-cali-chin-ups":
+            "Chin-Ups;Maximum biceps contraction at the top",
+          "preset-cali-flexao-diamante":
+            "Diamond Pushups;Hands together forming a diamond shape",
+          "preset-cali-elevacao-pernas-barra":
+            "Hanging Leg Raise;No momentum, explosive lift",
+        },
+        "preset-cardio-burn-hiit": {
+          title: "Cardio Burn & HIIT",
+          "preset-cardio-bike-hiit":
+            "HIIT Bike;30s max sprint / 30s low intensity",
+          "preset-cardio-esteira-incl":
+            "Incline Treadmill;15 min / 12% Incline / 5.0km/h",
+          "preset-cardio-burpees": "Burpees;45 seconds of execution",
+          "preset-cardio-corda": "Jump Rope;2 min constant pace",
+          "preset-cardio-mountain-climber":
+            "Mountain Climber;Focus on high heart rate",
+          "preset-cardio-polichinelos":
+            "Jumping Jacks;Fast execution to finish",
+        },
+      },
+      metrics: {
+        legs_compound: "Legs (Compound)",
+        legs_isolated: "Legs (Isolated)",
+        back_compound: "Back (Compound)",
+        chest_compound: "Chest (Compound)",
+        shoulders: "Shoulders",
+        biceps_isolated: "Biceps (Isolated)",
+        triceps_isolated: "Triceps (Isolated)",
+        abs_core: "Abs/Core",
+        cali_upper_compound: "Calisthenics (Upper)",
+        cali_lower_compound: "Calisthenics (Lower)",
+        cali_core_advanced: "Calisthenics (Core)",
+        cardio_hiit: "Cardio HIIT",
+        cardio_steady: "Steady-state Cardio",
+        other: "Others",
+      },
+      summary_story: {
+        change_theme: "Change theme",
+        saving: "Saving...",
+        saving_error: "Saving error",
+        share: "Share",
+        total_volume: "Total Volume",
+        calories_burned: "Calories Burned",
+        intensity: "Intensity",
+        exercises_abrev: "EXERC.",
+        workout_focus: "Workout Focus",
+        general_performance: "Performance",
+        surpassed_plan: {
+          0: "You surpassed your planned volume by ",
+          1: " in total.",
         },
       },
     },

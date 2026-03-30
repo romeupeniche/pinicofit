@@ -1,17 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  age?: number;
-  weight?: number;
-  height?: number;
-  gender?: "male" | "female" | "other";
-  isProfileComplete: boolean;
-}
+import type { User } from "../types/auth";
 
 interface AuthState {
   user: User | null;

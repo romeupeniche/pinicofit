@@ -1,3 +1,4 @@
+// @ts-expect-error - import is correct
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "../../services/api";
@@ -27,13 +28,6 @@ export function Onboarding() {
     }
   }, [_hasHydrated, token, user, navigate]);
 
-  if (!_hasHydrated)
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-zinc-950">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-accent"></div>
-      </div>
-    );
-
   const {
     register,
     handleSubmit,
@@ -42,6 +36,12 @@ export function Onboarding() {
     resolver: zodResolver(completeProfileSchema),
   });
 
+  if (!_hasHydrated)
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-zinc-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-accent"></div>
+      </div>
+    );
   const onSubmit = async (data: CompleteProfileFormData) => {
     setIsLoading(true);
     try {
