@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { MealsService } from './meals.service';
-import { AuthGuard } from '@nestjs/passport';
 import { CreateMealDto } from './dto/create-meal.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('meals')
 @UseGuards(AuthGuard)
