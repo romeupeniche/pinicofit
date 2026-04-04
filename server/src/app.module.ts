@@ -3,11 +3,14 @@ import { PrismaService } from './prisma/prisma.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
+import { FoodsModule } from './foods/foods.module';
+import { MealsModule } from './meals/meals.module';
+import { RecipesModule } from './recipes/recipes.module';
 
 @Global()
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), UsersModule, AuthModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), UsersModule, AuthModule, FoodsModule, MealsModule, RecipesModule],
   providers: [PrismaService],
   exports: [PrismaService],
 })
-export class AppModule {}
+export class AppModule { }

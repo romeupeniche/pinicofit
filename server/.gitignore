@@ -15,6 +15,9 @@ lerna-debug.log*
 # OS
 .DS_Store
 
+# DB
+prisma/data/*.ts
+
 # Tests
 /coverage
 /.nyc_output
