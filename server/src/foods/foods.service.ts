@@ -1,58 +1,71 @@
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateFoodDto } from './dto/create-food.dto';
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class FoodsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(userId: string, query?: string, source?: any) {
-    return await this.prisma.food.findMany({
-      where: {
-        AND: [
-          {
-            OR: [{ userId: null }, { userId: userId }],
-          },
+  async findAll(
+    userId: string,
+    skip: number = 0,
+    take: number = 30,
+    search?: string,
+    source?: string,
+  ) {
+    if (search) {
+      const searchPattern = `%${search}%`;
+      let sourceFilter = Prisma.sql`AND ("isPublic" = true OR "userId" = ${userId})`;
+      if (source && source !== 'global') {
+        if (source === 'USER') {
+          sourceFilter = Prisma.sql`AND "source" = 'USER' AND "userId" = ${userId}`;
+        } else {
+          sourceFilter = Prisma.sql`AND "source" = ${source}::"FoodSource"`;
+        }
+      }
 
-          source ? { source: source } : {},
+      return this.prisma.$queryRaw`
+        SELECT * FROM "Food"
+        WHERE (
+          unaccent("brName") ILIKE unaccent(${searchPattern}) OR 
+          unaccent("enName") ILIKE unaccent(${searchPattern}) OR
+          unaccent("esName") ILIKE unaccent(${searchPattern}) OR
+          unaccent("brandName") ILIKE unaccent(${searchPattern})
+        )
+        ${sourceFilter}
+        ORDER BY "brName" ASC
+        LIMIT ${take} OFFSET ${skip}
+      `;
+    }
 
-          query
-            ? {
-                OR: [
-                  { brName: { contains: query, mode: 'insensitive' } },
-                  { enName: { contains: query, mode: 'insensitive' } },
-                  { esName: { contains: query, mode: 'insensitive' } },
-                ],
-              }
-            : {},
-        ],
-      },
+    const whereClause: any = {
+      AND: [],
+    };
+
+    if (source && source !== 'global') {
+      whereClause.AND.push({ source: source as any });
+      if (source === 'USER') whereClause.AND.push({ userId: userId });
+    } else {
+      whereClause.AND.push({ OR: [{ isPublic: true }, { userId: userId }] });
+    }
+
+    return this.prisma.food.findMany({
+      where: whereClause,
       orderBy: { brName: 'asc' },
+      skip,
+      take,
     });
   }
 
   async create(userId: string, data: CreateFoodDto) {
     return await this.prisma.food.create({
       data: {
-        brName: data.brName,
-
+        ...data,
         enName: data.enName ?? data.brName,
         esName: data.esName ?? data.brName,
-
-        kcal: data.kcal,
-        protein: data.protein,
-        carbs: data.carbs,
-        fat: data.fat,
-        category: data.category,
-        useML: data.useML,
-        density: data.density,
-        allowedMeasures: data.allowedMeasures,
         brandName: data.brandName ?? '',
-        fiber: data.fiber ?? 0,
-        sodium: data.sodium ?? 0,
-        sugar: data.sugar ?? 0,
-
-        userId: userId,
+        userId,
         source: 'USER',
         isPublic: data.isPublic ?? false,
       },

@@ -11,6 +11,7 @@ export class AuthService {
   ) {}
 
   async generateJwt(user: any) {
+    const hydratedUser = await this.usersService.findById(user.id);
     const payload = {
       sub: user.id,
       email: user.email,
@@ -20,12 +21,7 @@ export class AuthService {
 
     return {
       access_token: await this.jwtService.signAsync(payload),
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        isProfileComplete: user.isProfileComplete,
-      },
+      user: hydratedUser,
     };
   }
 

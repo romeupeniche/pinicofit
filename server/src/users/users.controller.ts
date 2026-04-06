@@ -1,9 +1,11 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
   Patch,
   Param,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -26,8 +28,18 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('me')
+  me(@Req() req: { user: { sub: string } }) {
+    return this.usersService.findById(req.user.sub);
+  }
+
+  @UseGuards(AuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: { user: { sub: string } },
+  ) {
+    return this.usersService.update(id, req.user.sub, updateUserDto);
   }
 }

@@ -1,6 +1,19 @@
-import { IsNumber, IsOptional, IsString, Min, Max } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class UpdateUserDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
   @IsOptional()
   @IsNumber()
   @Min(30)
@@ -20,4 +33,85 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   goal?: string;
+
+  @IsOptional()
+  @IsString()
+  gender?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1000)
+  waterGoal?: number;
+
+  @IsOptional()
+  @IsString()
+  activityLevel?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1000)
+  calorieGoal?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  proteinGoal?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  carbsGoal?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  fatGoal?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  sodiumGoal?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  sugarGoal?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  sleepGoal?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1000)
+  stepsGoal?: number;
+
+  @IsOptional()
+  @IsEmail()
+  notificationsEmail?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isEmailVerified?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  emailAlertsEnabled?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  emailReportsEnabled?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isProfileComplete?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  recalculateGoals?: boolean;
+
+  @IsOptional()
+  @IsObject()
+  tutorialState?: Record<string, boolean>;
 }
