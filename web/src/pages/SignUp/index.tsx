@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, type SignUpFormData } from "../../schemas/Auth.ts";
 import { useAuthStore } from "../../store/authStore.ts";
 import type { AxiosError } from "axios";
-import api from "../../services/api.ts";
+import { api } from "../../services/api.ts";
 import { useSettingsStore } from "../../store/settingsStore.ts";
 import type { TranslationKeys } from "../../types/i18n.ts";
 

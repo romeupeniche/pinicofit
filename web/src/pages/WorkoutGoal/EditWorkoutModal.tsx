@@ -10,11 +10,13 @@ import {
   useWorkoutStore,
   type ICycleStep,
 } from "../../store/goals/workoutStore";
-import { Library, Plus, Save, X } from "lucide-react";
+import { Library, Plus, Save, X, Loader2 } from "lucide-react"; // Adicionado Loader2
 import { useSettingsStore } from "../../store/settingsStore";
 import { EXERCISE_CATEGORIES } from "../../constants/workout-metrics";
 import type { TranslationKeys } from "../../types/i18n";
 import { convertFromKg, convertToKg } from "../../utils/weightUnitConverter";
+import { useMutation, useQueryClient } from "@tanstack/react-query"; // Adicionado
+import { api } from "../../services/api";
 
 interface IProps {
   editingId: string | null;
@@ -31,6 +33,8 @@ const EditWorkoutModal: React.FC<IProps> = ({
 }) => {
   const { addPreset, presets } = useWorkoutStore();
   const { t, weightUnit } = useSettingsStore();
+  const queryClient = useQueryClient();
+
   const { register, control, handleSubmit, getValues, reset } =
     useForm<WorkoutFormValues>({
       resolver: zodResolver(workoutSchema),
@@ -39,36 +43,33 @@ const EditWorkoutModal: React.FC<IProps> = ({
         exercises: [],
       },
     });
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "exercises",
   });
+
+  // Mutation para salvar o preset no banco de dados
+  const presetMutation = useMutation({
+    mutationFn: async (newPreset: any) => {
+      const { data } = await api.post("/workouts/presets", newPreset);
+      return data;
+    },
+    onSuccess: () => {
+      // Invalida o cache para garantir que a lista de presets esteja atualizada
+      queryClient.invalidateQueries({ queryKey: ["workoutSettings"] });
+    },
+  });
+
   const [showSameNameError, setShowSameNameError] = useState<boolean>(false);
   const activeWorkout = cycle.find((c) => c.id === editingId);
   const watchExercises = useWatch({ control, name: "exercises" });
   const watchName = useWatch({ control, name: "name" });
+
   const isPresetNameUnique = !presets.some(
     (p) => t(p.name as TranslationKeys) === watchName,
   );
   const canApply = watchExercises && watchExercises.length > 0 && watchName;
-
-  useEffect(() => {
-    if (activeWorkout) {
-      reset({
-        name: activeWorkout.name || "",
-        exercises: activeWorkout.exercises,
-      });
-    }
-  }, [editingId, activeWorkout, reset]);
-
-  useEffect(() => {
-    if (!editingId) {
-      reset({
-        name: "",
-        exercises: [],
-      });
-    }
-  }, [editingId, reset]);
 
   useEffect(() => {
     if (activeWorkout) {
@@ -83,6 +84,15 @@ const EditWorkoutModal: React.FC<IProps> = ({
       });
     }
   }, [editingId, activeWorkout, reset, weightUnit]);
+
+  useEffect(() => {
+    if (!editingId) {
+      reset({
+        name: "",
+        exercises: [],
+      });
+    }
+  }, [editingId, reset]);
 
   const prepareDataForStorage = (data: WorkoutFormValues) => {
     return {
@@ -100,29 +110,36 @@ const EditWorkoutModal: React.FC<IProps> = ({
     const newCycle = cycle.map((step) =>
       step.id === editingId
         ? {
-            ...step,
-            name: formattedData.name,
-            exercises: formattedData.exercises,
-            isConfigured: true,
-          }
+          ...step,
+          name: formattedData.name,
+          exercises: formattedData.exercises,
+          isConfigured: true,
+        }
         : step,
     );
     setCycle(newCycle);
     setEditingId(null);
   };
 
-  const handleSaveAsPreset = () => {
+  const handleSaveAsPreset = async () => {
     const data = getValues();
     if (!isPresetNameUnique) {
       setShowSameNameError(true);
       return;
     }
+
     if (canApply && isPresetNameUnique) {
       const formattedData = prepareDataForStorage(data);
-      addPreset({
+
+      const newPreset = {
+        id: crypto.randomUUID(),
         name: formattedData.name,
         exercises: formattedData.exercises,
-      });
+      };
+
+      addPreset(newPreset);
+
+      presetMutation.mutate(newPreset);
     }
   };
 
@@ -157,13 +174,13 @@ const EditWorkoutModal: React.FC<IProps> = ({
             >
               {showSameNameError
                 ? t(
-                    "goals.workout.plan_window.edit_workout_modal.same_name_error",
-                  )
+                  "goals.workout.plan_window.edit_workout_modal.same_name_error",
+                )
                 : t("goals.workout.plan_window.edit_workout_modal.title", {
-                    workout: t("goals.workout.workout_label", {
-                      letter: activeWorkout.label,
-                    }),
-                  })}
+                  workout: t("goals.workout.workout_label", {
+                    letter: activeWorkout.label,
+                  }),
+                })}
             </span>
             <input
               {...register("name")}
@@ -179,20 +196,16 @@ const EditWorkoutModal: React.FC<IProps> = ({
             <button
               type="button"
               onClick={handleSaveAsPreset}
-              title={
-                isPresetNameUnique
-                  ? t(
-                      "goals.workout.plan_window.edit_workout_modal.save_to_library",
-                    )
-                  : t(
-                      "goals.workout.plan_window.edit_workout_modal.same_name_error",
-                    )
-              }
+              disabled={presetMutation.isPending || !canApply || !isPresetNameUnique}
               className={`p-3 bg-neutral-900 text-brand-accent rounded-2xl transition-all
-                ${canApply && isPresetNameUnique ? "cursor-pointer hover:scale-105 active:scale-95" : "cursor-not-allowed opacity-20"}
+                ${canApply && isPresetNameUnique && !presetMutation.isPending ? "cursor-pointer hover:scale-105 active:scale-95" : "cursor-not-allowed opacity-20"}
                 `}
             >
-              <Library size={24} />
+              {presetMutation.isPending ? (
+                <Loader2 size={24} className="animate-spin" />
+              ) : (
+                <Library size={24} />
+              )}
             </button>
             <button
               type="button"
@@ -203,6 +216,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
             </button>
           </div>
         </header>
+
         <div className="flex-1 p-8 overflow-y-auto space-y-6">
           <div className="flex justify-between items-center">
             <h3 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">
@@ -229,214 +243,210 @@ const EditWorkoutModal: React.FC<IProps> = ({
             </button>
           </div>
           <div className="space-y-4">
-            {fields.map(
-              (
-                // @ts-expect-error - field is correct
-                field,
-                // @ts-expect-error - index is correct
-                index,
-              ) => (
-                <div
-                  key={field.id}
-                  className="p-6 bg-neutral-50 rounded-4xl border border-neutral-100 space-y-4 relative group/item"
-                >
-                  <div className="flex gap-4">
-                    <div className="flex-1 space-y-1">
-                      <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
-                        {t(
-                          "goals.workout.plan_window.edit_workout_modal.exercise",
-                        )}
-                      </label>
-                      <input
-                        {...register(`exercises.${index}.name`)}
-                        className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-sm font-bold outline-none focus:border-brand-accent"
-                        placeholder={t(
-                          "goals.workout.plan_window.edit_workout_modal.inputs.name",
-                        )}
-                      />
-                    </div>
-                    <div className="w-44 space-y-1">
-                      <label
-                        htmlFor="group"
-                        className="text-[8px] font-black text-neutral-400 uppercase ml-1"
-                      >
-                        {t(
-                          "goals.workout.plan_window.edit_workout_modal.inputs.group",
-                        )}
-                      </label>
-                      <select
-                        {...register(`exercises.${index}.group`)}
-                        className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-sm font-bold outline-none focus:border-brand-accent appearance-none cursor-pointer"
-                        defaultValue=""
-                        id="group"
-                      >
-                        <option value="" disabled>
-                          {t(
-                            "goals.workout.plan_window.edit_workout_modal.inputs.group_ph",
-                          )}
-                        </option>
-
-                        {Object.entries(EXERCISE_CATEGORIES).map(
-                          ([key, value]) => (
-                            <option
-                              key={key}
-                              value={key}
-                              className="font-medium"
-                            >
-                              {t(value.label)}
-                            </option>
-                          ),
-                        )}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-6 gap-2">
-                    <div className="space-y-1">
-                      <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
-                        {t(
-                          "goals.workout.plan_window.edit_workout_modal.inputs.sets",
-                        )}
-                      </label>
-                      <input
-                        {...register(`exercises.${index}.sets`)}
-                        inputMode="numeric"
-                        placeholder="0"
-                        className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
-                        onChange={(e) => {
-                          e.target.value = maskOnlyNumbers(e.target.value);
-                          register(`exercises.${index}.sets`).onChange(e);
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
-                        {t(
-                          "goals.workout.plan_window.edit_workout_modal.inputs.reps",
-                        )}
-                      </label>
-                      <input
-                        {...register(`exercises.${index}.reps`)}
-                        inputMode="numeric"
-                        placeholder="0"
-                        className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
-                        onChange={(e) => {
-                          e.target.value = maskOnlyNumbers(e.target.value);
-                          register(`exercises.${index}.reps`).onChange(e);
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
-                        {t(
-                          "goals.workout.plan_window.edit_workout_modal.inputs.weight",
-                        )}{" "}
-                        ({weightUnit})
-                      </label>
-                      <input
-                        {...register(`exercises.${index}.weight`)}
-                        inputMode="decimal"
-                        placeholder="0.0"
-                        className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
-                        onChange={(e) => {
-                          e.target.value = maskOnlyNumbers(e.target.value);
-                          register(`exercises.${index}.weight`).onChange(e);
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
-                        {t(
-                          "goals.workout.plan_window.edit_workout_modal.inputs.rest",
-                        )}{" "}
-                      </label>
-                      <input
-                        {...register(`exercises.${index}.rest`)}
-                        placeholder="0:00"
-                        title="Format MM:SS (ex: 1:30)"
-                        inputMode="numeric"
-                        className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
-                        onChange={(e) => {
-                          const masked = maskRestTime(e.target.value);
-                          e.target.value = masked;
-                          register(`exercises.${index}.rest`).onChange(e);
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
-                        {t(
-                          "goals.workout.plan_window.edit_workout_modal.inputs.type.title",
-                        )}
-                      </label>
-                      <select
-                        {...register(`exercises.${index}.category`)}
-                        className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-[9px] font-black uppercase outline-none appearance-none cursor-pointer"
-                      >
-                        <option value="exercise">
-                          {t(
-                            "goals.workout.plan_window.edit_workout_modal.inputs.type.exercise",
-                          )}
-                        </option>
-                        <option value="warmup">
-                          {t(
-                            "goals.workout.plan_window.edit_workout_modal.inputs.type.warmup",
-                          )}
-                        </option>
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
-                        {t(
-                          "goals.workout.plan_window.edit_workout_modal.inputs.technique.title",
-                        )}
-                      </label>
-                      <select
-                        {...register(`exercises.${index}.technique`)}
-                        className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-[9px] font-black uppercase outline-none appearance-none cursor-pointer"
-                      >
-                        <option value="standard">
-                          {t(
-                            "goals.workout.plan_window.edit_workout_modal.inputs.technique.standard",
-                          )}
-                        </option>
-                        <option value="Bi-set">Bi-set</option>
-                        <option value="Drop-set">Drop-set</option>
-                        <option value="Rest-Pause">Rest-Pause</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
+            {fields.map((
+              // @ts-expect-error - types are correct
+              field,
+              // @ts-expect-error - types are correct
+              index) => (
+              <div
+                key={field.id}
+                className="p-6 bg-neutral-50 rounded-4xl border border-neutral-100 space-y-4 relative group/item"
+              >
+                <div className="flex gap-4">
+                  <div className="flex-1 space-y-1">
                     <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
                       {t(
-                        "goals.workout.plan_window.edit_workout_modal.inputs.obs",
+                        "goals.workout.plan_window.edit_workout_modal.exercise",
                       )}
                     </label>
                     <input
-                      {...register(`exercises.${index}.obs`)}
-                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-sm font-semibold"
+                      {...register(`exercises.${index}.name`)}
+                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-sm font-bold outline-none focus:border-brand-accent"
+                      placeholder={t(
+                        "goals.workout.plan_window.edit_workout_modal.inputs.name",
+                      )}
                     />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => remove(index)}
-                    className="cursor-pointer absolute -top-2 -right-2 bg-neutral-200 text-neutral-500 p-1.5 rounded-full opacity-0 group-hover/item:opacity-100 hover:bg-red-500 hover:text-white transition-all"
-                  >
-                    <X size={12} />
-                  </button>
+                  <div className="w-44 space-y-1">
+                    <label
+                      htmlFor="group"
+                      className="text-[8px] font-black text-neutral-400 uppercase ml-1"
+                    >
+                      {t(
+                        "goals.workout.plan_window.edit_workout_modal.inputs.group",
+                      )}
+                    </label>
+                    <select
+                      {...register(`exercises.${index}.group`)}
+                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-sm font-bold outline-none focus:border-brand-accent appearance-none cursor-pointer"
+                      defaultValue=""
+                      id="group"
+                    >
+                      <option value="" disabled>
+                        {t(
+                          "goals.workout.plan_window.edit_workout_modal.inputs.group_ph",
+                        )}
+                      </option>
+
+                      {Object.entries(EXERCISE_CATEGORIES).map(
+                        ([key, value]) => (
+                          <option
+                            key={key}
+                            value={key}
+                            className="font-medium"
+                          >
+                            {t(value.label)}
+                          </option>
+                        ),
+                      )}
+                    </select>
+                  </div>
                 </div>
-              ),
-            )}
+                <div className="grid grid-cols-6 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
+                      {t(
+                        "goals.workout.plan_window.edit_workout_modal.inputs.sets",
+                      )}
+                    </label>
+                    <input
+                      {...register(`exercises.${index}.sets`)}
+                      inputMode="numeric"
+                      placeholder="0"
+                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
+                      onChange={(e) => {
+                        e.target.value = maskOnlyNumbers(e.target.value);
+                        register(`exercises.${index}.sets`).onChange(e);
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
+                      {t(
+                        "goals.workout.plan_window.edit_workout_modal.inputs.reps",
+                      )}
+                    </label>
+                    <input
+                      {...register(`exercises.${index}.reps`)}
+                      inputMode="numeric"
+                      placeholder="0"
+                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
+                      onChange={(e) => {
+                        e.target.value = maskOnlyNumbers(e.target.value);
+                        register(`exercises.${index}.reps`).onChange(e);
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
+                      {t(
+                        "goals.workout.plan_window.edit_workout_modal.inputs.weight",
+                      )}{" "}
+                      ({weightUnit})
+                    </label>
+                    <input
+                      {...register(`exercises.${index}.weight`)}
+                      inputMode="decimal"
+                      placeholder="0.0"
+                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
+                      onChange={(e) => {
+                        e.target.value = maskOnlyNumbers(e.target.value);
+                        register(`exercises.${index}.weight`).onChange(e);
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
+                      {t(
+                        "goals.workout.plan_window.edit_workout_modal.inputs.rest",
+                      )}{" "}
+                    </label>
+                    <input
+                      {...register(`exercises.${index}.rest`)}
+                      placeholder="0:00"
+                      title="Format MM:SS (ex: 1:30)"
+                      inputMode="numeric"
+                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
+                      onChange={(e) => {
+                        const masked = maskRestTime(e.target.value);
+                        e.target.value = masked;
+                        register(`exercises.${index}.rest`).onChange(e);
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
+                      {t(
+                        "goals.workout.plan_window.edit_workout_modal.inputs.type.title",
+                      )}
+                    </label>
+                    <select
+                      {...register(`exercises.${index}.category`)}
+                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-[9px] font-black uppercase outline-none appearance-none cursor-pointer"
+                    >
+                      <option value="exercise">
+                        {t(
+                          "goals.workout.plan_window.edit_workout_modal.inputs.type.exercise",
+                        )}
+                      </option>
+                      <option value="warmup">
+                        {t(
+                          "goals.workout.plan_window.edit_workout_modal.inputs.type.warmup",
+                        )}
+                      </option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
+                      {t(
+                        "goals.workout.plan_window.edit_workout_modal.inputs.technique.title",
+                      )}
+                    </label>
+                    <select
+                      {...register(`exercises.${index}.technique`)}
+                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-[9px] font-black uppercase outline-none appearance-none cursor-pointer"
+                    >
+                      <option value="standard">
+                        {t(
+                          "goals.workout.plan_window.edit_workout_modal.inputs.technique.standard",
+                        )}
+                      </option>
+                      <option value="Bi-set">Bi-set</option>
+                      <option value="Drop-set">Drop-set</option>
+                      <option value="Rest-Pause">Rest-Pause</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
+                    {t(
+                      "goals.workout.plan_window.edit_workout_modal.inputs.obs",
+                    )}
+                  </label>
+                  <input
+                    {...register(`exercises.${index}.obs`)}
+                    className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-sm font-semibold"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="cursor-pointer absolute -top-2 -right-2 bg-neutral-200 text-neutral-500 p-1.5 rounded-full opacity-0 group-hover/item:opacity-100 hover:bg-red-500 hover:text-white transition-all"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
         <footer className="p-8 bg-neutral-900">
           <button
             type="submit"
             disabled={!canApply}
-            className={`w-full py-5 rounded-4xl font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl ${
-              canApply
-                ? "bg-white text-neutral-900 hover:bg-brand-accent cursor-pointer"
-                : "bg-neutral-800 text-neutral-500 cursor-not-allowed"
-            }`}
+            className={`w-full py-5 rounded-4xl font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl ${canApply
+              ? "bg-white text-neutral-900 hover:bg-brand-accent cursor-pointer"
+              : "bg-neutral-800 text-neutral-500 cursor-not-allowed"
+              }`}
           >
             <Save size={18} />{" "}
             {t("goals.workout.plan_window.edit_workout_modal.inputs.apply")}

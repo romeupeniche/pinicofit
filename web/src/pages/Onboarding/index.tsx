@@ -1,7 +1,7 @@
 // @ts-expect-error - import is correct
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import api from "../../services/api";
+import { api } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import {
@@ -34,6 +34,9 @@ export function Onboarding() {
     formState: { errors },
   } = useForm<CompleteProfileFormData>({
     resolver: zodResolver(completeProfileSchema),
+    defaultValues: {
+      activityLevel: "moderate",
+    },
   });
 
   if (!_hasHydrated)
@@ -50,15 +53,13 @@ export function Onboarding() {
         return navigate("/sign-in");
       }
 
-      await api.patch(`/users/${user.id}`, {
+      const response = await api.patch(`/users/${user.id}`, {
         ...data,
         isProfileComplete: true,
+        recalculateGoals: true,
       });
 
-      updateProfile({
-        ...data,
-        isProfileComplete: true,
-      });
+      updateProfile(response.data);
 
       navigate("/dashboard");
     } catch (error) {
@@ -181,6 +182,41 @@ export function Onboarding() {
             {errors.goal && (
               <p className="text-red-500 text-xs mt-1">
                 {t(errors.goal.message)}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              {t("onboarding.activity_level.title")}
+            </label>
+            <select
+              {...register("activityLevel")}
+              className="cursor-pointer w-full p-2.5 bg-neutral-50 border border-neutral-300 rounded-lg outline-none focus:border-brand-accent transition-all"
+            >
+              <option value="">{t("onboarding.select_placeholder")}</option>
+              <option value="sedentary">
+                {t("onboarding.activity_level.options.sedentary")}
+              </option>
+              <option value="light">
+                {t("onboarding.activity_level.options.light")}
+              </option>
+              <option value="moderate">
+                {t("onboarding.activity_level.options.moderate")}
+              </option>
+              <option value="active">
+                {t("onboarding.activity_level.options.active")}
+              </option>
+              <option value="intense">
+                {t("onboarding.activity_level.options.intense")}
+              </option>
+            </select>
+            <p className="text-xs text-neutral-400 mt-1">
+              {t("onboarding.activity_level.helper")}
+            </p>
+            {errors.activityLevel && (
+              <p className="text-red-500 text-xs mt-1">
+                {t(errors.activityLevel.message)}
               </p>
             )}
           </div>

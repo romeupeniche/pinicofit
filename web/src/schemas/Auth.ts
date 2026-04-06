@@ -63,7 +63,19 @@ export const completeProfileSchema = z.object({
     .min(1, "zod.onboarding.goal.required")
     .refine((val) => ["bulk", "cut", "maintain"].includes(val), {
       message: "zod.onboarding.goal_options.invalid",
-    }) as z.ZodType<"bulk" | "cut" | "mantain">,
+    }) as z.ZodType<"bulk" | "cut" | "maintain">,
+  activityLevel: z
+    .string()
+    .min(1, "zod.onboarding.activity_level.required")
+    .refine(
+      (val) =>
+        ["sedentary", "light", "moderate", "active", "intense"].includes(val),
+      {
+        message: "zod.onboarding.activity_level.invalid",
+      },
+    ) as z.ZodType<
+      "sedentary" | "light" | "moderate" | "active" | "intense"
+    >,
 });
 
 export type CompleteProfileFormData = z.infer<typeof completeProfileSchema>;

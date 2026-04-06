@@ -1,16 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 // @ts-expect-error - import is correct
 import { useForm } from "react-hook-form";
 import {
-  Droplets,
-  Plus,
-  History,
-  ChevronLeft,
-  Trash2,
-  Clock,
-  GlassWater,
-  CupSoda,
-  Pencil,
+  Droplets, Plus, History, ChevronLeft, Trash2, Clock, GlassWater, CupSoda, Pencil,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { goalsSchema, type GoalsFormData } from "../../schemas/Goals";
@@ -18,91 +10,105 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS, es } from "date-fns/locale";
 import { useSettingsStore } from "../../store/settingsStore";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "../../services/api";
+import AppLoadingScreen from "../../components/AppLoadingScreen";
+import FeatureTutorialModal from "../../components/FeatureTutorialModal";
+import { useAuthStore } from "../../store/authStore";
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
-const waterHistoryMock = {
-  today: [],
-  week: [
-    { id: 3, amount: 2100, goal: 3000, time: "Segunda-feira" },
-    { id: 4, amount: 2800, goal: 3000, time: "Terça-feira" },
-    { id: 5, amount: 3200, goal: 3000, time: "Ontem" },
-  ],
-  month: [
-    { id: 6, amount: 15000, time: "Semana 1" },
-    { id: 7, amount: 18500, time: "Semana 2" },
-  ],
-};
-
-const monthLogsMock = [
-  ...Array.from({ length: 29 }, (_, i) => ({
-    day: i + 1,
-    amount: Math.floor(Math.random() * 3500),
-    goal: 3000,
-  })),
-  {
-    day: 30,
-    amount: 3000,
-    goal: 3000,
-  },
-];
-
-const dateLocales = {
-  en: enUS,
-  br: ptBR,
-  es,
-};
+const dateLocales = { en: enUS, br: ptBR, es };
 
 const WaterGoal: React.FC = () => {
   const navigate = useNavigate();
-  const [currentWater, setCurrentWater] = useState(1200);
-  const [activeTab, setActiveTab] = useState<"today" | "week" | "month">(
-    "today",
-  );
-  const [, setTick] = useState(0);
+  const queryClient = useQueryClient();
   const { t, lang } = useSettingsStore();
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTick((t) => t + 1);
-    }, 60000);
-
-    return () => clearInterval(timer);
-  }, []);
+  const { user, updateProfile } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<"today" | "week" | "month">("today");
+  const [showTutorial, setShowTutorial] = useState(!user?.tutorialState?.water);
 
   const { register, handleSubmit, reset } = useForm<GoalsFormData>({
     resolver: zodResolver(goalsSchema),
     defaultValues: { customAmount: "" },
   });
 
-  const targetWater = 3000;
+  const { data: todayData, isLoading: loadingToday } = useQuery({
+    queryKey: ["water-today"],
+    queryFn: async () => {
+      const res = await api.get("/water/today");
+      return res.data;
+    },
+    refetchInterval: 60000,
+  });
 
-  const [logs, setLogs] = useState(() => [
-    { id: 1, amount: 400, createdAt: new Date() },
-    { id: 2, amount: 300, createdAt: new Date(Date.now() - 3600000) },
-    { id: 3, amount: 500, createdAt: new Date(Date.now() - 1600000) },
-  ]);
+  const { data: historyData } = useQuery({
+    queryKey: ["water-history", activeTab],
+    queryFn: async () => {
+      const res = await api.get("/water/history", {
+        params: activeTab === "month" ? { period: "month" } : undefined,
+      });
+      return res.data;
+    },
+    enabled: activeTab !== "today",
+  });
 
+  const logMutation = useMutation({
+    mutationFn: (amount: number) => api.post("/water/log", { amount }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["water-today"] });
+      queryClient.invalidateQueries({ queryKey: ["water-history"] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/water/log/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["water-today"] });
+    },
+  });
+
+  const currentWater = todayData?.total || 0;
+  const targetWater = todayData?.target || 3000;
+  const logs = todayData?.logs || [];
   const percentage = Math.min((currentWater / targetWater) * 100, 100);
 
   const addWater = (amount: number) => {
-    setCurrentWater((prev) => prev + amount);
-    setLogs((prev) => [
-      { id: Date.now(), amount, createdAt: new Date() },
-      ...prev,
-    ]);
+    logMutation.mutate(amount);
   };
 
   const handleCustomQtySubmit = (data: { customAmount: number }) => {
-    const amount = data.customAmount;
-    addWater(amount);
+    addWater(Number(data.customAmount));
     reset();
   };
 
-  const handleRemoveLog = (id: number) => {
-    setLogs((prev) => prev.filter((log) => log.id !== id));
-    setCurrentWater((prev) => prev - logs.find((log) => log.id === id)!.amount);
+  const handleRemoveLog = (id: string) => {
+    deleteMutation.mutate(id);
   };
+
+  const closeTutorial = async () => {
+    setShowTutorial(false);
+
+    if (!user?.id || user.tutorialState?.water) return;
+
+    const { data } = await api.patch(`/users/${user.id}`, {
+      tutorialState: {
+        ...user.tutorialState,
+        water: true,
+      },
+    });
+
+    updateProfile(data);
+  };
+
+  if (loadingToday) {
+    return (
+      <AppLoadingScreen
+        title="Carregando agua"
+        subtitle="Buscando seu consumo de hoje..."
+      />
+    );
+  }
 
   return (
     <div className="text-neutral-900 lg:px-8 relative overflow-hidden">
@@ -125,22 +131,9 @@ const WaterGoal: React.FC = () => {
           <section className="border border-neutral-200/50 flex-1 flex flex-col justify-center items-center bg-white/40 rounded-3xl p-8 text-center">
             <div className="relative inline-flex items-center justify-center mb-6">
               <svg className="w-48 h-48 transform -rotate-90">
+                <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-blue-50" />
                 <circle
-                  cx="96"
-                  cy="96"
-                  r="88"
-                  stroke="currentColor"
-                  strokeWidth="12"
-                  fill="transparent"
-                  className="text-blue-50"
-                />
-                <circle
-                  cx="96"
-                  cy="96"
-                  r="88"
-                  stroke="currentColor"
-                  strokeWidth="12"
-                  fill="transparent"
+                  cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent"
                   strokeDasharray={553}
                   strokeDashoffset={553 - (553 * percentage) / 100}
                   strokeLinecap="round"
@@ -158,27 +151,13 @@ const WaterGoal: React.FC = () => {
 
             <p className="text-neutral-600 font-medium">
               {currentWater === 0 ? (
-                <span className="text-brand-accent font-bold">
-                  {t("goals.water.start")}
-                </span>
-              ) : currentWater === targetWater ? (
-                <span className="text-emerald-500 font-bold uppercase tracking-widest">
-                  {t("goals.water.done")}
-                </span>
-              ) : currentWater > targetWater ? (
-                <>
-                  {t("goals.water.beaten")}{" "}
-                  <span className="text-brand-accent">
-                    {currentWater - targetWater}ml
-                  </span>
-                  !
-                </>
+                <span className="text-brand-accent font-bold">{t("goals.water.start")}</span>
+              ) : currentWater >= targetWater ? (
+                <span className="text-emerald-500 font-bold uppercase tracking-widest">{t("goals.water.done")}</span>
               ) : (
                 <>
                   {t("goals.water.remaining").split("?")[0]}{" "}
-                  <span className="text-brand-accent">
-                    {Math.max(targetWater - currentWater, 0)}ml
-                  </span>{" "}
+                  <span className="text-brand-accent">{Math.max(targetWater - currentWater, 0)}ml</span>{" "}
                   {t("goals.water.remaining").split("?")[1]}
                 </>
               )}
@@ -196,15 +175,11 @@ const WaterGoal: React.FC = () => {
               <button
                 key={item.label}
                 onClick={() => addWater(item.amount)}
-                className="bg-white/40 hover:bg-brand-accent border border-neutral-200 hover:text-white p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group cursor-pointer"
+                disabled={logMutation.isPending}
+                className="bg-white/40 hover:bg-brand-accent border border-neutral-200 hover:text-white p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group cursor-pointer disabled:opacity-50"
               >
-                <item.icon
-                  size={24}
-                  className="group-hover:scale-110 transition-transform"
-                />
-                <span className="text-[0.8rem] font-bold uppercase">
-                  {item.label}
-                </span>
+                <item.icon size={24} className="group-hover:scale-110 transition-transform" />
+                <span className="text-[0.8rem] font-bold uppercase">{item.label}</span>
                 <Plus size={16} />
               </button>
             ))}
@@ -219,23 +194,15 @@ const WaterGoal: React.FC = () => {
                   type="number"
                   {...register("customAmount")}
                   onInput={(e) => {
-                    if (e.currentTarget.value.length > 3) {
-                      e.currentTarget.value = e.currentTarget.value.slice(0, 3);
-                    }
+                    if (e.currentTarget.value.length > 4) e.currentTarget.value = e.currentTarget.value.slice(0, 4);
                   }}
-                  onKeyDown={(e) =>
-                    ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()
-                  }
                   placeholder="250"
                   className="w-20 lg:w-16 text-right"
                   inputMode="numeric"
                 />
                 <span>ml</span>
               </div>
-              <button
-                type="submit"
-                className="bg-white lg:w-full lg:p-1 p-4 rounded-full flex items-center justify-center cursor-pointer hover:bg-brand-accent transition-colors hover:text-white"
-              >
+              <button type="submit" disabled={logMutation.isPending} className="bg-white lg:w-full lg:p-1 p-4 rounded-full flex items-center justify-center cursor-pointer hover:bg-brand-accent transition-colors hover:text-white">
                 <Plus size={16} />
               </button>
             </form>
@@ -251,101 +218,57 @@ const WaterGoal: React.FC = () => {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer ${
-                      activeTab === tab
-                        ? "bg-white text-brand-accent shadow-sm scale-[1.02]"
-                        : "text-neutral-400 hover:text-neutral-600 hover:bg-white/30"
-                    }`}
+                    className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer ${activeTab === tab ? "bg-white text-brand-accent shadow-sm scale-[1.02]" : "text-neutral-400 hover:text-neutral-600 hover:bg-white/30"
+                      }`}
                   >
-                    {tab === "today"
-                      ? t("goals.water.today_history.title")
-                      : tab === "week"
-                        ? t("goals.water.week_history.title")
-                        : t("goals.water.month_history.title")}
+                    {tab === "today" ? t("goals.water.today_history.title") : tab === "week" ? t("goals.water.week_history.title") : t("goals.water.month_history.title")}
                   </button>
                 ))}
               </div>
             </div>
 
-            <div
-              className={`space-y-4 flex-1 overflow-y-auto pr-2 h-full ${activeTab === "month" ? "flex flex-col" : ""}`}
-            >
+            <div className={`space-y-4 flex-1 overflow-y-auto pr-2 h-full ${activeTab === "month" ? "flex flex-col" : ""}`}>
               {activeTab === "today" && (
                 <>
-                  {logs.map((log) => (
-                    <div
-                      key={log.id}
-                      className="flex items-center justify-between p-4 bg-white/30 rounded-2xl border border-white/20 transition-all hover:bg-white/40"
-                    >
+                  {logs.map((log: any) => (
+                    <div key={log.id} className="flex items-center justify-between p-4 bg-white/30 rounded-2xl border border-white/20 transition-all hover:bg-white/40">
                       <div className="flex items-center gap-4">
-                        <div className="p-2 bg-brand-accent/10 text-brand-accent rounded-lg">
-                          <Droplets size={18} />
-                        </div>
+                        <div className="p-2 bg-brand-accent/10 text-brand-accent rounded-lg"><Droplets size={18} /></div>
                         <div>
                           <p className="font-bold text-sm">+{log.amount}ml</p>
                           <div className="flex items-center gap-1">
                             <Clock size={10} className="text-neutral-400" />
                             <p className="text-[10px] text-neutral-400 font-medium">
-                              {capitalize(
-                                formatDistanceToNow(log.createdAt, {
-                                  addSuffix: true,
-                                  locale: dateLocales[lang],
-                                }),
-                              )}
+                              {capitalize(formatDistanceToNow(new Date(log.date), { addSuffix: true, locale: dateLocales[lang] }))}
                             </p>
                           </div>
                         </div>
                       </div>
-                      <button
-                        className="p-2 text-neutral-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
-                        onClick={() => handleRemoveLog(log.id)}
-                      >
+                      <button className="p-2 text-neutral-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer" onClick={() => handleRemoveLog(log.id)}>
                         <Trash2 size={16} />
                       </button>
                     </div>
                   ))}
                   {logs.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full text-neutral-400 opacity-50 py-10">
-                      <Droplets size={40} strokeWidth={1} />
-                      <p className="text-xs mt-2 font-medium">
-                        {t("goals.water.today_history.empty_state")}
-                      </p>
+                      <Droplets size={40} strokeWidth={1} /><p className="text-xs mt-2 font-medium">{t("goals.water.today_history.empty_state")}</p>
                     </div>
                   )}
                 </>
               )}
 
-              {activeTab === "week" && (
+              {activeTab === "week" && historyData && (
                 <div className="space-y-3">
-                  {waterHistoryMock.week.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between p-4 bg-white/20 rounded-2xl border border-white/10 opacity-80 hover:opacity-100 transition-opacity"
-                    >
+                  {historyData.map((item: any) => (
+                    <div key={item.id} className="flex items-center justify-between p-4 bg-white/20 rounded-2xl border border-white/10 opacity-80 hover:opacity-100 transition-opacity">
                       <div className="flex flex-col">
-                        <span className="text-[10px] uppercase text-neutral-400 font-bold">
-                          {item.time}
-                        </span>
-                        <span className="font-bold text-neutral-700">
-                          {item.amount}ml{" "}
-                          {t("goals.water.week_history.consumed")}
-                        </span>
+                        <span className="text-[10px] uppercase text-neutral-400 font-bold">{new Date(item.date).toLocaleDateString(lang, { weekday: 'long' })}</span>
+                        <span className="font-bold text-neutral-700">{item.amount}ml {t("goals.water.week_history.consumed")}</span>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <span className="text-[10px] font-bold text-neutral-400">
-                          {Math.round((item.amount / item.goal) * 100)}%
-                        </span>
+                        <span className="text-[10px] font-bold text-neutral-400">{Math.round((item.amount / 3000) * 100)}%</span>
                         <div className="h-2 w-24 bg-neutral-900/5 rounded-full overflow-hidden border border-white/20">
-                          <div
-                            className={`h-full transition-all duration-1000 ease-out rounded-full ${
-                              item.amount >= item.goal
-                                ? "bg-emerald-500"
-                                : "bg-brand-accent"
-                            }`}
-                            style={{
-                              width: `${Math.min((item.amount / item.goal) * 100, 100)}%`,
-                            }}
-                          />
+                          <div className={`h-full transition-all duration-1000 ease-out rounded-full ${item.amount >= 3000 ? "bg-emerald-500" : "bg-brand-accent"}`} style={{ width: `${Math.min((item.amount / 3000) * 100, 100)}%` }} />
                         </div>
                       </div>
                     </div>
@@ -353,95 +276,75 @@ const WaterGoal: React.FC = () => {
                 </div>
               )}
 
-              {activeTab === "month" &&
-                (() => {
-                  const totalDays = monthLogsMock.length;
-                  const totalAmount = monthLogsMock.reduce(
-                    (acc, item) => acc + item.amount,
-                    0,
-                  );
-                  const averageAmount = totalAmount / totalDays;
-                  const goalsMet = monthLogsMock.filter(
-                    (item) => item.amount >= item.goal,
-                  ).length;
+              {activeTab === "month" && historyData && (() => {
+                const totalAmount = historyData.reduce((acc: number, item: any) => acc + item.amount, 0);
+                const averageAmount = totalAmount / 30;
+                const goalsMet = historyData.filter((item: any) => item.amount >= item.goal).length;
 
-                  return (
-                    <div className="flex flex-col flex-1 h-full overflow-hidden">
-                      <div className="flex justify-between items-end mb-4 shrink-0">
-                        <div>
-                          <p className="text-[9px] uppercase text-neutral-400 font-black tracking-widest leading-none mb-1">
-                            {t("goals.water.month_history.average")}
-                          </p>
-                          <h4 className="text-lg font-black text-neutral-800 italic leading-none">
-                            {(averageAmount / 1000).toFixed(1)}L{" "}
-                            <span className="text-[10px] text-neutral-400">
-                              / {t("goals.water.month_history.day")}
-                            </span>
-                          </h4>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[9px] uppercase text-emerald-500 font-black tracking-widest leading-none mb-1">
-                            {t("goals.water.month_history.beaten")}
-                          </p>
-                          <h4 className="text-lg font-black text-emerald-500 italic leading-none">
-                            {goalsMet}{" "}
-                            <span className="text-[10px] text-neutral-400">
-                              / {totalDays}
-                            </span>
-                          </h4>
-                        </div>
+                return (
+                  <div className="flex flex-col flex-1 h-full overflow-hidden">
+                    <div className="flex justify-between items-end mb-4 shrink-0">
+                      <div>
+                        <p className="text-[9px] uppercase text-neutral-400 font-black tracking-widest leading-none mb-1">{t("goals.water.month_history.average")}</p>
+                        <h4 className="text-lg font-black text-neutral-800 italic leading-none">{(averageAmount / 1000).toFixed(1)}L <span className="text-[10px] text-neutral-400">/ {t("goals.water.month_history.day")}</span></h4>
                       </div>
-
-                      <div className="flex-1 min-h-0 relative flex flex-col justify-end bg-neutral-900/5 p-2 rounded-2xl border border-white/20">
-                        <div className="flex items-end justify-between gap-px h-full w-full">
-                          {monthLogsMock.map((item) => {
-                            const percentage = Math.min(
-                              (item.amount / item.goal) * 100,
-                              100,
-                            );
-                            const isGoalMet = item.amount >= item.goal;
-                            return (
-                              <div
-                                key={item.day}
-                                className="flex-1 h-full flex items-end group relative"
-                              >
-                                <div
-                                  className={`w-full rounded-t-[1px] transition-all duration-700 ease-out ${
-                                    isGoalMet
-                                      ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.2)]"
-                                      : "bg-brand-accent/40"
-                                  }`}
-                                  style={{
-                                    height: `${Math.max(percentage, 4)}%`,
-                                  }}
-                                />
-                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-neutral-900 text-white text-[8px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 font-bold">
-                                  {item.amount}ml
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between mt-2 px-1 shrink-0">
-                        <span className="text-[8px] font-black text-neutral-400 uppercase">
-                          D01
-                        </span>
-                        <span className="text-[8px] font-black text-neutral-400 uppercase text-center opacity-50 italic">
-                          {t("goals.water.month_history.graph_title")}
-                        </span>
-                        <span className="text-[8px] font-black text-neutral-400 uppercase">
-                          D{totalDays < 10 ? `0${totalDays}` : totalDays}
-                        </span>
+                      <div className="text-right">
+                        <p className="text-[9px] uppercase text-emerald-500 font-black tracking-widest leading-none mb-1">{t("goals.water.month_history.beaten")}</p>
+                        <h4 className="text-lg font-black text-emerald-500 italic leading-none">{goalsMet} <span className="text-[10px] text-neutral-400">/ 30</span></h4>
                       </div>
                     </div>
-                  );
-                })()}
+                    <div className="flex-1 min-h-0 relative flex flex-col justify-end bg-neutral-900/5 p-2 rounded-2xl border border-white/20">
+                      <div className="flex items-end justify-between gap-px h-full w-full">
+                        {historyData.map((item: any) => {
+                          const perc = Math.min((item.amount / item.goal) * 100, 100);
+                          return (
+                            <div key={item.day} className="flex-1 h-full flex items-end group relative">
+                              <div className={`w-full rounded-t-[1px] transition-all duration-700 ease-out ${item.amount >= item.goal ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.2)]" : "bg-brand-accent/40"}`} style={{ height: `${Math.max(perc, 4)}%` }} />
+                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-neutral-900 text-white text-[8px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30 font-bold">{item.amount}ml</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="flex justify-between mt-2 px-1 shrink-0">
+                      <span className="text-[8px] font-black text-neutral-400 uppercase">D01</span>
+                      <span className="text-[8px] font-black text-neutral-400 uppercase text-center opacity-50 italic">{t("goals.water.month_history.graph_title")}</span>
+                      <span className="text-[8px] font-black text-neutral-400 uppercase">D30</span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </section>
         </div>
       </div>
+
+      {showTutorial && (
+        <FeatureTutorialModal
+          title={t("tutorials.water.title")}
+          subtitle={t("tutorials.water.subtitle")}
+          closeLabel={t("tutorials.close")}
+          steps={[
+            {
+              title: t("tutorials.water.steps.quick_add.title"),
+              description: t("tutorials.water.steps.quick_add.description"),
+            },
+            {
+              title: t("tutorials.water.steps.custom.title"),
+              description: t("tutorials.water.steps.custom.description"),
+            },
+            {
+              title: t("tutorials.water.steps.history.title"),
+              description: t("tutorials.water.steps.history.description"),
+            },
+            {
+              title: t("tutorials.water.steps.goal.title"),
+              description: t("tutorials.water.steps.goal.description"),
+            },
+          ]}
+          onClose={closeTutorial}
+        />
+      )}
     </div>
   );
 };

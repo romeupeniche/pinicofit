@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema, type signInFormData } from "../../schemas/Auth.ts";
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import { api } from "../../services/api";
 import { useAuthStore } from "../../store/authStore.ts";
 import type { AxiosError } from "axios";
 import { useSettingsStore } from "../../store/settingsStore.ts";

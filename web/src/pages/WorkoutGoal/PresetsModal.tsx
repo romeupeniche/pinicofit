@@ -6,7 +6,9 @@ import {
   type IWorkoutPreset,
 } from "../../store/goals/workoutStore";
 import { useSettingsStore } from "../../store/settingsStore";
-import { Library, Plus, Trash2, X, Zap } from "lucide-react";
+import { Library, Plus, Trash2, X, Zap, Loader2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "../../services/api";
 
 interface IProps {
   cycle: ICycleStep[];
@@ -23,6 +25,16 @@ const PresetsModal: React.FC<IProps> = ({
 }) => {
   const { presets, removePreset } = useWorkoutStore();
   const { t } = useSettingsStore();
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: async (presetId: string) => {
+      await api.delete(`/workouts/presets/${presetId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workoutSettings"] });
+    },
+  });
 
   const addWorkoutFromPreset = (data: IWorkoutPreset) => {
     const id = crypto.randomUUID();
@@ -59,7 +71,16 @@ const PresetsModal: React.FC<IProps> = ({
     ]);
   };
 
+  const handleRemovePreset = async (idx: number, presetId?: string) => {
+    removePreset(idx);
+
+    if (presetId) {
+      deleteMutation.mutate(presetId);
+    }
+  };
+
   if (!showPresets) return null;
+
   return (
     <div className="fixed inset-0 z-110 flex justify-end">
       <div
@@ -83,6 +104,7 @@ const PresetsModal: React.FC<IProps> = ({
             <X size={24} />
           </button>
         </header>
+
         <div className="flex-1 p-8 overflow-y-auto space-y-4">
           {presets.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-30">
@@ -94,17 +116,19 @@ const PresetsModal: React.FC<IProps> = ({
           ) : (
             presets.map((p, idx) => (
               <div
-                key={idx}
-                className={`group relative overflow-hidden flex items-center justify-between gap-4 p-4 border-2 border-brand-accent ${p.presetTranslationKey ? "border-2 bg-neutral-900" : "bg-neutral-50"} rounded-3xl hover:scale-102 transition-all`}
+                key={p.id || idx}
+                className={`group relative overflow-hidden flex items-center justify-between gap-4 p-4 border-2 border-brand-accent ${p.presetTranslationKey ? "border-2 bg-neutral-900" : "bg-neutral-50"
+                  } rounded-3xl hover:scale-102 transition-all`}
               >
                 {!!p.presetTranslationKey && (
                   <div className="absolute right-0 -top-4 opacity-25 z-1 text-brand-accent">
                     <Zap size={110} />
                   </div>
                 )}
-                <span>
+                <span className="z-2">
                   <h4
-                    className={`font-black ${p.presetTranslationKey ? "text-brand-accent" : "text-neutral-900"} uppercase text-sm italic`}
+                    className={`font-black ${p.presetTranslationKey ? "text-brand-accent" : "text-neutral-900"
+                      } uppercase text-sm italic`}
                   >
                     {t(p.name as TranslationKeys)}
                   </h4>
@@ -124,12 +148,18 @@ const PresetsModal: React.FC<IProps> = ({
                   >
                     <Plus size={20} />
                   </button>
+
                   {!p.presetTranslationKey && (
                     <button
-                      onClick={() => removePreset(idx)}
-                      className="p-2 text-neutral-300 hover:text-red-500 transition-colors cursor-pointer"
+                      onClick={() => handleRemovePreset(idx, p.id)}
+                      disabled={deleteMutation.isPending}
+                      className="p-2 text-neutral-300 hover:text-red-500 transition-colors cursor-pointer disabled:opacity-50"
                     >
-                      <Trash2 size={18} />
+                      {deleteMutation.isPending ? (
+                        <Loader2 size={18} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={18} />
+                      )}
                     </button>
                   )}
                 </nav>

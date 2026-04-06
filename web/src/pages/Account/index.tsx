@@ -4,6 +4,7 @@ import { useAuthStore } from "../../store/authStore";
 import Profile from "./Profile";
 import Goals from "./Goals";
 import Preferences from "./Preferences";
+import Notifications from "./Notifications";
 import NavItem from "./NavItem";
 import { useSettingsStore } from "../../store/settingsStore";
 
@@ -35,7 +36,7 @@ const Account: React.FC = () => {
       id: "notifications",
       label: t("account.sidebar.notifications"),
       icon: Bell,
-      component: null,
+      component: <Notifications />,
     },
     {
       id: "security",

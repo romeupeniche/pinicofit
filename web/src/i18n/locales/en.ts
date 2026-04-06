@@ -51,6 +51,19 @@ export const en = {
       title: "Goal Settings",
       subtitle: "Here you can adjust your calories and macros manually.",
       adjust_button: "Adjust Goals",
+      fields: {
+        water: "Water Goal (ml)",
+        calories: "Daily Calories (kcal)",
+        sleep: "Sleep Goal (hours)",
+        steps: "Steps Goal",
+        protein: "Protein (g)",
+        carbs: "Carbs (g)",
+        fat: "Fat (g)",
+        sodium: "Sodium (mg)",
+        sugar: "Sugar (g)",
+      },
+      macro_title: "Nutrition & limits",
+      saving: "Saving goals...",
     },
     preferences: {
       title: "Preferences",
@@ -62,6 +75,20 @@ export const en = {
         title: "Weight Unit",
         subtitle: "Choose your preferred weight unit",
       },
+    },
+    notifications: {
+      title: "Notifications",
+      subtitle: "Control the email used for alerts and monthly reports.",
+      email_label: "Notification Email",
+      email_hint: "Use the same email you used to sign in, or another email you actually check.",
+      verified: "Verified",
+      verify: "Verify email",
+      verifying: "Verifying...",
+      alerts: "Alerts",
+      alerts_hint: "Receive reminders and important updates about your goals.",
+      reports: "Monthly reports",
+      reports_hint: "Get a monthly progress summary for water, meals and workouts.",
+      saving: "Saving notifications...",
     },
   },
   home: {
@@ -105,6 +132,17 @@ export const en = {
     height: "Height",
     gender: "Gender",
     goal: "What is your goal?",
+    activity_level: {
+      title: "Activity level",
+      helper: "This helps us calculate calories, water and macros more accurately.",
+      options: {
+        sedentary: "Sedentary",
+        light: "Light activity (1-2x/week)",
+        moderate: "Moderate activity (3-4x/week)",
+        active: "Active (5-6x/week)",
+        intense: "Intense activity (daily / high volume)",
+      },
+    },
     goal_options: {
       bulk: "Gain muscle mass (Bulking)",
       cut: "Lose weight (Cutting)",
@@ -431,6 +469,79 @@ export const en = {
       goal: {
         required: "Please define your goal",
         invalid: "Please select a valid goal",
+      },
+      activity_level: {
+        required: "Please select your activity level",
+        invalid: "Please select a valid activity level",
+      },
+    },
+  },
+  tutorials: {
+    close: "Start using the app",
+    workout: {
+      title: "How workout works",
+      subtitle: "Plan your cycle, preserve the past, and complete each exercise from the workout tab.",
+      steps: {
+        plan: {
+          title: "Plan and configure",
+          description: "Add workouts or rest days, open each card to configure exercises, and use presets to speed things up.",
+        },
+        reorder: {
+          title: "Drag to reorder",
+          description: "You can drag the cycle structure. Past days stay preserved; only future projection changes.",
+        },
+        complete: {
+          title: "Complete from the workout tab",
+          description: "Open today's workout, tap an exercise, and mark it as completed, failed, or weight up.",
+        },
+        save_modes: {
+          title: "Know the two save modes",
+          description: "Apply as New Cycle restarts the cycle from today. Quick Edit keeps the current cycle phase and only updates what comes next.",
+        },
+      },
+    },
+    water: {
+      title: "How water works",
+      subtitle: "Log your water quickly, track history, and compare progress with your daily target.",
+      steps: {
+        quick_add: {
+          title: "Use quick buttons",
+          description: "Tap 200ml, 500ml or 1L to log with one touch.",
+        },
+        custom: {
+          title: "Custom amount",
+          description: "Use the custom field when you drank a different amount.",
+        },
+        history: {
+          title: "Check history",
+          description: "Switch between today, week and month to see consistency and remove incorrect entries.",
+        },
+        goal: {
+          title: "Daily target",
+          description: "Your target is calculated in onboarding, but you can fine-tune it later in account goals.",
+        },
+      },
+    },
+    meals: {
+      title: "How meals works",
+      subtitle: "Search real foods, choose the right measure, and track calories, sugar, and sodium.",
+      steps: {
+        add: {
+          title: "Add foods",
+          description: "Use the add button, search by name, and pick the food that best matches what you ate.",
+        },
+        measure: {
+          title: "Choose the right measure",
+          description: "Before saving, select grams, ml or household measures so the macros stay accurate.",
+        },
+        warning: {
+          title: "Watch alerts",
+          description: "Foods with high sugar or sodium show a warning before you confirm.",
+        },
+        dashboard: {
+          title: "Track your day",
+          description: "Meals update your dashboard and macro progress so you always know what is left for the day.",
+        },
       },
     },
   },

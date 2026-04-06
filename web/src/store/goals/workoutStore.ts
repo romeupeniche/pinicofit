@@ -7,12 +7,15 @@ import {
   subDays,
   isWithinInterval,
   isBefore,
+  format,
+  isAfter,
 } from "date-fns";
 import type { IExercise } from "../../schemas/WorkoutGoal";
 import processPendingSummaries, {
   type Summary,
 } from "../../utils/processPendingSummaries";
 import type { User } from "../../types/auth";
+import { api } from "../../services/api";
 
 export interface ICycleStep {
   id: string;
@@ -29,7 +32,16 @@ interface IWorkoutHistory {
   cycle: ICycleStep[];
 }
 
+export interface WorkoutServerState {
+  cycle: ICycleStep[];
+  startDate: string;
+  history?: IWorkoutHistory[];
+  logs?: IExerciseLog[];
+  summaries?: Summary[];
+}
+
 export interface IWorkoutPreset {
+  id: string;
   name: string;
   exercises: IExercise[];
   presetTranslationKey?: string;
@@ -65,6 +77,7 @@ interface WorkoutState {
   checkAndMarkFailed: () => void;
   hasChanges: () => boolean;
   checkAndGenerateSummaries: (userSettings: User) => void;
+  setFullState: (data: Partial<WorkoutState>) => void;
 }
 
 const initialCycle: ICycleStep[] = [
@@ -88,8 +101,9 @@ const initialCycle: ICycleStep[] = [
 
 const initialDate = startOfDay(new Date()).toISOString();
 
-const initialPresets: IWorkoutPreset[] = [
+export const DEFAULT_WORKOUT_PRESETS: IWorkoutPreset[] = [
   {
+    id: "preset-chest-triceps",
     name: "goals.workout.presets.preset-chest-triceps.title",
     exercises: [
       {
@@ -180,6 +194,7 @@ const initialPresets: IWorkoutPreset[] = [
     presetTranslationKey: "goals.workout.presets.preset-chest-triceps",
   },
   {
+    id: "preset-back-biceps",
     name: "goals.workout.presets.preset-back-biceps.title",
     exercises: [
       {
@@ -270,6 +285,7 @@ const initialPresets: IWorkoutPreset[] = [
     presetTranslationKey: "goals.workout.presets.preset-back-biceps",
   },
   {
+    id: "preset-legs-shoulders",
     name: "goals.workout.presets.preset-legs-shoulders.title",
     exercises: [
       {
@@ -360,6 +376,7 @@ const initialPresets: IWorkoutPreset[] = [
     presetTranslationKey: "goals.workout.presets.preset-legs-shoulders",
   },
   {
+    id: "preset-abs-core",
     name: "goals.workout.presets.preset-abs-core.title",
     exercises: [
       {
@@ -438,6 +455,7 @@ const initialPresets: IWorkoutPreset[] = [
     presetTranslationKey: "goals.workout.presets.preset-abs-core",
   },
   {
+    id: "preset-fb-performance",
     name: "goals.workout.presets.preset-fb-performance.title",
     exercises: [
       {
@@ -528,6 +546,7 @@ const initialPresets: IWorkoutPreset[] = [
     presetTranslationKey: "goals.workout.presets.preset-fb-performance",
   },
   {
+    id: "preset-fb-calisthenics-pro",
     name: "goals.workout.presets.preset-fb-calisthenics-pro.title",
     exercises: [
       {
@@ -618,6 +637,7 @@ const initialPresets: IWorkoutPreset[] = [
     presetTranslationKey: "goals.workout.presets.preset-fb-calisthenics-pro",
   },
   {
+    id: "preset-cardio-burn-hiit",
     name: "goals.workout.presets.preset-cardio-burn-hiit.title",
     exercises: [
       {
@@ -697,28 +717,119 @@ const initialPresets: IWorkoutPreset[] = [
   },
 ];
 
+const buildUpdatedLogs = (logs: IExerciseLog[], newLog: IExerciseLog) => {
+  const filteredLogs = logs.filter(
+    (log) => !(log.date === newLog.date && log.exerciseId === newLog.exerciseId),
+  );
+
+  return [...filteredLogs, newLog];
+};
+
+const getCyclePhaseIndex = (
+  startDate: string,
+  cycleLength: number,
+  referenceDate: Date,
+) => {
+  if (!cycleLength) return 0;
+
+  const cycleStart = startOfDay(parseISO(startDate));
+  const cycleReference = startOfDay(referenceDate);
+  const diff = differenceInDays(cycleReference, cycleStart);
+  const normalized = ((diff % cycleLength) + cycleLength) % cycleLength;
+
+  return normalized;
+};
+
+const archiveCycleHistory = ({
+  history,
+  cycle,
+  startDate,
+  endDate,
+}: {
+  history: IWorkoutHistory[];
+  cycle: ICycleStep[];
+  startDate: string;
+  endDate: string;
+}) => {
+  if (!cycle.length) return history;
+
+  const historyStart = startOfDay(parseISO(startDate));
+  const historyEnd = startOfDay(parseISO(endDate));
+
+  if (isAfter(historyStart, historyEnd)) return history;
+
+  const archivedEntry: IWorkoutHistory = {
+    startDate: historyStart.toISOString(),
+    endDate: historyEnd.toISOString(),
+    cycle,
+  };
+
+  return [
+    ...history.filter(
+      (entry) =>
+        !(
+          entry.startDate === archivedEntry.startDate &&
+          entry.endDate === archivedEntry.endDate
+        ),
+    ),
+    archivedEntry,
+  ];
+};
+
+export const getWorkoutForDateFromState = (
+  state: WorkoutServerState,
+  date: Date,
+) => {
+  const cycle = state.cycle || [];
+  const history = state.history || [];
+  const startDate = state.startDate;
+  const targetDate = startOfDay(date);
+
+  for (const entry of history) {
+    const start = startOfDay(parseISO(entry.startDate));
+    const end = startOfDay(parseISO(entry.endDate));
+
+    if (isWithinInterval(targetDate, { start, end }) && entry.cycle.length) {
+      const diff = Math.abs(differenceInDays(targetDate, start));
+      return entry.cycle[diff % entry.cycle.length];
+    }
+  }
+
+  if (!cycle.length || !startDate) return null;
+
+  const currentStart = startOfDay(parseISO(startDate));
+  const diffCurrent = differenceInDays(targetDate, currentStart);
+  return diffCurrent >= 0 ? cycle[diffCurrent % cycle.length] : null;
+};
+
 export const useWorkoutStore = create<WorkoutState>()(
   persist(
     (set, get) => ({
-      cycle: initialCycle,
+      cycle: [],
       startDate: initialDate,
       history: [],
       logs: [],
       summaries: [],
-      presets: initialPresets,
+      presets: DEFAULT_WORKOUT_PRESETS,
       lastSavedCycle: JSON.stringify(initialCycle),
       lastSavedStartDate: initialDate,
       isLoading: false,
+
+      setFullState: (data: Partial<WorkoutState>) =>
+        set((state) => ({
+          ...state,
+          ...data,
+          lastSavedCycle: data.cycle
+            ? JSON.stringify(data.cycle)
+            : state.lastSavedCycle,
+          lastSavedStartDate: data.startDate || state.lastSavedStartDate,
+        })),
 
       setCycle: (newCycle) => set({ cycle: [...newCycle] }),
 
       saveExerciseLog: (newLog) =>
         set((state) => {
-          const filteredLogs = state.logs.filter(
-            (l) =>
-              !(l.date === newLog.date && l.exerciseId === newLog.exerciseId),
-          );
-          return { logs: [...filteredLogs, newLog] };
+          return { logs: buildUpdatedLogs(state.logs, newLog) };
         }),
 
       setStartDate: (date) =>
@@ -741,114 +852,102 @@ export const useWorkoutStore = create<WorkoutState>()(
       },
 
       hasChanges: () => {
-        const { cycle, lastSavedCycle, isLoading } = get();
+        const {
+          cycle,
+          lastSavedCycle,
+          startDate,
+          lastSavedStartDate,
+          isLoading,
+        } = get();
         if (isLoading) return false;
-
-        const saved = JSON.parse(lastSavedCycle) as typeof cycle;
-
-        if (cycle.length !== saved.length) return true;
-
-        for (let i = 0; i < cycle.length; i++) {
-          const current = cycle[i];
-          const prev = saved[i];
-
-          if (current.type !== prev.type) return true;
-
-          if (current.type === "workout") {
-            if (current.name !== prev.name || current.label !== prev.label) {
-              return true;
-            }
-          }
-        }
-
-        return false;
+        const cycleChanged = JSON.stringify(cycle) !== lastSavedCycle;
+        const dateChanged = startDate !== lastSavedStartDate;
+        return cycleChanged || dateChanged;
       },
 
       saveChanges: async (resetCycle = false) => {
         set({ isLoading: true });
 
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        const { cycle, history, logs, lastSavedStartDate, lastSavedCycle } = get();
 
-        const {
-          cycle,
-          startDate,
-          history,
-          lastSavedCycle,
-          lastSavedStartDate,
-        } = get();
+        try {
+          const today = startOfDay(new Date());
+          const todayIso = today.toISOString();
+          const yesterdayIso = subDays(today, 1).toISOString();
+          const previousCycle = JSON.parse(lastSavedCycle) as ICycleStep[];
+          const previousPhaseIndex = getCyclePhaseIndex(
+            lastSavedStartDate,
+            previousCycle.length,
+            today,
+          );
+          const preservedPhaseIndex = cycle.length
+            ? previousPhaseIndex % cycle.length
+            : 0;
+          const finalStartDate = resetCycle
+            ? todayIso
+            : subDays(today, preservedPhaseIndex).toISOString();
+          const updatedHistory = archiveCycleHistory({
+            history,
+            cycle: previousCycle,
+            startDate: lastSavedStartDate,
+            endDate: yesterdayIso,
+          });
 
-        const today = startOfDay(new Date());
-        const todayIso = today.toISOString();
-        const yesterdayIso = subDays(today, 1).toISOString();
+          // 1. SINCRONIZAÇÃO DAS SETTINGS
+          // Enviamos apenas o essencial para a tabela WorkoutSettings
+          await api.patch("/workouts/settings", {
+            cycle,
+            history: updatedHistory,
+            startDate: finalStartDate,
+            logs,
+            // NÃO enviamos o 'history' aqui para evitar o Erro 413
+          });
 
-        const finalStartDate = resetCycle ? todayIso : startDate;
+          // 2. LOG DO CICLO ANTIGO (Se houver reset)
+          if (resetCycle) {
+            // Usamos o lastSavedStartDate para registrar o período correto no log
+            await api.post("/workouts/log", {
+              name: `Ciclo Finalizado`,
+              exercises: previousCycle,
+              duration: 0,
+              date: yesterdayIso, // Data do fim do ciclo
+              startDate: lastSavedStartDate, // Data de início do ciclo que fechou
+            });
+          }
 
-        const newHistory = resetCycle
-          ? [
-              ...history,
-              {
-                startDate: lastSavedStartDate,
-                endDate: yesterdayIso,
-                cycle: JSON.parse(lastSavedCycle),
-              },
-            ]
-          : history;
+          // 3. ATUALIZAÇÃO LOCAL
+          set({
+            history: updatedHistory,
+            startDate: finalStartDate,
+            lastSavedStartDate: finalStartDate,
+            lastSavedCycle: JSON.stringify(cycle),
+            // Se você quiser manter o histórico visual no front, não resete o history aqui
+            // mas saiba que ele só existirá no LocalStorage deste navegador.
+            isLoading: false,
+          });
 
-        set({
-          history: newHistory,
-          startDate: finalStartDate,
-          lastSavedStartDate: finalStartDate,
-          lastSavedCycle: JSON.stringify(cycle),
-          isLoading: false,
-        });
+          console.log("PinicoFit: Sincronizado!");
+        } catch (error) {
+          console.error("Erro na sincronização:", error);
+          set({ isLoading: false });
+          alert("Erro ao salvar no servidor.");
+        }
       },
 
       getWorkoutForDate: (date: Date) => {
-        const { cycle, startDate, history, hasChanges } = get();
-        const targetDate = startOfDay(date);
-        const today = startOfDay(new Date());
-
-        if (targetDate >= today) {
-          const referenceDate = hasChanges()
-            ? today
-            : startOfDay(parseISO(startDate));
-
-          const diff = differenceInDays(targetDate, referenceDate);
-
-          if (diff >= 0) {
-            return cycle[diff % cycle.length];
-          }
-        }
-        for (const entry of history) {
-          const start = startOfDay(parseISO(entry.startDate));
-          const end = startOfDay(parseISO(entry.endDate));
-
-          if (isWithinInterval(targetDate, { start, end })) {
-            const diff = Math.abs(differenceInDays(targetDate, start));
-            return entry.cycle[diff % entry.cycle.length];
-          }
-        }
-
-        if (targetDate >= startOfDay(parseISO(startDate))) {
-          const diff = Math.abs(
-            differenceInDays(targetDate, startOfDay(parseISO(startDate))),
-          );
-          return cycle[diff % cycle.length];
-        }
-
-        return null;
+        const { cycle, startDate, history } = get();
+        return getWorkoutForDateFromState({ cycle, startDate, history }, date);
       },
 
       checkAndMarkFailed: () => {
         const { logs, getWorkoutForDate, saveExerciseLog } = get();
         const now = new Date();
         const today = startOfDay(now);
-
         if (now.getHours() < 4) return;
 
         [1, 2, 3].forEach((d) => {
           const checkDate = subDays(today, d);
-          const checkDateIso = checkDate.toISOString().split("T")[0];
+          const checkDateIso = format(checkDate, "yyyy-MM-dd");
           const workout = getWorkoutForDate(checkDate);
 
           if (workout && workout.type === "workout") {
@@ -856,13 +955,12 @@ export const useWorkoutStore = create<WorkoutState>()(
               const hasLog = logs.some(
                 (l) => l.date === checkDateIso && l.exerciseId === ex.id,
               );
-
               if (!hasLog) {
                 saveExerciseLog({
                   date: checkDateIso,
                   exerciseId: ex.id,
                   status: "failed",
-                  actualWeight: ex.weight,
+                  actualWeight: ex.weight?.toString() || "0",
                 });
               }
             });
@@ -874,10 +972,10 @@ export const useWorkoutStore = create<WorkoutState>()(
         const { logs, summaries, getWorkoutForDate } = get();
         const yesterdayLimit = startOfDay(subDays(new Date(), 1));
         const datesWithLogs = Array.from(new Set(logs.map((l) => l.date)));
+
         const pendingDates = datesWithLogs.filter((logDate) => {
           const logDateParsed = startOfDay(parseISO(logDate));
           const alreadyDone = summaries.some((s) => s.date === logDate);
-
           return !alreadyDone && isBefore(logDateParsed, yesterdayLimit);
         });
 
@@ -886,7 +984,6 @@ export const useWorkoutStore = create<WorkoutState>()(
         const newSummaries = pendingDates
           .map((date) => {
             const workoutAtDate = getWorkoutForDate(parseISO(date));
-
             if (!workoutAtDate || workoutAtDate.type !== "workout") return null;
 
             return processPendingSummaries({
@@ -896,7 +993,7 @@ export const useWorkoutStore = create<WorkoutState>()(
               userSettings,
             });
           })
-          .filter((s) => s !== null);
+          .filter((s): s is Summary => s !== null);
 
         if (newSummaries.length > 0) {
           set((state) => ({
@@ -908,15 +1005,16 @@ export const useWorkoutStore = create<WorkoutState>()(
     {
       name: "pinicofit-workout-storage",
       partialize: (state) => ({
-        cycle: state.cycle,
-        startDate: state.startDate,
-        logs: state.logs,
-        history: state.history,
-        presets: state.presets,
-        lastSavedCycle: state.lastSavedCycle,
-        lastSavedStartDate: state.lastSavedStartDate,
         summaries: state.summaries,
       }),
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<WorkoutState> | undefined;
+
+        return {
+          ...currentState,
+          summaries: persisted?.summaries || currentState.summaries,
+        };
+      },
     },
   ),
 );

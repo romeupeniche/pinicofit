@@ -13,6 +13,8 @@ import { useWorkoutStore } from "../../store/goals/workoutStore";
 import ConfirmExitModal from "./ConfirmExitModal";
 import WorkoutOverview from "./WorkoutOverview";
 import { useAuthStore } from "../../store/authStore";
+import FeatureTutorialModal from "../../components/FeatureTutorialModal";
+import { api } from "../../services/api";
 
 const titles: Record<string, { title: TranslationKeys; icon: LucideIcon }> = {
   workout: { title: "goals.workout.workout_window.title", icon: Dumbbell },
@@ -24,14 +26,27 @@ const WorkoutGoal: React.FC = () => {
   const [activeTab, setActiveTab] = useState("workout");
   const { t } = useSettingsStore();
   const { user } = useAuthStore();
-  const { logs, checkAndGenerateSummaries } = useWorkoutStore();
-  const { hasChanges, rollbackChanges, isLoading, checkAndMarkFailed } =
-    useWorkoutStore();
+
+  const {
+    logs,
+    checkAndGenerateSummaries,
+    hasChanges,
+    rollbackChanges,
+    checkAndMarkFailed,
+  } = useWorkoutStore();
+
   const changesPending = hasChanges();
   const [showExitAlert, setShowExitAlert] = useState(false);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
+  const [showTutorial, setShowTutorial] = useState(
+    !user?.tutorialState?.workout,
+  );
 
   const TitleIcon = titles[activeTab].icon;
+
+  useEffect(() => {
+    setShowTutorial(!user?.tutorialState?.workout);
+  }, [user?.tutorialState?.workout]);
 
   useEffect(() => {
     checkAndMarkFailed();
@@ -61,6 +76,28 @@ const WorkoutGoal: React.FC = () => {
     setPendingTab(null);
   };
 
+  const closeTutorial = async () => {
+    setShowTutorial(false);
+
+    if (!user?.id || user.tutorialState?.workout) {
+      return;
+    }
+
+    const tutorialState = {
+      ...user.tutorialState,
+      workout: true,
+    };
+
+    try {
+      const { data } = await api.patch(`/users/${user.id}`, {
+        tutorialState,
+      });
+      useAuthStore.getState().updateProfile(data);
+    } catch (error) {
+      console.error("Erro ao salvar tutorial de workout:", error);
+    }
+  };
+
   return (
     <section>
       <header className="sticky top-4 z-50 mb-8 border border-neutral-200/50 flex md:flex-row flex-col justify-between md:items-center gap-4 bg-white/60 backdrop-blur-sm rounded-3xl p-4 shadow-sm">
@@ -83,11 +120,10 @@ const WorkoutGoal: React.FC = () => {
             <button
               key={tab}
               onClick={() => handleTabChange(tab)}
-              className={`flex-1 px-8 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer ${
-                activeTab === tab
-                  ? "bg-white text-brand-accent shadow-sm scale-[1.02]"
-                  : "text-neutral-400 hover:text-neutral-600 hover:bg-white/30"
-              }`}
+              className={`flex-1 px-8 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer ${activeTab === tab
+                ? "bg-white text-brand-accent shadow-sm scale-[1.02]"
+                : "text-neutral-400 hover:text-neutral-600 hover:bg-white/30"
+                }`}
             >
               {tab === "workout"
                 ? t("goals.workout.workout_window.badge_title")
@@ -105,7 +141,34 @@ const WorkoutGoal: React.FC = () => {
           rollbackChanges={rollbackChanges}
           manualClose={() => setShowExitAlert(false)}
           manualConfirm={onConfirmExit}
-          isLoading={isLoading}
+          isLoading={false}
+        />
+      )}
+
+      {showTutorial && (
+        <FeatureTutorialModal
+          title={t("tutorials.workout.title")}
+          subtitle={t("tutorials.workout.subtitle")}
+          closeLabel={t("tutorials.close")}
+          steps={[
+            {
+              title: t("tutorials.workout.steps.plan.title"),
+              description: t("tutorials.workout.steps.plan.description"),
+            },
+            {
+              title: t("tutorials.workout.steps.reorder.title"),
+              description: t("tutorials.workout.steps.reorder.description"),
+            },
+            {
+              title: t("tutorials.workout.steps.complete.title"),
+              description: t("tutorials.workout.steps.complete.description"),
+            },
+            {
+              title: t("tutorials.workout.steps.save_modes.title"),
+              description: t("tutorials.workout.steps.save_modes.description"),
+            },
+          ]}
+          onClose={closeTutorial}
         />
       )}
     </section>

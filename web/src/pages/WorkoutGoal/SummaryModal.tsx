@@ -155,9 +155,9 @@ const SummaryModal = ({
     const loadProgression =
       totalPlannedTonnage > 0
         ? (
-            ((totalActualTonnage - totalPlannedTonnage) / totalPlannedTonnage) *
-            100
-          ).toFixed(1)
+          ((totalActualTonnage - totalPlannedTonnage) / totalPlannedTonnage) *
+          100
+        ).toFixed(1)
         : "0";
 
     return {
@@ -358,7 +358,7 @@ const SummaryModal = ({
                     fontWeight: 900,
                   }}
                 >
-                  {user!.name}
+                  {user?.name || "Athlete"}
                 </p>
               </div>
             </div>

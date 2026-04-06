@@ -51,6 +51,19 @@ export const br = {
       title: "Configurações de Metas",
       subtitle: "Aqui você poderá ajustar suas calorias e macros manualmente.",
       adjust_button: "Ajustar Metas",
+      fields: {
+        water: "Meta de Agua (ml)",
+        calories: "Calorias Diarias (kcal)",
+        sleep: "Meta de Sono (horas)",
+        steps: "Meta de Passos",
+        protein: "Proteina (g)",
+        carbs: "Carboidratos (g)",
+        fat: "Gordura (g)",
+        sodium: "Sodio (mg)",
+        sugar: "Acucar (g)",
+      },
+      macro_title: "Nutricao e limites",
+      saving: "Salvando metas...",
     },
     preferences: {
       title: "Preferências",
@@ -62,6 +75,20 @@ export const br = {
         title: "Unidade de Peso",
         subtitle: "Escolha sua unidade de peso preferida",
       },
+    },
+    notifications: {
+      title: "Notificacoes",
+      subtitle: "Controle o e-mail usado para alertas e relatorios mensais.",
+      email_label: "E-mail de notificacoes",
+      email_hint: "Use o mesmo e-mail do login ou outro que voce realmente acompanhe.",
+      verified: "Verificado",
+      verify: "Verificar e-mail",
+      verifying: "Verificando...",
+      alerts: "Alertas",
+      alerts_hint: "Receba lembretes e avisos importantes sobre suas metas.",
+      reports: "Relatorios mensais",
+      reports_hint: "Receba um resumo mensal de agua, refeicoes e treinos.",
+      saving: "Salvando notificacoes...",
     },
   },
   home: {
@@ -105,6 +132,17 @@ export const br = {
     height: "Altura",
     gender: "Gênero",
     goal: "Qual a sua meta?",
+    activity_level: {
+      title: "Nivel de atividade",
+      helper: "Isso ajuda a calcular calorias, agua e macros com mais precisao.",
+      options: {
+        sedentary: "Sedentario",
+        light: "Atividade leve (1-2x/semana)",
+        moderate: "Atividade moderada (3-4x/semana)",
+        active: "Ativo (5-6x/semana)",
+        intense: "Intenso (diario / alto volume)",
+      },
+    },
     goal_options: {
       bulk: "Ganhar massa muscular (Bulking)",
       cut: "Emagrecer (Cutting)",
@@ -436,6 +474,79 @@ export const br = {
       goal: {
         required: "Defina sua meta",
         invalid: "Selecione uma meta valida",
+      },
+      activity_level: {
+        required: "Selecione seu nivel de atividade",
+        invalid: "Selecione um nivel de atividade valido",
+      },
+    },
+  },
+  tutorials: {
+    close: "Comecar a usar o app",
+    workout: {
+      title: "Como o workout funciona",
+      subtitle: "Planeje o ciclo, preserve o passado e conclua cada exercicio pela aba de treino.",
+      steps: {
+        plan: {
+          title: "Planeje e configure",
+          description: "Adicione treinos ou descansos, abra cada card para configurar exercicios e use os presets para acelerar.",
+        },
+        reorder: {
+          title: "Arraste para reordenar",
+          description: "Voce pode arrastar a estrutura do ciclo. Os dias passados ficam preservados; so a projecao futura muda.",
+        },
+        complete: {
+          title: "Conclua pela aba workout",
+          description: "Abra o treino de hoje, toque em um exercicio e marque como concluido, falhei ou subi carga.",
+        },
+        save_modes: {
+          title: "Entenda os dois salvamentos",
+          description: "Aplicar como Novo Ciclo reinicia o ciclo comecando hoje. Atualizar e Manter o Ciclo preserva a fase atual e so muda o que vem pela frente.",
+        },
+      },
+    },
+    water: {
+      title: "Como a agua funciona",
+      subtitle: "Registre agua rapidamente, acompanhe o historico e compare o progresso com sua meta diaria.",
+      steps: {
+        quick_add: {
+          title: "Use os botoes rapidos",
+          description: "Toque em 200ml, 500ml ou 1L para registrar com um toque.",
+        },
+        custom: {
+          title: "Quantidade personalizada",
+          description: "Use o campo personalizado quando voce beber um valor diferente.",
+        },
+        history: {
+          title: "Veja o historico",
+          description: "Alterne entre hoje, semana e mes para acompanhar consistencia e remover lancamentos errados.",
+        },
+        goal: {
+          title: "Meta diaria",
+          description: "Sua meta e calculada no onboarding, mas pode ser ajustada depois nas metas da conta.",
+        },
+      },
+    },
+    meals: {
+      title: "Como a comida funciona",
+      subtitle: "Pesquise alimentos reais, escolha a medida certa e acompanhe calorias, acucar e sodio.",
+      steps: {
+        add: {
+          title: "Adicione alimentos",
+          description: "Use o botao de adicionar, pesquise pelo nome e escolha o alimento que mais combina com o que voce comeu.",
+        },
+        measure: {
+          title: "Escolha a medida certa",
+          description: "Antes de salvar, selecione gramas, ml ou medidas caseiras para manter os macros corretos.",
+        },
+        warning: {
+          title: "Observe os alertas",
+          description: "Alimentos com muito acucar ou sodio mostram um aviso antes da confirmacao.",
+        },
+        dashboard: {
+          title: "Acompanhe o dia",
+          description: "As refeicoes atualizam seu dashboard e o progresso de macros para voce sempre saber o que ainda falta.",
+        },
       },
     },
   },

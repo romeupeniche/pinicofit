@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Flame,
   Utensils,
@@ -13,70 +13,224 @@ import {
 import { useSettingsStore } from "../../store/settingsStore";
 import type { TranslationKeys } from "../../types/i18n";
 import { useNavigate } from "react-router-dom";
+import { useQueries } from "@tanstack/react-query";
+import { api } from "../../services/api";
+import AppLoadingScreen from "../../components/AppLoadingScreen";
+import type { BackendFood } from "../../types/food";
+import { getWorkoutForDateFromState, type WorkoutServerState } from "../../store/goals/workoutStore";
+import { useAuthStore } from "../../store/authStore";
 
-const userStats = {
-  caloriesMeta: 2200,
-  caloriesConsumed: 1450,
-  macros: {
-    protein: { goal: 160, current: 110, color: "bg-brand-accent" },
-    carbs: { goal: 250, current: 180, color: "bg-brand-pink" },
-    fats: { goal: 70, current: 45, color: "bg-yellow-400" },
-  },
-};
-
-const cardGoals: {
+interface DailyMealLog {
   id: string;
-  titleId: TranslationKeys;
-  icon: LucideIcon;
-  progress: string;
-  progressPercentage: number;
-  remaining: string;
-  postfix: string;
-}[] = [
-  {
-    id: "water",
-    titleId: "dashboard.cards.water",
-    icon: GlassWater,
-    progress: "1200ml",
-    progressPercentage: 40,
-    remaining: "1800",
-    postfix: "ml",
-  },
-  {
-    id: "workout",
-    titleId: "dashboard.cards.workout",
-    icon: Dumbbell,
-    progress: "1/5",
-    progressPercentage: 20,
-    remaining: "4",
-    postfix: "dashboard.cards.workout_postfix",
-  },
-  {
-    id: "steps",
-    titleId: "dashboard.cards.steps",
-    icon: Footprints,
-    progress: "200",
-    progressPercentage: 75,
-    remaining: "800",
-    postfix: "dashboard.cards.steps_postfix",
-  },
-  {
-    id: "sleep",
-    titleId: "dashboard.cards.sleep",
-    icon: BedDouble,
-    progress: "8h",
-    progressPercentage: 100,
-    remaining: "0",
-    postfix: "h",
-  },
-];
+  quantity: number;
+  measure: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  date: string;
+  food: BackendFood;
+}
 
 const Dashboard: React.FC = () => {
   const { t } = useSettingsStore();
   const navigate = useNavigate();
-  const caloriesLeft = userStats.caloriesMeta - userStats.caloriesConsumed;
-  const progressPercent =
-    (userStats.caloriesConsumed / userStats.caloriesMeta) * 100;
+  const { user } = useAuthStore();
+  const todayKey = new Date().toISOString().slice(0, 10);
+
+  const [meQuery, waterQuery, mealsQuery, workoutSettingsQuery, workoutLogQuery] =
+    useQueries({
+      queries: [
+        {
+          queryKey: ["me"],
+          queryFn: async () => {
+            const { data } = await api.get("/users/me");
+            return data;
+          },
+          enabled: !!user,
+        },
+        {
+          queryKey: ["water-today"],
+          queryFn: async () => {
+            const { data } = await api.get("/water/today");
+            return data;
+          },
+          enabled: !!user,
+        },
+        {
+          queryKey: ["meals-log", todayKey],
+          queryFn: async () => {
+            const { data } = await api.get(`/meals/log?date=${todayKey}`);
+            return data as DailyMealLog[];
+          },
+          enabled: !!user,
+        },
+        {
+          queryKey: ["workoutSettings"],
+          queryFn: async () => {
+            const { data } = await api.get("/workouts/settings");
+            return data as WorkoutServerState | null;
+          },
+          enabled: !!user,
+        },
+        {
+          queryKey: ["workout-log", todayKey],
+          queryFn: async () => {
+            const { data } = await api.get(`/workouts/today?date=${todayKey}`);
+            return data;
+          },
+          enabled: !!user,
+        },
+      ],
+    });
+
+  const isLoading = [meQuery, waterQuery, mealsQuery, workoutSettingsQuery, workoutLogQuery].some(
+    (query) => query.isLoading,
+  );
+
+  const profile = meQuery.data || user;
+  const meals = mealsQuery.data || [];
+  const waterToday = waterQuery.data;
+  const workoutState = workoutSettingsQuery.data;
+  const todayWorkout = workoutState
+    ? getWorkoutForDateFromState(workoutState, new Date())
+    : null;
+  const completedExercises = useMemo(() => {
+    if (!todayWorkout || todayWorkout.type !== "workout") return 0;
+
+    const todayLogs = (workoutState?.logs || []).filter(
+      (log) =>
+        log.date === todayKey &&
+        todayWorkout.exercises.some((exercise) => exercise.id === log.exerciseId),
+    );
+
+    return todayLogs.length;
+  }, [todayKey, todayWorkout, workoutState?.logs]);
+  const totalWorkoutExercises = todayWorkout?.type === "workout"
+    ? todayWorkout.exercises.length
+    : 0;
+
+  const nutritionStats = useMemo(
+    () =>
+      meals.reduce(
+        (acc, meal) => ({
+          kcal: acc.kcal + meal.kcal,
+          protein: acc.protein + meal.protein,
+          carbs: acc.carbs + meal.carbs,
+          fat: acc.fat + meal.fat,
+        }),
+        { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+      ),
+    [meals],
+  );
+
+  const macroGoals = {
+    protein: profile?.proteinGoal || 160,
+    carbs: profile?.carbsGoal || 250,
+    fat: profile?.fatGoal || 70,
+  };
+  const workoutCaloriesBurned = useMemo(() => {
+    if (!todayWorkout || todayWorkout.type !== "workout") return 0;
+
+    return Math.round(
+      (workoutState?.logs || [])
+        .filter(
+          (log) =>
+            log.date === todayKey &&
+            todayWorkout.exercises.some((exercise) => exercise.id === log.exerciseId),
+        )
+        .reduce((total, log) => {
+          const exercise = todayWorkout.exercises.find(
+            (item) => item.id === log.exerciseId,
+          );
+          if (!exercise) return total;
+
+          const reps = Number(exercise.reps || 0);
+          const sets = Number(exercise.sets || 0);
+          const weight = Number(log.actualWeight || exercise.weight || 0);
+
+          return total + Math.max(6, sets * reps * Math.max(weight, 1) * 0.03);
+        }, 0),
+    );
+  }, [todayKey, todayWorkout, workoutState?.logs]);
+  const calorieGoal =
+    profile?.calorieGoal || Math.round((profile?.weight || 70) * 30);
+  const caloriesLeft = Math.max(calorieGoal - nutritionStats.kcal + workoutCaloriesBurned, 0);
+  const progressPercent = calorieGoal
+    ? Math.min((nutritionStats.kcal / calorieGoal) * 100, 100)
+    : 0;
+  const targetWater = waterToday?.target || profile?.waterGoal || 2000;
+  const currentWater = waterToday?.total || 0;
+
+  const cardGoals: {
+    id: string;
+    titleId: TranslationKeys;
+    icon: LucideIcon;
+    progress: string;
+    progressPercentage: number;
+    remaining: string;
+    postfix: string;
+    route: string;
+  }[] = [
+    {
+      id: "water",
+      titleId: "dashboard.cards.water",
+      icon: GlassWater,
+      progress: `${currentWater}ml`,
+      progressPercentage: Math.min((currentWater / targetWater) * 100, 100),
+      remaining: `${Math.max(targetWater - currentWater, 0)}`,
+      postfix: "ml",
+      route: "/goals/water",
+    },
+    {
+      id: "workout",
+      titleId: "dashboard.cards.workout",
+      icon: Dumbbell,
+      progress:
+        todayWorkout?.type === "workout"
+          ? `${completedExercises}/${Math.max(totalWorkoutExercises, 1)}`
+          : "OFF",
+      progressPercentage:
+        todayWorkout?.type === "workout" && totalWorkoutExercises
+          ? Math.min((completedExercises / totalWorkoutExercises) * 100, 100)
+          : 100,
+      remaining:
+        todayWorkout?.type === "workout"
+          ? `${Math.max(totalWorkoutExercises - completedExercises, 0)}`
+          : "0",
+      postfix: "dashboard.cards.workout_postfix",
+      route: "/goals/workout",
+    },
+    {
+      id: "steps",
+      titleId: "dashboard.cards.steps",
+      icon: Footprints,
+      progress: "--",
+      progressPercentage: 0,
+      remaining: "--",
+      postfix: "dashboard.cards.steps_postfix",
+      route: "/goals/steps",
+    },
+    {
+      id: "sleep",
+      titleId: "dashboard.cards.sleep",
+      icon: BedDouble,
+      progress: "--",
+      progressPercentage: 0,
+      remaining: "--",
+      postfix: "h",
+      route: "/goals/sleep",
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <AppLoadingScreen
+        title="Carregando dashboard"
+        subtitle="Buscando seus dados reais do dia..."
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen px-8 text-neutral-900 relative overflow-hidden">
@@ -89,7 +243,7 @@ const Dashboard: React.FC = () => {
             "{t("dashboard.subtitle")}"
           </p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap justify-end">
           {cardGoals.map((card) => (
             <div
               key={card.id}
@@ -112,7 +266,7 @@ const Dashboard: React.FC = () => {
               <p className="text-xs text-neutral-500 uppercase font-bold">
                 {t("dashboard.meta_label")}
               </p>
-              <p className="font-semibold">{userStats.caloriesMeta} kcal</p>
+              <p className="font-semibold">{calorieGoal} kcal</p>
             </div>
           </div>
         </div>
@@ -162,7 +316,7 @@ const Dashboard: React.FC = () => {
                   {t("dashboard.consumed_label")}
                 </p>
                 <p className="text-2xl font-bold">
-                  {userStats.caloriesConsumed} kcal
+                  {Math.round(nutritionStats.kcal)} kcal
                 </p>
               </div>
             </div>
@@ -174,7 +328,16 @@ const Dashboard: React.FC = () => {
                 <p className="text-sm text-neutral-500">
                   {t("dashboard.total_meals")}
                 </p>
-                <p className="text-2xl font-bold">4/6</p>
+                <p className="text-2xl font-bold">{meals.length}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-emerald-100 rounded-2xl text-emerald-600">
+                <Dumbbell />
+              </div>
+              <div>
+                <p className="text-sm text-neutral-500">Treino compensado</p>
+                <p className="text-2xl font-bold">{workoutCaloriesBurned} kcal</p>
               </div>
             </div>
           </div>
@@ -187,18 +350,22 @@ const Dashboard: React.FC = () => {
           </h3>
 
           <div className="space-y-8 mt-6">
-            {Object.entries(userStats.macros).map(([key, macro]) => (
-              <div key={key}>
+            {[
+              { key: "protein", current: nutritionStats.protein, goal: macroGoals.protein, color: "bg-brand-accent" },
+              { key: "carbs", current: nutritionStats.carbs, goal: macroGoals.carbs, color: "bg-brand-pink" },
+              { key: "fats", current: nutritionStats.fat, goal: macroGoals.fat, color: "bg-yellow-400" },
+            ].map((macro) => (
+              <div key={macro.key}>
                 <div className="flex justify-between mb-2">
                   <span className="capitalize font-medium text-neutral-400">
-                    {key === "protein"
+                    {macro.key === "protein"
                       ? t("dashboard.macros.protein")
-                      : key === "carbs"
+                      : macro.key === "carbs"
                         ? t("dashboard.macros.carbs")
                         : t("dashboard.macros.fats")}
                   </span>
                   <span className="font-bold">
-                    {macro.current}g{" "}
+                    {Math.round(macro.current)}g{" "}
                     <span className="text-neutral-600 text-xs">
                       / {macro.goal}g
                     </span>
@@ -207,8 +374,8 @@ const Dashboard: React.FC = () => {
                 <div className="w-full h-2.5 bg-neutral-800 rounded-full overflow-hidden">
                   <div
                     className={`h-full ${macro.color} transition-all duration-700`}
-                    style={{ width: `${(macro.current / macro.goal) * 100}%` }}
-                  ></div>
+                    style={{ width: `${Math.min((macro.current / macro.goal) * 100, 100)}%` }}
+                  />
                 </div>
               </div>
             ))}
@@ -233,12 +400,13 @@ const Dashboard: React.FC = () => {
             progressPercentage,
             remaining,
             postfix,
+            route,
           }) => {
             return (
               <div
                 key={id}
                 className="bg-white/60 border border-neutral-200 p-6 rounded-3xl hover:border-brand-accent transition-all cursor-pointer group flex items-center justify-between"
-                onClick={() => navigate(`/goals/${id}`)}
+                onClick={() => navigate(route)}
               >
                 <div className="flex flex-col">
                   <div className="p-2 w-fit bg-neutral-100 rounded-lg group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition-colors">
@@ -252,6 +420,8 @@ const Dashboard: React.FC = () => {
                     <p className="text-neutral-500 text-xs mt-1">
                       {progressPercentage === 100 ? (
                         t("dashboard.cards.goal_reached")
+                      ) : remaining === "--" ? (
+                        "Sem dados sincronizados ainda"
                       ) : (
                         <>
                           {t("dashboard.cards.remaining")}
