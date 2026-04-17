@@ -4,7 +4,7 @@ import type {
   GoalType,
   ISODateTimeString,
   LanguageCode,
-} from "./common";
+} from './common';
 
 export type TutorialState = {
   dashboard: boolean;
@@ -49,6 +49,21 @@ export type UserPreferencesResponse = {
 
   tasksGoal: number;
   tasksEnabled: boolean;
+
+  nutritionDeactivatedAt: string | Date | null;
+  nutritionCooldownUntil: string | Date | null;
+
+  waterDeactivatedAt: string | Date | null;
+  waterCooldownUntil: string | Date | null;
+
+  sleepDeactivatedAt: string | Date | null;
+  sleepCooldownUntil: string | Date | null;
+
+  workoutDeactivatedAt: string | Date | null;
+  workoutCooldownUntil: string | Date | null;
+
+  tasksDeactivatedAt: string | Date | null;
+  tasksCooldownUntil: string | Date | null;
 
   tutorialState: TutorialState;
   notificationsEmail: string;
