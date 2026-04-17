@@ -12,7 +12,7 @@ import Goals from "../pages/Goals";
 import WaterGoal from "../pages/WaterGoal";
 import SleepGoal from "../pages/SleepGoal";
 import WorkoutGoal from "../pages/WorkoutGoal";
-import StepsGoal from "../pages/StepsGoal";
+import TasksGoal from "../pages/TasksGoal";
 import Meals from "../pages/Meals";
 
 export const router = createBrowserRouter([
@@ -43,7 +43,7 @@ export const router = createBrowserRouter([
               { path: "water", element: <WaterGoal /> },
               { path: "sleep", element: <SleepGoal /> },
               { path: "workout", element: <WorkoutGoal /> },
-              { path: "steps", element: <StepsGoal /> },
+              { path: "tasks", element: <TasksGoal /> },
             ],
           },
           { path: "meals", element: <Meals /> },

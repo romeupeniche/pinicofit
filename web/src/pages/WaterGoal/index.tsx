@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-// @ts-expect-error - import is correct
+﻿import React, { useState } from "react";
+// @ts-expect-error
 import { useForm } from "react-hook-form";
 import {
   Droplets, Plus, History, ChevronLeft, Trash2, Clock, GlassWater, CupSoda, Pencil,
+  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { goalsSchema, type GoalsFormData } from "../../schemas/Goals";
@@ -55,6 +56,29 @@ const WaterGoal: React.FC = () => {
 
   const logMutation = useMutation({
     mutationFn: (amount: number) => api.post("/water/log", { amount }),
+    onMutate: async (amount: number) => {
+      await queryClient.cancelQueries({ queryKey: ["water-today"] });
+      const previousToday = queryClient.getQueryData<any>(["water-today"]);
+      const optimisticLog = {
+        id: `optimistic-${Date.now()}`,
+        amount,
+        date: new Date().toISOString(),
+      };
+
+      queryClient.setQueryData(["water-today"], (current: any) => ({
+        ...(current || {}),
+        total: Number(current?.total || 0) + amount,
+        target: current?.target || user?.waterGoal || 3000,
+        logs: [optimisticLog, ...(current?.logs || [])],
+      }));
+
+      return { previousToday };
+    },
+    onError: (_error, _amount, context) => {
+      if (context?.previousToday) {
+        queryClient.setQueryData(["water-today"], context.previousToday);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["water-today"] });
       queryClient.invalidateQueries({ queryKey: ["water-history"] });
@@ -63,6 +87,27 @@ const WaterGoal: React.FC = () => {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/water/log/${id}`),
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ["water-today"] });
+      const previousToday = queryClient.getQueryData<any>(["water-today"]);
+      const deletedLog = previousToday?.logs?.find((log: any) => log.id === id);
+
+      queryClient.setQueryData(["water-today"], (current: any) => ({
+        ...(current || {}),
+        total: Math.max(
+          Number(current?.total || 0) - Number(deletedLog?.amount || 0),
+          0,
+        ),
+        logs: (current?.logs || []).filter((log: any) => log.id !== id),
+      }));
+
+      return { previousToday };
+    },
+    onError: (_error, _id, context) => {
+      if (context?.previousToday) {
+        queryClient.setQueryData(["water-today"], context.previousToday);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["water-today"] });
     },
@@ -86,10 +131,10 @@ const WaterGoal: React.FC = () => {
     deleteMutation.mutate(id);
   };
 
-  const closeTutorial = async () => {
+  const closeTutorial = async (dontShowAgain: boolean) => {
     setShowTutorial(false);
 
-    if (!user?.id || user.tutorialState?.water) return;
+    if (!dontShowAgain || !user?.id || user.tutorialState?.water) return;
 
     const { data } = await api.patch(`/users/${user.id}`, {
       tutorialState: {
@@ -104,8 +149,8 @@ const WaterGoal: React.FC = () => {
   if (loadingToday) {
     return (
       <AppLoadingScreen
-        title="Carregando agua"
-        subtitle="Buscando seu consumo de hoje..."
+        title={t("goals.water.loading_title")}
+        subtitle={t("goals.water.loading_subtitle")}
       />
     );
   }
@@ -127,6 +172,9 @@ const WaterGoal: React.FC = () => {
             <h1 className="text-2xl font-bold tracking-tighter text-brand-accent">
               {t("goals.water.title")}
             </h1>
+            <button onClick={() => navigate("/account", { state: { tab: "goals", section: "waterGoal" }, })} className="cursor-pointer md:h-12 md:w-12 w-9 h-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors ml-auto">
+              <Settings className="w-6 h-6 justify-self-center text-inherit" />
+            </button>
           </header>
           <section className="border border-neutral-200/50 flex-1 flex flex-col justify-center items-center bg-white/40 rounded-3xl p-8 text-center">
             <div className="relative inline-flex items-center justify-center mb-6">
@@ -262,7 +310,11 @@ const WaterGoal: React.FC = () => {
                   {historyData.map((item: any) => (
                     <div key={item.id} className="flex items-center justify-between p-4 bg-white/20 rounded-2xl border border-white/10 opacity-80 hover:opacity-100 transition-opacity">
                       <div className="flex flex-col">
-                        <span className="text-[10px] uppercase text-neutral-400 font-bold">{new Date(item.date).toLocaleDateString(lang, { weekday: 'long' })}</span>
+                        <span className="text-[10px] uppercase text-neutral-400 font-bold">
+                          {new Date(`${item.id}T12:00:00`).toLocaleDateString(lang, {
+                            weekday: "long",
+                          })}
+                        </span>
                         <span className="font-bold text-neutral-700">{item.amount}ml {t("goals.water.week_history.consumed")}</span>
                       </div>
                       <div className="flex flex-col items-end gap-1">
@@ -342,7 +394,8 @@ const WaterGoal: React.FC = () => {
               description: t("tutorials.water.steps.goal.description"),
             },
           ]}
-          onClose={closeTutorial}
+          dontShowAgainLabel={t("tutorials.do_not_show_again")}
+          onContinue={closeTutorial}
         />
       )}
     </div>
@@ -350,3 +403,6 @@ const WaterGoal: React.FC = () => {
 };
 
 export default WaterGoal;
+
+
+

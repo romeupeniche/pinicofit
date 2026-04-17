@@ -1,5 +1,6 @@
 import React from "react";
 import { CheckCircle2, Sparkles } from "lucide-react";
+import { useBodyScrollLock } from "../hooks/useBodyScrollLock";
 
 interface TutorialStep {
   title: string;
@@ -10,27 +11,32 @@ interface FeatureTutorialModalProps {
   title: string;
   subtitle: string;
   steps: TutorialStep[];
-  onClose: () => void;
+  onContinue: (dontShowAgain: boolean) => void;
   closeLabel: string;
+  dontShowAgainLabel: string;
 }
 
 const FeatureTutorialModal: React.FC<FeatureTutorialModalProps> = ({
   title,
   subtitle,
   steps,
-  onClose,
+  onContinue,
   closeLabel,
+  dontShowAgainLabel,
 }) => {
+  const [dontShowAgain, setDontShowAgain] = React.useState(false);
+  useBodyScrollLock(true);
+
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm"
+      className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm"
       onClick={(event) => {
         if (event.target === event.currentTarget) {
-          onClose();
+          onContinue(dontShowAgain);
         }
       }}
     >
-      <div className="w-full max-w-3xl rounded-[2rem] border border-white/10 bg-neutral-950 text-white shadow-2xl overflow-hidden">
+      <div className="w-full max-w-3xl rounded-4xl border border-white/10 bg-neutral-950 text-white shadow-2xl overflow-hidden">
         <div className="bg-brand-accent/10 border-b border-white/10 px-8 py-6">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-accent flex items-center gap-2">
             <Sparkles size={14} />
@@ -40,7 +46,7 @@ const FeatureTutorialModal: React.FC<FeatureTutorialModalProps> = ({
           <p className="mt-2 max-w-2xl text-sm text-neutral-300">{subtitle}</p>
         </div>
 
-        <div className="grid gap-4 px-8 py-8 md:grid-cols-2">
+        <div className="grid gap-4 px-8 py-8 md:grid-cols-2 max-h-[40vh] sm:max-h-[50vh] overflow-y-auto">
           {steps.map((step) => (
             <div
               key={step.title}
@@ -58,8 +64,17 @@ const FeatureTutorialModal: React.FC<FeatureTutorialModalProps> = ({
         </div>
 
         <div className="px-8 pb-8">
+          <label className="mb-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm text-neutral-300">
+            <input
+              type="checkbox"
+              checked={dontShowAgain}
+              onChange={(event) => setDontShowAgain(event.target.checked)}
+              className="h-4 w-4 accent-brand-accent"
+            />
+            {dontShowAgainLabel}
+          </label>
           <button
-            onClick={onClose}
+            onClick={() => onContinue(dontShowAgain)}
             className="w-full cursor-pointer rounded-2xl bg-brand-accent py-4 text-sm font-black uppercase tracking-[0.2em] text-black transition-transform active:scale-[0.98]"
           >
             {closeLabel}

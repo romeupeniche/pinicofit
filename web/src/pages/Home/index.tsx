@@ -40,7 +40,7 @@ export default function Home() {
             `}
           />
           <img
-            src="hero_home.webp"
+            src="/hero_home.webp"
             alt="Hero"
             fetchPriority="high"
             loading="eager"
@@ -55,3 +55,4 @@ export default function Home() {
     </main>
   );
 }
+

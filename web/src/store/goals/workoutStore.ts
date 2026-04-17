@@ -1,4 +1,4 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   startOfDay,
@@ -79,25 +79,6 @@ interface WorkoutState {
   checkAndGenerateSummaries: (userSettings: User) => void;
   setFullState: (data: Partial<WorkoutState>) => void;
 }
-
-const initialCycle: ICycleStep[] = [
-  {
-    id: "1",
-    label: "Treino A",
-    type: "workout",
-    name: "Peito e Tríceps",
-    exercises: [],
-    isConfigured: true,
-  },
-  {
-    id: "2",
-    label: "Descanso",
-    type: "rest",
-    name: "",
-    exercises: [],
-    isConfigured: true,
-  },
-];
 
 const initialDate = startOfDay(new Date()).toISOString();
 
@@ -719,7 +700,8 @@ export const DEFAULT_WORKOUT_PRESETS: IWorkoutPreset[] = [
 
 const buildUpdatedLogs = (logs: IExerciseLog[], newLog: IExerciseLog) => {
   const filteredLogs = logs.filter(
-    (log) => !(log.date === newLog.date && log.exerciseId === newLog.exerciseId),
+    (log) =>
+      !(log.date === newLog.date && log.exerciseId === newLog.exerciseId),
   );
 
   return [...filteredLogs, newLog];
@@ -811,7 +793,7 @@ export const useWorkoutStore = create<WorkoutState>()(
       logs: [],
       summaries: [],
       presets: DEFAULT_WORKOUT_PRESETS,
-      lastSavedCycle: JSON.stringify(initialCycle),
+      lastSavedCycle: JSON.stringify([]),
       lastSavedStartDate: initialDate,
       isLoading: false,
 
@@ -868,7 +850,8 @@ export const useWorkoutStore = create<WorkoutState>()(
       saveChanges: async (resetCycle = false) => {
         set({ isLoading: true });
 
-        const { cycle, history, logs, lastSavedStartDate, lastSavedCycle } = get();
+        const { cycle, history, logs, lastSavedStartDate, lastSavedCycle } =
+          get();
 
         try {
           const today = startOfDay(new Date());
@@ -893,44 +876,31 @@ export const useWorkoutStore = create<WorkoutState>()(
             endDate: yesterdayIso,
           });
 
-          // 1. SINCRONIZAÇÃO DAS SETTINGS
-          // Enviamos apenas o essencial para a tabela WorkoutSettings
           await api.patch("/workouts/settings", {
             cycle,
             history: updatedHistory,
             startDate: finalStartDate,
             logs,
-            // NÃO enviamos o 'history' aqui para evitar o Erro 413
           });
-
-          // 2. LOG DO CICLO ANTIGO (Se houver reset)
           if (resetCycle) {
-            // Usamos o lastSavedStartDate para registrar o período correto no log
             await api.post("/workouts/log", {
-              name: `Ciclo Finalizado`,
+              name: "Finalized Cycle",
               exercises: previousCycle,
               duration: 0,
-              date: yesterdayIso, // Data do fim do ciclo
-              startDate: lastSavedStartDate, // Data de início do ciclo que fechou
+              date: yesterdayIso,
+              startDate: lastSavedStartDate,
             });
           }
-
-          // 3. ATUALIZAÇÃO LOCAL
           set({
             history: updatedHistory,
             startDate: finalStartDate,
             lastSavedStartDate: finalStartDate,
             lastSavedCycle: JSON.stringify(cycle),
-            // Se você quiser manter o histórico visual no front, não resete o history aqui
-            // mas saiba que ele só existirá no LocalStorage deste navegador.
             isLoading: false,
           });
-
-          console.log("PinicoFit: Sincronizado!");
-        } catch (error) {
-          console.error("Erro na sincronização:", error);
+        } catch {
           set({ isLoading: false });
-          alert("Erro ao salvar no servidor.");
+          alert("Error saving changes to server.");
         }
       },
 

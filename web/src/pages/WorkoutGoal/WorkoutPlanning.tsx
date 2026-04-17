@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+﻿import React, { useState, useMemo, useCallback } from "react";
 import {
   Plus,
   Moon,
@@ -43,6 +43,7 @@ import PresetsModal from "./PresetsModal";
 import ConfirmExitModal from "./ConfirmExitModal";
 import SortableStep from "./SortableStep";
 import type { TranslationKeys } from "../../types/i18n";
+import { localizeWorkoutName } from "../../utils/workoutLocalization";
 
 const getWorkoutLabel = (index: number): string => {
   let label = "";
@@ -65,7 +66,7 @@ const WorkoutPlanning: React.FC = () => {
     getWorkoutForDate,
   } = useWorkoutStore();
 
-  const { t } = useSettingsStore();
+  const { t, lang } = useSettingsStore();
   const isMobile = useIsMobile();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showPresets, setShowPresets] = useState(false);
@@ -139,8 +140,12 @@ const WorkoutPlanning: React.FC = () => {
     updateCycleAndLabels(cycle.filter((s) => s.id !== id));
   };
 
+  const clearCycle = () => {
+    updateCycleAndLabels([]);
+  }
+
   return (
-    <div className="space-y-12 pb-32 overflow-x-hidden animate-in fade-in duration-500">
+    <div className="space-y-12 overflow-x-hidden">
       <section className="space-y-6">
         <div className="max-w-xl mx-auto flex flex-col gap-6 p-8 items-center justify-center text-center">
           <div className="space-y-2">
@@ -173,9 +178,9 @@ const WorkoutPlanning: React.FC = () => {
           <button
             onClick={() => !isLoading && setShowPresets(true)}
             disabled={isLoading}
-            className="flex items-center gap-3 px-6 py-3 transition-all group rounded-2xl border-2 bg-neutral-900 text-brand-accent border-transparent hover:border-brand-accent hover:scale-105 active:scale-95 disabled:opacity-50 disabled:grayscale"
+            className="enabled:cursor-pointer disabled:cursor-not-allowed flex items-center gap-3 px-6 py-3 transition-all group rounded-2xl border-2 bg-neutral-900 text-brand-accent border-transparent enabled:hover:border-brand-accent enabled:hover:scale-105 enabled:active:scale-95 disabled:opacity-50 disabled:grayscale"
           >
-            <Library size={20} className="group-hover:-rotate-12 transition-transform" />
+            <Library size={20} className="group-enabled:group-hover:-rotate-12 transition-transform" />
             <span className="text-xs font-black uppercase tracking-widest">
               {t("goals.workout.plan_window.explore_presets")}
             </span>
@@ -191,9 +196,14 @@ const WorkoutPlanning: React.FC = () => {
               {t("goals.workout.plan_window.cycle_structure.subtitle")}
             </p>
           </div>
-          <span className="text-[10px] font-bold bg-brand-accent/10 text-brand-accent px-3 py-1 rounded-full uppercase">
-            {cycle.length} {t("goals.workout.plan_window.cycle_structure.length")}
-          </span>
+          <div className="flex items-center gap-4">
+            <button disabled={isLoading} onClick={clearCycle} className="enabled:cursor-pointer disabled:cursor-not-allowed text-[10px] font-bold uppercase text-red-500 enabled:hover:bg-red-200 transition-colors bg-red-100 px-3 py-1 rounded-full disabled:grayscale-75">
+              {t("goals.workout.plan_window.cycle_structure.clear_btn")}
+            </button>
+            <span className="text-[10px] font-bold bg-brand-accent/10 text-brand-accent px-3 py-1 rounded-full uppercase">
+              {cycle.length} {t("goals.workout.plan_window.cycle_structure.length")}
+            </span>
+          </div>
         </header>
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -214,26 +224,24 @@ const WorkoutPlanning: React.FC = () => {
               <button
                 onClick={() => addStep("workout")}
                 disabled={isLoading}
-                className="h-12.5 flex items-center gap-2 px-4 py-2 transition-all group border-2 border-dashed border-neutral-200 rounded-2xl hover:border-brand-accent hover:text-brand-accent text-neutral-400"
+                className="enabled:cursor-pointer disabled:cursor-not-allowed h-12.5 flex items-center gap-2 px-4 py-2 transition-all group border-2 border-dashed border-neutral-200 rounded-2xl enabled:hover:border-brand-accent enabled:hover:text-brand-accent text-neutral-400"
               >
-                <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+                <Plus size={18} className="group-enabled:group-hover:rotate-90 transition-transform" />
                 <span className="text-[10px] font-black uppercase">{t("goals.workout.plan_window.cycle_structure.workout_add")}</span>
               </button>
 
               <button
                 onClick={() => addStep("rest")}
                 disabled={isLoading}
-                className="h-12.5 flex items-center gap-2 px-4 py-2 transition-all border-2 border-dashed border-neutral-200 rounded-2xl hover:border-neutral-900 hover:text-neutral-900 text-neutral-400"
+                className="enabled:cursor-pointer disabled:cursor-not-allowed h-12.5 flex items-center gap-2 px-4 py-2 transition-all border-2 border-dashed border-neutral-200 rounded-2xl enabled:hover:border-neutral-900 enabled:hover:text-neutral-900 text-neutral-400"
               >
                 <Moon size={16} />
-                <span className="text-[10px] font-black uppercase">Off</span>
+                <span className="text-[10px] font-black uppercase">OFF</span>
               </button>
             </div>
           </div>
         </DndContext>
       </section>
-
-      {/* PROJEÇÃO MENSAL */}
       <section className="space-y-6">
         <h2 className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] px-2 text-center">
           {t("goals.workout.plan_window.monthly_projection.title")}
@@ -259,7 +267,7 @@ const WorkoutPlanning: React.FC = () => {
 
                   <div
                     onClick={() => !isLoading && !isPastDay && workoutStep?.type === "workout" && setEditingId(workoutStep.id)}
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center text-[11px] font-black transition-all ${isToday ? "ring-2 ring-brand-accent ring-offset-2" : ""
+                    className={`w-6 h-6 md:w-9 md:h-9 rounded-xl flex items-center justify-center text-[11px] font-black transition-all ${isToday ? "ring-2 ring-brand-accent ring-offset-2" : ""
                       } ${workoutStep?.type === "rest"
                         ? "bg-neutral-100 text-neutral-500 border border-dashed border-neutral-300"
                         : workoutStep
@@ -267,23 +275,22 @@ const WorkoutPlanning: React.FC = () => {
                           : "bg-neutral-50 text-neutral-200"
                       }`}
                   >
-                    {workoutStep?.type === "rest" ? <Moon size={12} /> : workoutStep?.label || "—"}
+                    {workoutStep?.type === "rest" ? <Moon size={12} /> : workoutStep?.label || "-"}
                   </div>
 
-                  {/* Tooltip do Calendário */}
                   {workoutStep && !isMobile && !isLoading && (
                     <div className="absolute bottom-full mb-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 z-50 translate-y-2 group-hover:translate-y-0">
                       <div className="bg-neutral-900 text-white p-4 rounded-3xl shadow-2xl border border-white/10 w-48 overflow-hidden relative">
                         <p className="text-[8px] font-black text-brand-accent uppercase tracking-widest">
-                          {workoutStep.type === "rest" ? t(workoutStep.label as TranslationKeys) : `TREINO ${workoutStep.label}`}
+                          {workoutStep.type === "rest" ? t(workoutStep.label as TranslationKeys) : t("goals.workout.workout_label", { letter: workoutStep.label })}
                         </p>
                         <h4 className="text-sm font-black uppercase truncate mt-1">
-                          {workoutStep.name || (workoutStep.type === "rest" ? "OFF" : "Sem nome")}
+                          {localizeWorkoutName(workoutStep.name, lang) || (workoutStep.type === "rest" ? "OFF" : t("goals.workout.plan_window.unnamed_workout"))}
                         </h4>
                         <div className="mt-3 flex items-center gap-2 opacity-60">
                           {workoutStep.type === "rest" ? <Coffee size={10} /> : <LayoutList size={10} />}
                           <span className="text-[9px] font-bold uppercase">
-                            {workoutStep.type === "rest" ? "Recuperação" : `${workoutStep.exercises.length} Exercícios`}
+                            {workoutStep.type === "rest" ? t("goals.workout.plan_window.monthly_projection.recovery") : t("goals.workout.plan_window.monthly_projection.exercise_count", { count: String(workoutStep.exercises.length) })}
                           </span>
                         </div>
                       </div>
@@ -308,7 +315,7 @@ const WorkoutPlanning: React.FC = () => {
               }`}
           >
             {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} className="group-hover:rotate-90 transition-transform" />}
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+            <span className="md:block hidden text-[10px] font-black uppercase tracking-[0.2em]">
               {isLoading ? t("goals.workout.plan_window.saving") : t("goals.workout.plan_window.cycle_structure.actions.new_cycle")}
             </span>
           </button>
@@ -319,7 +326,7 @@ const WorkoutPlanning: React.FC = () => {
               className="flex items-center gap-3 px-6 py-4 rounded-full shadow-2xl border border-blue-500/10 bg-blue-500/20 backdrop-blur-md text-blue-500 hover:bg-blue-500 hover:text-white transition-all active:scale-95 cursor-pointer"
             >
               <Edit3 size={18} />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t("goals.workout.plan_window.cycle_structure.actions.quick_edit")}</span>
+              <span className="md:block hidden text-[10px] font-black uppercase tracking-[0.2em]">{t("goals.workout.plan_window.cycle_structure.actions.quick_edit")}</span>
             </button>
           )}
 
@@ -335,12 +342,13 @@ const WorkoutPlanning: React.FC = () => {
         </div>
       )}
 
-      {/* MODAIS */}
-      <PresetsModal cycle={cycle} setCycle={setCycle} setShowPresets={setShowPresets} showPresets={showPresets} />
-      <EditWorkoutModal cycle={cycle} editingId={editingId} setCycle={setCycle} setEditingId={setEditingId} />
+      {showPresets && <PresetsModal cycle={cycle} setCycle={setCycle} setShowPresets={setShowPresets} />}
+      {editingId && <EditWorkoutModal cycle={cycle} editingId={editingId} setCycle={setCycle} setEditingId={setEditingId} />}
       <ConfirmExitModal hasChanges={hasChanges()} rollbackChanges={rollbackChanges} isLoading={isLoading} />
     </div>
   );
 };
 
 export default WorkoutPlanning;
+
+

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { api } from "../services/api";
 import AppLoadingScreen from "../components/AppLoadingScreen";
+import { useSettingsStore } from "../store/settingsStore";
 import {
   DEFAULT_WORKOUT_PRESETS,
   useWorkoutStore,
@@ -11,6 +12,7 @@ import {
 
 export const ProtectedRoute = () => {
   const { user, token, _hasHydrated, updateProfile } = useAuthStore();
+  const { t } = useSettingsStore();
   const location = useLocation();
   const setFullState = useWorkoutStore((state) => state.setFullState);
   const canBootstrap = _hasHydrated && Boolean(token);
@@ -66,6 +68,22 @@ export const ProtectedRoute = () => {
         },
         enabled: canBootstrap,
       },
+      {
+        queryKey: ["tasks", todayKey],
+        queryFn: async () => {
+          const { data } = await api.get(`/tasks/today?date=${todayKey}`);
+          return data;
+        },
+        enabled: canBootstrap,
+      },
+      {
+        queryKey: ["sleep-today", todayKey],
+        queryFn: async () => {
+          const { data } = await api.get(`/sleep/today?date=${todayKey}`);
+          return data;
+        },
+        enabled: canBootstrap,
+      },
     ],
   });
 
@@ -101,7 +119,12 @@ export const ProtectedRoute = () => {
   }, [setFullState, workoutPresetsQuery.data, workoutSettingsQuery.data]);
 
   if (!_hasHydrated)
-    return <AppLoadingScreen fullScreen title="Entrando" subtitle="Preparando seu espaco..." />;
+    return (
+      <AppLoadingScreen
+        title={t("app_loading.entering_title")}
+        subtitle={t("app_loading.entering_subtitle")}
+      />
+    );
 
   if (!token) {
     return <Navigate to="/sign-in" state={{ from: location }} replace />;
@@ -114,9 +137,9 @@ export const ProtectedRoute = () => {
   if (isBootstrapping) {
     return (
       <AppLoadingScreen
-        fullScreen
-        title="Sincronizando"
-        subtitle="Carregando dashboard, treino, agua e refeicoes..."
+        title={t("app_loading.syncing_title")}
+        subtitle={t("app_loading.syncing_subtitle")}
+        darkMode={location.pathname === "/goals"}
       />
     );
   }

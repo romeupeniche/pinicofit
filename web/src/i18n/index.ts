@@ -10,6 +10,7 @@ export const translate = (
   key: TranslationKeys,
   vars: Record<string, string> = {},
 ): string => {
+  if (!key) return "";
   const keys = key.split(".");
   let text: any = translations[lang];
   for (const k of keys) {

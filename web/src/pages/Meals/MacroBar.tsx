@@ -13,7 +13,7 @@ const MacroBar: React.FC<MacroBarProps> = ({ label, current, goal, color }) => (
       <span className="text-[9px] font-black uppercase text-neutral-500">
         {label}
       </span>
-      <span className="text-[10px] font-bold text-neutral-300">{current}g</span>
+      <span className="text-[10px] font-bold text-neutral-400">{current}g</span>
     </div>
     <div className="h-1 bg-neutral-950 rounded-full overflow-hidden">
       <div

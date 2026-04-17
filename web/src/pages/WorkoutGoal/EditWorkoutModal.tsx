@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-// @ts-expect-error - import is correct
+﻿import React, { useEffect, useState } from "react";
+// @ts-expect-error
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import {
   workoutSchema,
@@ -10,13 +10,14 @@ import {
   useWorkoutStore,
   type ICycleStep,
 } from "../../store/goals/workoutStore";
-import { Library, Plus, Save, X, Loader2 } from "lucide-react"; // Adicionado Loader2
+import { Library, Plus, Save, X, Loader2 } from "lucide-react";
 import { useSettingsStore } from "../../store/settingsStore";
 import { EXERCISE_CATEGORIES } from "../../constants/workout-metrics";
 import type { TranslationKeys } from "../../types/i18n";
 import { convertFromKg, convertToKg } from "../../utils/weightUnitConverter";
-import { useMutation, useQueryClient } from "@tanstack/react-query"; // Adicionado
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../services/api";
+import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 
 interface IProps {
   editingId: string | null;
@@ -34,6 +35,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
   const { addPreset, presets } = useWorkoutStore();
   const { t, weightUnit } = useSettingsStore();
   const queryClient = useQueryClient();
+  useBodyScrollLock(true);
 
   const { register, control, handleSubmit, getValues, reset } =
     useForm<WorkoutFormValues>({
@@ -49,14 +51,12 @@ const EditWorkoutModal: React.FC<IProps> = ({
     name: "exercises",
   });
 
-  // Mutation para salvar o preset no banco de dados
   const presetMutation = useMutation({
     mutationFn: async (newPreset: any) => {
       const { data } = await api.post("/workouts/presets", newPreset);
       return data;
     },
     onSuccess: () => {
-      // Invalida o cache para garantir que a lista de presets esteja atualizada
       queryClient.invalidateQueries({ queryKey: ["workoutSettings"] });
     },
   });
@@ -196,7 +196,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
             <button
               type="button"
               onClick={handleSaveAsPreset}
-              disabled={presetMutation.isPending || !canApply || !isPresetNameUnique}
+              disabled={presetMutation.isPending || !canApply}
               className={`p-3 bg-neutral-900 text-brand-accent rounded-2xl transition-all
                 ${canApply && isPresetNameUnique && !presetMutation.isPending ? "cursor-pointer hover:scale-105 active:scale-95" : "cursor-not-allowed opacity-20"}
                 `}
@@ -238,16 +238,11 @@ const EditWorkoutModal: React.FC<IProps> = ({
               }
               className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-brand-accent text-neutral-900 rounded-xl text-[10px] font-black uppercase hover:scale-105 transition-all"
             >
-              <Plus size={14} /> Add{" "}
-              {t("goals.workout.plan_window.edit_workout_modal.exercise")}s
+              <Plus size={14} /> {t("goals.workout.plan_window.edit_workout_modal.add_exercises")}
             </button>
           </div>
           <div className="space-y-4">
-            {fields.map((
-              // @ts-expect-error - types are correct
-              field,
-              // @ts-expect-error - types are correct
-              index) => (
+            {fields.map((field: any, index: number) => (
               <div
                 key={field.id}
                 className="p-6 bg-neutral-50 rounded-4xl border border-neutral-100 space-y-4 relative group/item"
@@ -364,7 +359,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
                     <input
                       {...register(`exercises.${index}.rest`)}
                       placeholder="0:00"
-                      title="Format MM:SS (ex: 1:30)"
+                      title={t("goals.workout.plan_window.edit_workout_modal.inputs.rest_format")}
                       inputMode="numeric"
                       className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
                       onChange={(e) => {
@@ -411,9 +406,9 @@ const EditWorkoutModal: React.FC<IProps> = ({
                           "goals.workout.plan_window.edit_workout_modal.inputs.technique.standard",
                         )}
                       </option>
-                      <option value="Bi-set">Bi-set</option>
-                      <option value="Drop-set">Drop-set</option>
-                      <option value="Rest-Pause">Rest-Pause</option>
+                      <option value="Bi-set">{t("goals.workout.plan_window.edit_workout_modal.inputs.technique.bi_set")}</option>
+                      <option value="Drop-set">{t("goals.workout.plan_window.edit_workout_modal.inputs.technique.drop_set")}</option>
+                      <option value="Rest-Pause">{t("goals.workout.plan_window.edit_workout_modal.inputs.technique.rest_pause")}</option>
                     </select>
                   </div>
                 </div>
@@ -458,3 +453,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
 };
 
 export default EditWorkoutModal;
+
+
+
+

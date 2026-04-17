@@ -1,5 +1,6 @@
 export interface BackendFood {
   id: string;
+  userId?: string | null;
   brandName?: string;
   brName: string;
   enName: string;
@@ -13,5 +14,9 @@ export interface BackendFood {
   sugar: number;
   allowedMeasures: Record<string, number>;
   useML: boolean;
+  density?: number;
+  category?: string;
+  isPublic?: boolean;
+  isFavorite?: boolean;
   source: "TACO" | "PINICODB" | "USER";
 }

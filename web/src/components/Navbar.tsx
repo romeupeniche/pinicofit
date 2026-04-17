@@ -5,7 +5,7 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { useSettingsStore } from "../store/settingsStore";
 
-const Navbar: React.FC = () => {
+const Navbar: React.FC<{ darkMode: boolean }> = ({ darkMode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useSettingsStore();
@@ -26,7 +26,7 @@ const Navbar: React.FC = () => {
   return (
     <header className="p-4 flex justify-between items-center max-w-7xl mx-auto w-full">
       <span
-        className={`flex font-bold ${isHomePage ? "text-2xl" : "text-3xl"} items-center gap-2 ${!isOnboarding && "cursor-pointer"}`}
+        className={`flex font-bold ${isHomePage ? "text-2xl" : "text-3xl"} items-center gap-2 ${!isOnboarding && "cursor-pointer"} ${darkMode ? "text-white" : "text-black"}`}
         onClick={handleLogoRedirect}
       >
         PinicoFit <Flame size={isHomePage ? 28 : 38} color="#aa3bff" />

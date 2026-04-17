@@ -1,11 +1,13 @@
-import React from "react";
+﻿import React from "react";
 import { Bell, CheckCircle2, Mail, Save } from "lucide-react";
-// @ts-expect-error - import is correct
+// @ts-expect-error
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
 import { api } from "../../services/api";
 import { useSettingsStore } from "../../store/settingsStore";
+import { useSearchParams } from "react-router-dom";
+import { useAccountUnsavedChanges } from "./AccountUnsavedChangesContext";
 
 type NotificationFormData = {
   notificationsEmail: string;
@@ -14,10 +16,18 @@ type NotificationFormData = {
 };
 
 const Notifications: React.FC = () => {
-  const { t } = useSettingsStore();
+  const { t, lang } = useSettingsStore();
   const { user, updateProfile } = useAuthStore();
+  const { setHasUnsavedChanges } = useAccountUnsavedChanges();
   const queryClient = useQueryClient();
-  const { register, handleSubmit, watch } = useForm<NotificationFormData>({
+  const [searchParams, setSearchParams] = useSearchParams();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { isDirty },
+  } = useForm<NotificationFormData>({
     defaultValues: {
       notificationsEmail: user?.notificationsEmail || user?.email || "",
       emailAlertsEnabled: user?.emailAlertsEnabled ?? true,
@@ -25,33 +35,75 @@ const Notifications: React.FC = () => {
     },
   });
 
+  React.useEffect(() => {
+    setHasUnsavedChanges(isDirty);
+    return () => setHasUnsavedChanges(false);
+  }, [isDirty, setHasUnsavedChanges]);
+
   const saveMutation = useMutation({
     mutationFn: async (data: NotificationFormData) => {
-      const response = await api.patch(`/users/${user?.id}`, data);
-      return response.data;
-    },
-    onSuccess: (data) => {
-      updateProfile(data);
-      queryClient.invalidateQueries({ queryKey: ["me"] });
-    },
-  });
-
-  const verifyMutation = useMutation({
-    mutationFn: async () => {
+      const needsReverify =
+        (data.notificationsEmail || "").trim() !==
+        (user?.notificationsEmail || user?.email || "").trim();
       const response = await api.patch(`/users/${user?.id}`, {
-        notificationsEmail: watch("notificationsEmail"),
-        isEmailVerified: true,
+        ...data,
+        isEmailVerified: needsReverify ? false : user?.isEmailVerified,
       });
       return response.data;
     },
     onSuccess: (data) => {
       updateProfile(data);
+      reset({
+        notificationsEmail: data?.notificationsEmail || data?.email || "",
+        emailAlertsEnabled: data?.emailAlertsEnabled ?? true,
+        emailReportsEnabled: data?.emailReportsEnabled ?? false,
+      });
       queryClient.invalidateQueries({ queryKey: ["me"] });
+      setHasUnsavedChanges(false);
     },
   });
 
+  const verifyMutation = useMutation({
+    mutationFn: async () => {
+      const response = await api.post(
+        `/users/${user?.id}/notifications/send-verification`,
+        { lang },
+      );
+      return response.data;
+    },
+  });
+
+  const reportMutation = useMutation({
+    mutationFn: async () => {
+      const response = await api.post(`/users/${user?.id}/notifications/test-report`, {
+        lang,
+        recipientEmail: user?.notificationsEmail || user?.email,
+        recipientName: user?.name,
+      });
+      return response.data;
+    },
+  });
+
+  React.useEffect(() => {
+    const token = searchParams.get("verifyEmailToken");
+    if (!token || !user?.id) return;
+
+    api
+      .get(`/users/verify-email?token=${token}`)
+      .then(({ data }) => {
+        updateProfile(data);
+        queryClient.invalidateQueries({ queryKey: ["me"] });
+        searchParams.delete("verifyEmailToken");
+        setSearchParams(searchParams, { replace: true });
+      })
+      .catch(() => {
+        searchParams.delete("verifyEmailToken");
+        setSearchParams(searchParams, { replace: true });
+      });
+  }, [queryClient, searchParams, setSearchParams, updateProfile, user?.id]);
+
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div>
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-xl font-bold">
@@ -71,7 +123,7 @@ const Notifications: React.FC = () => {
         className="max-w-2xl space-y-6"
       >
         <div className="rounded-3xl border border-neutral-200 bg-white/60 p-6">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col-reverse items-start justify-between gap-4">
             <div>
               <p className="text-sm font-bold text-neutral-800 flex items-center gap-2">
                 <Mail size={16} className="text-brand-accent" />
@@ -90,11 +142,16 @@ const Notifications: React.FC = () => {
               <button
                 type="button"
                 onClick={() => verifyMutation.mutate()}
-                className="cursor-pointer rounded-full bg-brand-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-brand-accent"
+                disabled={
+                  isDirty || !watch("notificationsEmail")?.trim() || saveMutation.isPending
+                }
+                className="cursor-pointer rounded-full bg-brand-accent/10 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-brand-accent disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {verifyMutation.isPending
-                  ? t("account.notifications.verifying")
-                  : t("account.notifications.verify")}
+                {isDirty
+                  ? t("account.notifications.save_before_verify")
+                  : verifyMutation.isPending
+                    ? t("account.notifications.verifying")
+                    : t("account.notifications.verify")}
               </button>
             )}
           </div>
@@ -134,13 +191,24 @@ const Notifications: React.FC = () => {
 
         <button
           type="submit"
-          disabled={saveMutation.isPending}
-          className="w-fit px-8 py-3 bg-neutral-900 text-white rounded-xl font-bold hover:bg-brand-accent transition-all cursor-pointer flex items-center gap-2 group"
+          disabled={saveMutation.isPending || !isDirty}
+          className="w-fit px-8 py-3 bg-neutral-900 disabled:opacity-50 text-white rounded-xl font-bold enabled:hover:bg-brand-accent transition-all cursor-pointer disabled:cursor-not-allowed flex items-center gap-2 group"
         >
-          <Save size={18} className="group-hover:scale-110 transition-transform" />
+          <Save
+            size={18}
+            className="group-enabled:group-hover:scale-110 transition-transform"
+          />
           {saveMutation.isPending
             ? t("account.notifications.saving")
-            : t("account.profile.save_updates")}
+            : t("account.save_updates")}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => reportMutation.mutate()}
+          className="ml-3 w-fit px-8 py-3 bg-white text-neutral-900 rounded-xl font-bold border border-neutral-200 hover:border-brand-accent transition-all cursor-pointer"
+        >
+          {reportMutation.isPending ? t("account.notifications.sending_report") : t("account.notifications.test_report")}
         </button>
       </form>
     </div>
@@ -148,3 +216,6 @@ const Notifications: React.FC = () => {
 };
 
 export default Notifications;
+
+
+

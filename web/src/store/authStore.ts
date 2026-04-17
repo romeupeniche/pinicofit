@@ -24,13 +24,27 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         set({ user: null, token: null });
-        localStorage.removeItem("auth-storage");
+        ["auth-storage", "user-settings", "pinicofit-workout-storage"].forEach(
+          (key) => localStorage.removeItem(key),
+        );
       },
 
       updateProfile: (data) =>
-        set((state) => ({
-          user: state.user ? { ...state.user, ...data } : null,
-        })),
+        set((state) => {
+          if (!state.user) return { user: null };
+          const updatedUser = { ...state.user };
+
+          if (data.preferences) {
+            updatedUser.preferences = {
+              ...updatedUser.preferences,
+              ...data.preferences,
+            };
+          } else {
+            Object.assign(updatedUser, data);
+          }
+
+          return { user: updatedUser };
+        }),
     }),
     {
       name: "auth-storage",

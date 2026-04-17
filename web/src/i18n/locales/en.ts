@@ -1,7 +1,10 @@
-export const en = {
+﻿export const en = {
   dashboard: {
     title: "Today's Evolution",
     subtitle: "The shape doesn't rest, do you?",
+    loading_title: "Loading dashboard",
+    loading_subtitle: "Fetching your real daily data...",
+    workout_compensated: "Workout compensated",
     macros: {
       protein: "Proteins",
       carbs: "Carbohydrates",
@@ -16,11 +19,12 @@ export const en = {
     cards: {
       water: "Water",
       workout: "Workout",
-      steps: "Steps",
+      tasks: "Tasks",
       sleep: "Sleep",
       goal_reached: "Goal reached today",
       remaining: "Still missing ",
-      steps_postfix: " steps",
+      no_synced_data: "No synced data yet",
+      tasks_postfix: " tasks",
       workout_postfix: " exercises",
     },
   },
@@ -33,19 +37,43 @@ export const en = {
   account: {
     title: "Account",
     subtitle: "Manage your experience",
+    save_updates: "Save Updates",
+    unsaved_changes: {
+      title: "You have unsaved changes",
+      description: "If you leave now, your changes will not be saved.",
+      stay: "Stay here",
+      leave: "Leave anyway",
+    },
+    logout_confirm: {
+      title: "Sign out?",
+      description:
+        "If you leave now, your current session will be closed on this device.",
+      cancel: "Cancel",
+      confirm: "Sign out",
+    },
     sidebar: {
       profile: "Profile",
       goals: "Goals",
       preferences: "Preferences",
-      security: "Security",
       notifications: "Notifications",
+      help: "Help & reports",
+      about: "About",
       sign_out: "Sign Out",
     },
     profile: {
       title: "Profile",
       name: "Name",
+      age: "Age",
+      weight: "Weight",
+      height: "Height",
+      gender: "Gender",
+      goal: "Goal",
+      activity_level: "Activity level",
+      unknown_user: "User",
+      warning_recalculate:
+        "When you change weight, height, age, gender, goal, or activity level, all of your goals will be recalculated.",
       change_picture: "Change Picture",
-      save_updates: "Save Updates",
+      saving: "Saving profile...",
     },
     goals: {
       title: "Goal Settings",
@@ -55,7 +83,7 @@ export const en = {
         water: "Water Goal (ml)",
         calories: "Daily Calories (kcal)",
         sleep: "Sleep Goal (hours)",
-        steps: "Steps Goal",
+        tasks: "Tasks Goal",
         protein: "Protein (g)",
         carbs: "Carbs (g)",
         fat: "Fat (g)",
@@ -70,25 +98,60 @@ export const en = {
       language: {
         title: "App Language",
         subtitle: "Choose your preferred language",
+        options: {
+          en: "English (US)",
+          br: "Português (BR)",
+          es: "Español",
+        },
       },
       weight_unit: {
         title: "Weight Unit",
         subtitle: "Choose your preferred weight unit",
       },
+      saving: "Saving preferences...",
     },
     notifications: {
       title: "Notifications",
       subtitle: "Control the email used for alerts and monthly reports.",
       email_label: "Notification Email",
-      email_hint: "Use the same email you used to sign in, or another email you actually check.",
+      email_hint:
+        "Use the same email you used to sign in, or another email you actually check.",
       verified: "Verified",
       verify: "Verify email",
       verifying: "Verifying...",
+      save_before_verify: "Save email first",
       alerts: "Alerts",
       alerts_hint: "Receive reminders and important updates about your goals.",
       reports: "Monthly reports",
-      reports_hint: "Get a monthly progress summary for water, meals and workouts.",
+      reports_hint:
+        "Get a monthly progress summary for water, meals and workouts.",
       saving: "Saving notifications...",
+      test_report: "Send test report",
+      sending_report: "Sending report...",
+    },
+    help: {
+      title: "Help & reports",
+      subtitle:
+        "Send a message straight from the app so we can review bugs, feedback, or any issue you found.",
+      subject: "Subject",
+      subject_placeholder: "Example: Problem when saving meals",
+      message: "Message",
+      message_placeholder:
+        "Explain what happened, what you expected, and any detail that may help reproduce the issue.",
+      send: "Send message",
+      sending: "Sending message...",
+    },
+    about: {
+      title: "About",
+      subtitle: "Learn more about PinicoFit and its creators.",
+      app_proposal_title: "The Proposal",
+      app_proposal_text:
+        "PinicoFit was born to simplify health tracking. Focus on consistency, not perfection. Track your workouts, nutrition, and habits in a simple and intuitive way.",
+      developer_title: "The Developer",
+      developer_bio:
+        "Full-stack developer passionate about building tools that improve people's lives through technology and good design.",
+      links_title: "Presence & Code",
+      luana: "For you, Luana",
     },
   },
   home: {
@@ -134,7 +197,8 @@ export const en = {
     goal: "What is your goal?",
     activity_level: {
       title: "Activity level",
-      helper: "This helps us calculate calories, water and macros more accurately.",
+      helper:
+        "This helps us calculate calories, water and macros more accurately.",
       options: {
         sedentary: "Sedentary",
         light: "Light activity (1-2x/week)",
@@ -157,10 +221,320 @@ export const en = {
     finalize_button: "Complete Profile",
     loading: "Saving Information...",
     logout_button: "Wrong account? Sign out",
+    placeholders: {
+      age: "Ex: 25",
+      weight: "Ex: 75.5",
+      height: "Ex: 175",
+    },
+    user_missing: "User not found. Please sign in again.",
+    unexpected_error: "Unexpected error while saving your profile",
+  },
+  meals: {
+    loading_title: "Loading meals",
+    loading_subtitle: "Fetching your meals and macros for today...",
+    remaining_calories: "Remaining calories",
+    saved_meals: "Saved meals",
+    no_saved_meals: "No saved meals yet.",
+    quick_add: "Quick add",
+    history: {
+      today: "Today",
+      yesterday: "Yesterday",
+    },
+    buckets: {
+      breakfast: "Breakfast",
+      lunch: "Lunch",
+      snack: "Snack",
+      dinner: "Dinner",
+      breakfast_empty: "Nothing logged in the morning",
+      lunch_empty: "Nothing logged for lunch",
+      snack_empty: "Nothing logged for snacks",
+      dinner_empty: "Nothing logged for dinner",
+      pending: "Pending",
+    },
+    nutrients: {
+      sugar: "Sugar",
+      sodium: "Sodium",
+      within_target: "Within the recommended target for today.",
+      above_target: "Above the recommended target for today.",
+    },
+    modal: {
+      add_title: "Add",
+      food: "Food",
+      meal: "Meal",
+      search_placeholder_food: "Search foods...",
+      search_placeholder_meal: "Search meals...",
+      global: "Global",
+      database: "PinicoDB",
+      taco: "TACO",
+      my_items: "My items",
+      created_foods: "My foods",
+      favorite_foods: "Saved foods",
+      created_meals: "My meals",
+      favorite_meals: "Saved meals",
+      no_results: "No items found.",
+      end_results: "End of results",
+      create_food: "Create food",
+      create_meal: "Create meal",
+      favorite: "Save item",
+      unfavorite: "Remove from saved",
+      edit: "Edit",
+      delete: "Delete",
+      public_label: "Public",
+      created_section: "Created",
+      saved_section: "Saved",
+      collapse: "Collapse",
+      expand: "Expand",
+    },
+    bucket_modal: {
+      meal_label: "Meal",
+      add: "Add",
+      empty: "No items in this meal yet.",
+      amount_and_kcal: "{{amount}} g/ml • {{kcal}} kcal",
+    },
+    measurement: {
+      generic: "Generic",
+      adjust_quantity: "Adjust quantity",
+      choose_measure: "Choose measure",
+      nutrition: "Nutrition facts",
+      proteins: "Proteins",
+      carbs: "Carbs",
+      fats: "Fats",
+      fibers: "Fibers",
+      total_weight: "Total weight",
+      watch_out: "Pay attention",
+      sugar_warning:
+        "This serving already uses about {{percent}}% of your daily sugar target.",
+      sodium_warning:
+        "This serving already uses about {{percent}}% of your daily sodium target.",
+      unit_suffix_g: "g",
+      unit_suffix_ml: "ml",
+      confirm_add: "Add",
+      confirm_save: "Save",
+    },
+    editor: {
+      new_food: "New food",
+      edit_food: "Edit food",
+      new_meal: "New meal",
+      edit_meal: "Edit meal",
+      name: "Name",
+      english_name: "English name",
+      spanish_name: "Spanish name",
+      description: "Description",
+      brand: "Brand",
+      calories: "Calories",
+      protein: "Protein",
+      carbs: "Carbs",
+      fat: "Fats",
+      fiber: "Fibers",
+      sodium: "Sodium",
+      sugar: "Sugar",
+      category: "Category",
+      density: "Density",
+      uses_ml: "Uses ml",
+      public_toggle: "Make public",
+      search_foods: "Search foods to build this meal",
+      meal_items: "Meal items",
+      empty_items: "Add at least one food to build your meal.",
+      add_food: "Add food",
+      save: "Save",
+      cancel: "Cancel",
+      remove: "Remove",
+      quantity: "Quantity",
+      no_description: "No description",
+    },
   },
   goals: {
+    loading_title: "Preparing your daily plan...",
+    loading_subtitle: "Syncing your streaks and counting your progress.",
+    title: "The Forge",
+    subtitle: "Your contract with your future self.",
+    today_contract: "Today's Contract",
+    disabled_streak: "Streak Disabled",
+    consistency_days: "Days of Consistency",
+    cards: {
+      nutrition: "Nutrition",
+      nutrition_subtitle: "Fulfill the daily nutritional plan.",
+      tasks: "Focus Tasks",
+      tasks_subtitle: "Execute high-priority obligations.",
+      water: "Water",
+      sleep: "Sleep",
+      workout: "Workout",
+      streak_shield: "Streak Shield",
+      left_lives:
+        "You have {{lives}} resurrections available this month. Use them wisely{{name}}.",
+    },
+    help_modal: {
+      main: {
+        title: "The Daily Contract",
+        rules_summary:
+          "The Daily Contract defines the rules to maintain your streak.",
+        status_total: {
+          label: "Goal Fully Met",
+          details: "Objective 100% completed",
+        },
+        status_guaranteed: {
+          label: "Contract Guaranteed",
+          details: "Within allowed tolerance",
+        },
+        status_risk: {
+          label: "Below Minimum",
+          details: "Risk of breaking contract",
+        },
+        headers: {
+          min_goal: "Min / Goal (Tol.)",
+          realized: "Achieved",
+        },
+        rows: {
+          nutrition: "Nutrition",
+          water: "Water",
+          sleep: "Sleep",
+          workout: "Workout",
+          tasks: "Tasks",
+          rest: "Rest Day",
+          disabled: "Disabled",
+        },
+        footer: {
+          warning: "WARNING:",
+          note: "NOTE:",
+          no_lives:
+            "You have no more Lives available this month. If the day ends with any goal in red, your streak will be reset immediately.",
+          with_lives:
+            "If the day ends in red, a life will be automatically consumed to protect the streak. {{lives}} life(s) remaining.",
+        },
+      },
+      flame: {
+        title: "Flame Status",
+        description:
+          "The flame reflects your daily commitment. Your current status is determined by meeting the tolerances of all your active goals.",
+        off: {
+          label: "Extinguished (Gray)",
+          details:
+            "Pending. The minimum contract requirement hasn't been met yet today.",
+        },
+        streak: {
+          label: "Streak Flame (Orange)",
+          details:
+            "Active. You have met the tolerances and secured your streak maintenance.",
+        },
+        supreme: {
+          label: "Supreme Flame (Blue)",
+          details:
+            "Maximum Level. Unlocked only when ALL goals are enabled and ALL tolerances are set to 100%.",
+        },
+        potential: {
+          label: "Current Potential",
+          supreme: "Supreme Level",
+          standard: "Standard Level",
+        },
+      },
+      nutrition: {
+        title: "Nutrition",
+        description:
+          "Caloric control is the foundation of any physical transformation. Staying within the tolerance range ensures you stay on track with the plan.",
+        status: {
+          current: "Currently",
+          ideal: "Ideal Goal",
+          minimum: "Minimum (Tol. {{pct}}%)",
+        },
+        button: {
+          disabled: "Focus Disabled",
+          completed: "Diet Met",
+          adjust: "Adjust Nutrients",
+          log: "Log Meal",
+        },
+      },
+      water: {
+        title: "Water",
+        description:
+          "Hydration is essential for metabolism and performance. Hitting your water goal ensures your body functions at a high level.",
+        status: {
+          current: "Currently",
+          ideal: "Ideal Goal",
+          minimum: "Minimum (Tol. {{pct}}%)",
+        },
+        button: {
+          disabled: "Focus Disabled",
+          completed: "Hydration Completed",
+          complete_ideal: "Complete Ideal",
+          drink: "Drink Water",
+        },
+      },
+      sleep: {
+        title: "Sleep",
+        description:
+          "Rest is where the results happen. Less sleep means lower performance and worse muscle recovery.",
+        status: {
+          current: "Currently",
+          ideal: "Ideal Goal",
+          minimum: "Minimum (Tol. {{pct}}%)",
+        },
+        button: {
+          disabled: "Focus Disabled",
+          completed: "Rest Up to Date",
+          log: "Log Sleep",
+        },
+      },
+      workout: {
+        title: "Workout",
+        description:
+          "Consistency beats intensity. Meeting the minimum exercise volume keeps the habit alive even on the toughest days.",
+        status: {
+          completed_exercises: "Exercises Completed",
+          minimum: "Minimum (Tol. {{pct}}%)",
+          min_exercises: "{{count}} exercises",
+          progress: "Progress",
+        },
+        button: {
+          disabled: "Focus Disabled",
+          completed: "Workout Finished",
+          rest_day: "Rest Day",
+          complete_remaining: "Complete Remaining",
+          hit_goal: "Hit the Goal",
+        },
+      },
+      tasks: {
+        title: "Focus Tasks",
+        description:
+          "Focus tasks are your non-physical victories. Fulfilling your daily obligations builds the necessary discipline.",
+        status: {
+          completed: "Completed",
+          progress: "Progress",
+        },
+        button: {
+          disabled: "Focus Disabled",
+          completed: "Total Focus Achieved",
+          finish: "Finish Pendencies",
+        },
+      },
+      streak_shield: {
+        title: "Streak Shield",
+        how_it_works: {
+          title: "How the Shield works:",
+          description:
+            "The life system is your only protection against inevitable failures. If the day ends and any of your goals are in {RED}, a life will be automatically consumed to keep your fire from going out.",
+        },
+        protection: {
+          title: "Automatic Protection",
+          description:
+            "You don't need to activate anything. The contract consumes the life at the last second of the day if you fail.",
+        },
+        death: {
+          title: "Sudden Death",
+          description:
+            "If your life counter reaches {zero}, any failure will result in an immediate reset of your streak. No warnings, no going back.",
+        },
+        recharge: {
+          title: "Monthly Recharge",
+          description:
+            "Lives are limited per cycle. Use them wisely, as discipline does not accept frequent excuses.",
+        },
+        status_label: "Shield Status",
+      },
+    },
     water: {
       title: "Water",
+      loading_title: "Loading water",
+      loading_subtitle: "Fetching your hydration progress for today...",
       goal: "Goal",
       remaining: "? left to reach your goal!",
       start: "Time to hydrate!",
@@ -222,6 +596,7 @@ export const en = {
         title: "Planning",
         week_days: "SMTWTFS",
         rest_label: "Rest",
+        unnamed_workout: "Unnamed workout",
         synchronized: "Synchronized",
         pending: "Pending Changes",
         changes_apply: {
@@ -237,6 +612,7 @@ export const en = {
           length: "Days",
           configure: "Configure",
           workout_add: "Workout",
+          clear_btn: "Clear",
           actions: {
             quick_edit: "Quick Edit (Keep Cycle)",
             quick_edit_mobile: "Update",
@@ -249,8 +625,8 @@ export const en = {
         },
         monthly_projection: {
           title: "Monthly Projection",
-          recover_yourself: "Recover Yourself",
-          exercises: "Exercises",
+          recovery: "Recovery",
+          exercise_count: "{{count}} exercises",
         },
         edit_workout_modal: {
           title: "Editing {{workout}}",
@@ -258,6 +634,7 @@ export const en = {
           save_to_library: "Save to Library",
           same_name_error: "There is already a workout with this name",
           exercise: "Exercise",
+          add_exercises: "Add exercises",
           inputs: {
             name: "Name",
             group: "Group",
@@ -266,6 +643,7 @@ export const en = {
             reps: "Reps",
             weight: "Weight",
             rest: "Rest",
+            rest_format: "Format MM:SS (example: 1:30)",
             obs: "Observations",
             type: {
               title: "Type",
@@ -275,6 +653,9 @@ export const en = {
             technique: {
               title: "Technique",
               standard: "Standard",
+              bi_set: "Bi-set",
+              drop_set: "Drop-set",
+              rest_pause: "Rest-pause",
             },
             apply: "Apply to Cycle",
           },
@@ -422,6 +803,7 @@ export const en = {
         saving: "Saving...",
         saving_error: "Saving error",
         share: "Share",
+        export_error: "Error generating image. Please try again.",
         total_volume: "Total Volume",
         calories_burned: "Calories Burned",
         intensity: "Intensity",
@@ -433,6 +815,59 @@ export const en = {
           1: " in total.",
         },
       },
+    },
+    sleep: {
+      title: "Sleep",
+      subtitle: "Log your main sleep and any extra nap from the day.",
+      target: "Target",
+      main_duration: "Main sleep duration",
+      main_sleep: "Main sleep",
+      nap: "Extra nap",
+      bedtime: "Bedtime",
+      wake_time: "Wake-up time",
+      nap_start: "Nap started",
+      nap_end: "Nap ended",
+      nap_duration: "Nap duration",
+      total_today: "Total sleep today",
+      recent_history: "Recent history",
+      average: "Average",
+      save: "Save sleep",
+      saving: "Saving...",
+      no_data: "No sleep logs yet.",
+      history_total: "{{hours}}h total",
+      history_nap: "Nap: {{hours}}h",
+      helper: "Adjust duration or times and the total updates automatically.",
+      overwrite_title: "Replace today's sleep?",
+      overwrite_description:
+        "A sleep entry already exists for today. Saving again will replace the current record.",
+      confirm_overwrite: "Replace record",
+      cancel: "Cancel",
+    },
+    tasks: {
+      title: "Tasks",
+      subtitle: "Organize daily reminders and date-based tasks in one place.",
+      add: "Add",
+      today: "Today",
+      scheduled: "Scheduled",
+      none_today: "No active tasks for today.",
+      none_scheduled: "No scheduled tasks right now.",
+      daily: "Daily",
+      one_time: "Specific date",
+      new_task: "New task",
+      edit_task: "Edit task",
+      title_label: "Title",
+      title_placeholder: "Example: Pick up the house keys",
+      notes_label: "Details",
+      notes_placeholder: "Details, context, or anything you want to remember",
+      daily_label: "Repeat every day",
+      target_date: "Date for this task",
+      reminder_label: "Reminder",
+      reminder_hint: "Optional reminder date and time",
+      cancel: "Cancel",
+      save: "Save",
+      pending_today: "{{count}} pending for today",
+      complete: "Mark as done",
+      incomplete: "Mark as pending",
     },
   },
   zod: {
@@ -478,31 +913,38 @@ export const en = {
   },
   tutorials: {
     close: "Start using the app",
+    do_not_show_again: "Don't show again",
     workout: {
       title: "How workout works",
-      subtitle: "Plan your cycle, preserve the past, and complete each exercise from the workout tab.",
+      subtitle:
+        "Plan your cycle, preserve the past, and complete each exercise from the workout tab.",
       steps: {
         plan: {
           title: "Plan and configure",
-          description: "Add workouts or rest days, open each card to configure exercises, and use presets to speed things up.",
+          description:
+            "Add workouts or rest days, open each card to configure exercises, and use presets to speed things up.",
         },
         reorder: {
           title: "Drag to reorder",
-          description: "You can drag the cycle structure. Past days stay preserved; only future projection changes.",
+          description:
+            "You can drag the cycle structure. Past days stay preserved; only future projection changes.",
         },
         complete: {
           title: "Complete from the workout tab",
-          description: "Open today's workout, tap an exercise, and mark it as completed, failed, or weight up.",
+          description:
+            "Open today's workout, tap an exercise, and mark it as completed, failed, or weight up.",
         },
         save_modes: {
           title: "Know the two save modes",
-          description: "Apply as New Cycle restarts the cycle from today. Quick Edit keeps the current cycle phase and only updates what comes next.",
+          description:
+            "Apply as New Cycle restarts the cycle from today. Quick Edit keeps the current cycle phase and only updates what comes next.",
         },
       },
     },
     water: {
       title: "How water works",
-      subtitle: "Log your water quickly, track history, and compare progress with your daily target.",
+      subtitle:
+        "Log your water quickly, track history, and compare progress with your daily target.",
       steps: {
         quick_add: {
           title: "Use quick buttons",
@@ -510,40 +952,109 @@ export const en = {
         },
         custom: {
           title: "Custom amount",
-          description: "Use the custom field when you drank a different amount.",
+          description:
+            "Use the custom field when you drank a different amount.",
         },
         history: {
           title: "Check history",
-          description: "Switch between today, week and month to see consistency and remove incorrect entries.",
+          description:
+            "Switch between today, week and month to see consistency and remove incorrect entries.",
         },
         goal: {
           title: "Daily target",
-          description: "Your target is calculated in onboarding, but you can fine-tune it later in account goals.",
+          description:
+            "Your target is calculated in onboarding, but you can fine-tune it later in account goals.",
         },
       },
     },
     meals: {
       title: "How meals works",
-      subtitle: "Search real foods, choose the right measure, and track calories, sugar, and sodium.",
+      subtitle:
+        "Search real foods, choose the right measure, and track calories, sugar, and sodium.",
       steps: {
         add: {
           title: "Add foods",
-          description: "Use the add button, search by name, and pick the food that best matches what you ate.",
+          description:
+            "Use the add button, search by name, and pick the food that best matches what you ate.",
         },
         measure: {
           title: "Choose the right measure",
-          description: "Before saving, select grams, ml or household measures so the macros stay accurate.",
+          description:
+            "Before saving, select grams, ml or household measures so the macros stay accurate.",
         },
         warning: {
           title: "Watch alerts",
-          description: "Foods with high sugar or sodium show a warning before you confirm.",
+          description:
+            "Foods with high sugar or sodium show a warning before you confirm.",
         },
         dashboard: {
           title: "Track your day",
-          description: "Meals update your dashboard and macro progress so you always know what is left for the day.",
+          description:
+            "Meals update your dashboard and macro progress so you always know what is left for the day.",
         },
       },
     },
+    sleep: {
+      title: "How sleep works",
+      subtitle:
+        "Track your total sleep with a main sleep block and an optional nap.",
+      steps: {
+        duration: {
+          title: "Main sleep first",
+          description:
+            "Your main sleep duration is the central value. Bedtime and wake-up help you reach it.",
+        },
+        automatic: {
+          title: "Automatic sync",
+          description:
+            "When you change duration, wake-up time takes priority and bedtime adjusts automatically. If you edit bedtime and wake-up, duration recalculates.",
+        },
+        nap: {
+          title: "Add naps too",
+          description:
+            "You can also log an extra nap so your daily total reflects the full day.",
+        },
+        history: {
+          title: "Track consistency",
+          description:
+            "The history card helps you see your recent average and whether you're sleeping enough.",
+        },
+      },
+    },
+    tasks: {
+      title: "How tasks work",
+      subtitle:
+        "Create recurring reminders, tasks for today, or something scheduled for a future date.",
+      steps: {
+        daily: {
+          title: "Daily reminders",
+          description:
+            "Use daily tasks for habits and recurring reminders, like taking your keys or a supplement.",
+        },
+        dated: {
+          title: "Date-based tasks",
+          description:
+            "Use a specific date when something belongs only to one day, like going to the bank or remembering a birthday.",
+        },
+        reminder: {
+          title: "Optional reminder",
+          description:
+            "You can add a reminder date and time to make the task more actionable.",
+        },
+        dashboard: {
+          title: "Dashboard sync",
+          description:
+            "Pending tasks also show on the dashboard, so they work as quick reminders.",
+        },
+      },
+    },
+  },
+  app_loading: {
+    entering_title: "Entering",
+    entering_subtitle: "Preparing your space...",
+    syncing_title: "Syncing",
+    syncing_subtitle:
+      "Loading dashboard, workout, water, meals, tasks, and sleep...",
   },
   server: {
     errors: {

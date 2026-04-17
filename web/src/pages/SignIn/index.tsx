@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-// @ts-expect-error - import is correct
+// @ts-expect-error
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema, type signInFormData } from "../../schemas/Auth.ts";
@@ -47,7 +47,6 @@ const SignIn: React.FC = () => {
         t(err.response?.data.message as TranslationKeys) ||
         t("sign_in.serverError");
       setErrorMsg(`${t("sign_in.error")} ${message}`);
-      console.error("Login error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -197,7 +196,7 @@ const SignIn: React.FC = () => {
             `}
           />
           <img
-            src="hero_signin.webp"
+            src="/hero_signin.webp"
             alt="Hero"
             fetchPriority="high"
             loading="eager"
@@ -214,3 +213,4 @@ const SignIn: React.FC = () => {
 };
 
 export default SignIn;
+

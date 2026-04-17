@@ -3,6 +3,8 @@ interface SuggestionCardProps {
   desc: string;
   kcal: number;
   icon: React.ReactNode;
+  actionLabel: string;
+  onClick: () => void;
 }
 
 const SuggestionCard: React.FC<SuggestionCardProps> = ({
@@ -10,6 +12,8 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   desc,
   kcal,
   icon,
+  actionLabel,
+  onClick,
 }) => {
   return (
     <div className="min-w-65 bg-neutral-900 border border-white/5 rounded-4xl p-5">
@@ -27,9 +31,10 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
       <p className="text-neutral-500 text-xs mb-4 line-clamp-1">{desc}</p>
       <button
         type="button"
+        onClick={onClick}
         className="w-full cursor-pointer text-white bg-neutral-800 hover:bg-brand-accent hover:text-black py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all"
       >
-        Quick Add +
+        {actionLabel}
       </button>
     </div>
   );

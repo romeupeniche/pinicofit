@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
+﻿import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import {
   Clock,
   ChevronRight,
@@ -25,6 +25,7 @@ import processPendingSummaries, {
 } from "../../utils/processPendingSummaries";
 import { useAuthStore } from "../../store/authStore";
 import { api } from "../../services/api";
+import { localizeExerciseName } from "../../utils/workoutLocalization";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface WorkoutListProps {
@@ -65,7 +66,7 @@ const completionStatuses: {
 
 const WorkoutList: React.FC<WorkoutListProps> = ({ step, date, onFinish }) => {
   const { user } = useAuthStore();
-  const { t, weightUnit } = useSettingsStore();
+  const { t, weightUnit, lang } = useSettingsStore();
   const queryClient = useQueryClient();
   const saveExerciseLog = useWorkoutStore((state) => state.saveExerciseLog);
   const logs = useWorkoutStore((state) => state.logs);
@@ -94,8 +95,6 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ step, date, onFinish }) => {
   const getLogForExercise = useCallback((exerciseId: string) => {
     return logs.find((l) => l.date === targetDateIso && l.exerciseId === exerciseId);
   }, [logs, targetDateIso]);
-
-  // EFEITO DE FINALIZAÇÃO E SINCRONIZAÇÃO COM O BACKEND
   useEffect(() => {
     if (answeredLogs.length === exercises.length && user) {
       const summary = processPendingSummaries({
@@ -120,7 +119,7 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ step, date, onFinish }) => {
           exercises: answeredLogs,
           duration: summary?.duration || 0,
           date: targetDateIso,
-        }).catch((err: unknown) => console.error("Erro ao salvar log no banco:", err));
+        }).catch(() => undefined);
       }
 
       onFinish(summary);
@@ -183,10 +182,9 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ step, date, onFinish }) => {
 
     api.patch("/workouts/settings", { logs: updatedLogs })
       .then(() => {
-        queryClient.invalidateQueries({ queryKey: ["workoutSettings"] });
         queryClient.invalidateQueries({ queryKey: ["workout-log", targetDateIso] });
       })
-      .catch((err: unknown) => console.error("Erro ao sincronizar logs do treino:", err));
+      .catch(() => undefined);
 
     closeModal();
   };
@@ -246,7 +244,7 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ step, date, onFinish }) => {
                     {isFuture && <CalendarClock size={16} className="text-neutral-400" />}
 
                     <h4 className={`font-bold ${completion || isPast ? "text-neutral-900" : "text-neutral-800"}`}>
-                      {ex.name}
+                      {localizeExerciseName(ex.name, lang)}
                     </h4>
                   </div>
                   <p className={`text-[10px] font-bold ${completion?.actualWeight && Number(completion.actualWeight) !== Number(ex.weight) ? "text-brand-accent" : "text-neutral-400"} tracking-tight`}>
@@ -276,10 +274,10 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ step, date, onFinish }) => {
 
       {selectedExercise && (
         <div
-          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 bg-neutral-900/80 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 bg-neutral-900/80"
           onClick={(e) => e.target === e.currentTarget && closeModal()}
         >
-          <div className="bg-white w-full max-w-lg rounded-t-[2.5rem] md:rounded-[3rem] p-8 shadow-2xl relative animate-in slide-in-from-bottom-10 duration-300">
+          <div className="bg-white w-full max-w-lg rounded-t-[2.5rem] md:rounded-[3rem] p-8 shadow-2xl relative">
             <button
               onClick={closeModal}
               className="absolute top-6 right-6 p-2 bg-neutral-100 rounded-full text-neutral-400 hover:bg-neutral-200 transition-colors hover:text-red-500 cursor-pointer"
@@ -391,3 +389,6 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ step, date, onFinish }) => {
 };
 
 export default WorkoutList;
+
+
+

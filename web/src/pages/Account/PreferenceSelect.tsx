@@ -19,7 +19,7 @@ const PreferenceSelect: React.FC<PreferenceSelectProps> = ({
 }) => {
   const { t } = useSettingsStore();
   return (
-    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border-neutral-200 hover:border-brand-accent/50 transition-colors border">
+    <div className="flex md:flex-row flex-col items-center justify-between p-4 bg-white rounded-2xl border-neutral-200 hover:border-brand-accent/50 transition-colors border">
       <div>
         <p className="font-bold">{t(title)}</p>
         <p className="text-sm text-neutral-500">{t(subtitle)}</p>

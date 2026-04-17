@@ -9,23 +9,23 @@ import { useSettingsStore } from "../../store/settingsStore";
 import { Library, Plus, Trash2, X, Zap, Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../services/api";
+import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 
 interface IProps {
   cycle: ICycleStep[];
   setCycle: (newCycle: ICycleStep[]) => void;
-  showPresets: boolean;
   setShowPresets: (show: boolean) => void;
 }
 
 const PresetsModal: React.FC<IProps> = ({
   cycle,
   setCycle,
-  showPresets,
   setShowPresets,
 }) => {
   const { presets, removePreset } = useWorkoutStore();
   const { t } = useSettingsStore();
   const queryClient = useQueryClient();
+  useBodyScrollLock(true);
 
   const deleteMutation = useMutation({
     mutationFn: async (presetId: string) => {
@@ -78,8 +78,6 @@ const PresetsModal: React.FC<IProps> = ({
       deleteMutation.mutate(presetId);
     }
   };
-
-  if (!showPresets) return null;
 
   return (
     <div className="fixed inset-0 z-110 flex justify-end">

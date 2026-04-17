@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   Dumbbell,
   type LucideIcon,
+  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSettingsStore } from "../../store/settingsStore";
@@ -76,10 +77,10 @@ const WorkoutGoal: React.FC = () => {
     setPendingTab(null);
   };
 
-  const closeTutorial = async () => {
+  const closeTutorial = async (dontShowAgain: boolean) => {
     setShowTutorial(false);
 
-    if (!user?.id || user.tutorialState?.workout) {
+    if (!dontShowAgain || !user?.id || user.tutorialState?.workout) {
       return;
     }
 
@@ -88,49 +89,53 @@ const WorkoutGoal: React.FC = () => {
       workout: true,
     };
 
-    try {
-      const { data } = await api.patch(`/users/${user.id}`, {
-        tutorialState,
-      });
-      useAuthStore.getState().updateProfile(data);
-    } catch (error) {
-      console.error("Erro ao salvar tutorial de workout:", error);
-    }
+    const { data } = await api.patch(`/users/${user.id}`, {
+      tutorialState,
+    });
+    useAuthStore.getState().updateProfile(data);
   };
 
   return (
     <section>
-      <header className="sticky top-4 z-50 mb-8 border border-neutral-200/50 flex md:flex-row flex-col justify-between md:items-center gap-4 bg-white/60 backdrop-blur-sm rounded-3xl p-4 shadow-sm">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-white/50 rounded-xl transition-colors cursor-pointer hover:text-brand-accent"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <div className="p-2 rounded-lg bg-brand-accent/10 text-brand-accent transition-colors">
-            <TitleIcon size={25} />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tighter text-brand-accent">
-            {t(titles[activeTab].title)}
-          </h1>
-        </div>
-        <div className="flex p-1 rounded-2xl gap-2">
-          {(["workout", "plan"] as const).map((tab) => (
+      <header className="sticky top-4 z-50 mb-8 border border-neutral-200/50 flex md:flex-row flex-col md:items-center gap-4 bg-white/60 backdrop-blur-sm rounded-3xl p-4 shadow-sm">
+        <div className="flex justify-between flex-1 md:flex-row flex-col gap-4">
+          <div className="flex items-center gap-4">
             <button
-              key={tab}
-              onClick={() => handleTabChange(tab)}
-              className={`flex-1 px-8 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer ${activeTab === tab
-                ? "bg-white text-brand-accent shadow-sm scale-[1.02]"
-                : "text-neutral-400 hover:text-neutral-600 hover:bg-white/30"
-                }`}
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-white/50 rounded-xl transition-colors cursor-pointer hover:text-brand-accent"
             >
-              {tab === "workout"
-                ? t("goals.workout.workout_window.badge_title")
-                : t("goals.workout.plan_window.badge_title")}
+              <ChevronLeft size={24} />
             </button>
-          ))}
+            <div className="p-2 rounded-lg bg-brand-accent/10 text-brand-accent transition-colors">
+              <TitleIcon size={25} />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tighter text-brand-accent">
+              {t(titles[activeTab].title)}
+            </h1>
+          </div>
+          <div className="flex p-1 rounded-2xl gap-2">
+            {(["workout", "plan"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => handleTabChange(tab)}
+                className={`flex-1 px-8 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer ${activeTab === tab
+                  ? "bg-white text-brand-accent shadow-sm scale-[1.02]"
+                  : "text-neutral-400 hover:text-neutral-600 hover:bg-white/30"
+                  }`}
+              >
+                {tab === "workout"
+                  ? t("goals.workout.workout_window.badge_title")
+                  : t("goals.workout.plan_window.badge_title")}
+              </button>
+            ))}
+            <button onClick={() => navigate("/account", { state: { tab: "goals", section: "workoutGoal" }, })} className="md:hidden block cursor-pointer h-9 w-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+              <Settings className="w-6 h-6 justify-self-center text-inherit" />
+            </button>
+          </div>
         </div>
+        <button onClick={() => navigate("/account", { state: { tab: "goals", section: "workoutGoal" }, })} className="md:block hidden cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+          <Settings className="w-6 h-6 justify-self-center text-inherit" />
+        </button>
       </header>
 
       {activeTab === "workout" ? <WorkoutOverview /> : <WorkoutPlanning />}
@@ -168,7 +173,8 @@ const WorkoutGoal: React.FC = () => {
               description: t("tutorials.workout.steps.save_modes.description"),
             },
           ]}
-          onClose={closeTutorial}
+          dontShowAgainLabel={t("tutorials.do_not_show_again")}
+          onContinue={closeTutorial}
         />
       )}
     </section>

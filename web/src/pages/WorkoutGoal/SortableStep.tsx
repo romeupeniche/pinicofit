@@ -5,6 +5,7 @@ import { Moon, X } from "lucide-react";
 import { useSettingsStore } from "../../store/settingsStore";
 import type { TranslationKeys } from "../../types/i18n";
 import type { ICycleStep } from "../../store/goals/workoutStore";
+import { localizeWorkoutName } from "../../utils/workoutLocalization";
 
 interface SortableStepProps {
   step: ICycleStep;
@@ -19,7 +20,7 @@ const SortableStep: React.FC<SortableStepProps> = ({
   onEdit,
   onRemove,
 }) => {
-  const { t } = useSettingsStore();
+  const { t, lang } = useSettingsStore();
   const {
     attributes,
     listeners,
@@ -84,7 +85,7 @@ const SortableStep: React.FC<SortableStepProps> = ({
           </span>
           {step.type === "workout" && (
             <span className="text-[8px] font-bold opacity-60 uppercase truncate max-w-20 block mt-0.5">
-              {step.name ||
+              {localizeWorkoutName(step.name, lang) ||
                 t("goals.workout.plan_window.cycle_structure.configure")}
             </span>
           )}

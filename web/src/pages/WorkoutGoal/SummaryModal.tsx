@@ -12,6 +12,8 @@ import { saveAs } from "file-saver";
 import { format, parseISO } from "date-fns";
 import type { Summary } from "../../utils/processPendingSummaries";
 import { useSettingsStore } from "../../store/settingsStore";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../services/api";
 import {
   EXERCISE_CATEGORIES,
   type ExerciseCategory,
@@ -20,6 +22,14 @@ import { useAuthStore } from "../../store/authStore";
 import type { ExerciseStatus } from "../../store/goals/workoutStore";
 import MUSCLE_QUOTES from "../../constants/muscle-quotes";
 import { KG_TO_LBS_RATIO } from "../../utils/weightUnitConverter";
+import { getLocalDateKey } from "../../utils/date";
+
+type StreakMeResponse = {
+  streak: number;
+  livesRemaining: number;
+  maxLivesPerMonth: number;
+  flameLevel: "low" | "streak" | "max";
+};
 
 const THEMES = [
   {
@@ -67,6 +77,13 @@ const SummaryModal = ({
   const { t, lang, weightUnit } = useSettingsStore();
   const { user } = useAuthStore();
   const currentTheme = THEMES[themeIndex];
+  const todayKey = getLocalDateKey();
+
+  const { data: streakData } = useQuery({
+    queryKey: ["streak-me", todayKey],
+    queryFn: async () => (await api.get(`/streak/me?date=${todayKey}`)).data as StreakMeResponse,
+    enabled: Boolean(user),
+  });
 
   const nextTheme = () => setThemeIndex((prev) => (prev + 1) % THEMES.length);
 
@@ -119,11 +136,14 @@ const SummaryModal = ({
       .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 3)
       .map(([, data]) => {
+        const safeGroup = data.group || "default";
         const label =
-          EXERCISE_CATEGORIES[data.group as ExerciseCategory]?.label ||
-          data.group;
-        const translatedName = t(label).split(" (")[0];
-        const suffix = data.group.toLowerCase().split("_")[1] || "";
+          EXERCISE_CATEGORIES[safeGroup as ExerciseCategory]?.label || safeGroup;
+        const translatedName =
+          typeof label === "string" && label.includes(".")
+            ? t(label as never).split(" (")[0]
+            : String(label || "").split(" (")[0];
+        const suffix = safeGroup.toLowerCase().split("_")[1] || "";
         const typeLetter = suffix.startsWith("c")
           ? "C"
           : suffix.startsWith("i")
@@ -135,7 +155,7 @@ const SummaryModal = ({
     const topEntry = Object.entries(counts).sort(
       (a, b) => b[1].count - a[1].count,
     )[0];
-    const mainGroupId = topEntry
+    const mainGroupId = topEntry?.[1]?.group
       ? topEntry[1].group.split("_")[0].toLowerCase()
       : "default";
     const quotes = MUSCLE_QUOTES[mainGroupId] || MUSCLE_QUOTES.default;
@@ -202,8 +222,7 @@ const SummaryModal = ({
 
       saveAs(dataUrl, `pinicofit-${format(new Date(), "dd-MM")}.png`);
     } catch (err) {
-      console.error("Erro na exportação:", err);
-      alert("Erro ao gerar imagem. Tente novamente.");
+      alert(t("goals.workout.summary_modal.export_error"));
     } finally {
       setLoading(false);
     }
@@ -337,7 +356,7 @@ const SummaryModal = ({
                     marginLeft: "-20px",
                   }}
                 >
-                  238
+                  {streakData?.streak ?? 0}
                 </span>
               </div>
               <div style={{ textAlign: "right" }}>
@@ -734,7 +753,7 @@ const SummaryModal = ({
                       marginBottom: "5px",
                     }}
                   >
-                    🚀 +{stats.loadProgression}%
+                    +{stats.loadProgression}%
                   </p>
                   <p
                     style={{
@@ -796,3 +815,5 @@ const SummaryModal = ({
 };
 
 export default SummaryModal;
+
+

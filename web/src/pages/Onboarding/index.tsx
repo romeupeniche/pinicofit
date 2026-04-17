@@ -1,4 +1,4 @@
-// @ts-expect-error - import is correct
+﻿// @ts-expect-error
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "../../services/api";
@@ -49,7 +49,7 @@ export function Onboarding() {
     setIsLoading(true);
     try {
       if (!user?.id) {
-        alert("Usuário não encontrado. Por favor, faça login novamente.");
+        alert(t("onboarding.user_missing"));
         return navigate("/sign-in");
       }
 
@@ -66,9 +66,8 @@ export function Onboarding() {
       const err = error as AxiosError<{ message: string }>;
 
       const errorMessage =
-        err.response?.data?.message || "Erro inesperado ao salvar perfil";
+        err.response?.data?.message || t("onboarding.unexpected_error");
 
-      console.error("Erro no Onboarding:", errorMessage);
       alert(errorMessage);
     } finally {
       setIsLoading(false);
@@ -93,7 +92,7 @@ export function Onboarding() {
             <input
               type="number"
               {...register("age", { valueAsNumber: true })}
-              placeholder="Ex: 25"
+              placeholder={t("onboarding.placeholders.age")}
               className="w-full p-2.5 bg-neutral-50 border border-neutral-300 rounded-lg outline-none focus:border-brand-accent transition-all"
             />
             {errors.age && (
@@ -111,7 +110,7 @@ export function Onboarding() {
               type="number"
               step="0.1"
               {...register("weight", { valueAsNumber: true })}
-              placeholder="Ex: 75.5"
+              placeholder={t("onboarding.placeholders.weight")}
               className="w-full p-2.5 bg-neutral-50 border border-neutral-300 rounded-lg outline-none focus:border-brand-accent transition-all"
             />
             {errors.weight && (
@@ -128,7 +127,7 @@ export function Onboarding() {
             <input
               type="number"
               {...register("height", { valueAsNumber: true })}
-              placeholder="Ex: 175"
+              placeholder={t("onboarding.placeholders.height")}
               className="w-full p-2.5 bg-neutral-50 border border-neutral-300 rounded-lg outline-none focus:border-brand-accent transition-all"
             />
             {errors.height && (
@@ -245,3 +244,6 @@ export function Onboarding() {
     </div>
   );
 }
+
+
+

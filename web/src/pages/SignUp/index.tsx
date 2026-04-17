@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-// @ts-expect-error - import is correct
+// @ts-expect-error
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, type SignUpFormData } from "../../schemas/Auth.ts";
@@ -39,7 +39,6 @@ const SignUp: React.FC = () => {
       const { access_token, user } = response.data;
 
       if (!access_token || !user) {
-        console.error("ERRO: API não retornou token ou user!");
         return;
       }
 
@@ -268,7 +267,7 @@ const SignUp: React.FC = () => {
             `}
           />
           <img
-            src="hero_signup.webp"
+            src="/hero_signup.webp"
             alt="Hero"
             fetchPriority="high"
             loading="eager"
@@ -285,3 +284,4 @@ const SignUp: React.FC = () => {
 };
 
 export default SignUp;
+
