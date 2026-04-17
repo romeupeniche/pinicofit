@@ -99,6 +99,21 @@ model UserPreferences {
   tasksGoal    Int     @default(0)
   tasksEnabled Boolean @default(true)
 
+  nutritionDeactivatedAt DateTime?
+  nutritionCooldownUntil DateTime?
+
+  waterDeactivatedAt DateTime?
+  waterCooldownUntil DateTime?
+
+  sleepDeactivatedAt DateTime?
+  sleepCooldownUntil DateTime?
+
+  workoutDeactivatedAt DateTime?
+  workoutCooldownUntil DateTime?
+
+  tasksDeactivatedAt DateTime?
+  tasksCooldownUntil DateTime?
+
   tutorialState       Json     @default("{}")
   notificationsEmail  String?
   avatar              String?

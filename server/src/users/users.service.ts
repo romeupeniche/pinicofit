@@ -468,37 +468,189 @@ export class UsersService implements OnModuleDestroy {
     return this.findById(id);
   }
 
-  async updateGoals(userId: string, data: any) {
-    return await this.prisma.userPreferences.update({
+  async updateGoals(userId: string, data: any) { 
+    const preferences = await this.prisma.userPreferences.findUnique({ 
+      where: { userId }, 
+    }); 
+ 
+    if (!preferences) { 
+      throw new NotFoundException('server.errors.users.not_found'); 
+    } 
+
+    const streak = await this.prisma.userStreak.findUnique({
       where: { userId },
-      data: {
-        nutritionEnabled: data.nutritionEnabled,
-        calorieGoal: data.calorieGoal,
-        calorieTolerance: data.calorieTolerance,
-        calorieEnabled: data.calorieEnabled,
-        proteinGoal: data.proteinGoal,
-        proteinEnabled: data.proteinEnabled,
-        carbsGoal: data.carbsGoal,
-        carbsEnabled: data.carbsEnabled,
-        fatGoal: data.fatGoal,
-        fatEnabled: data.fatEnabled,
+    });
 
-        waterGoal: data.waterGoal,
-        waterTolerance: data.waterTolerance,
-        waterEnabled: data.waterEnabled,
+    const now = new Date();
+    const cooldownUntil = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-        sleepGoal: data.sleepGoal,
-        sleepTolerance: data.sleepTolerance,
-        sleepEnabled: data.sleepEnabled,
+    type GoalKey = 'nutrition' | 'water' | 'sleep' | 'workout' | 'tasks';
 
-        workoutTolerance: data.workoutTolerance,
-        workoutEnabled: data.workoutEnabled,
-        tasksGoal: data.tasksGoal,
-        tasksEnabled: data.tasksEnabled,
+    type ToggleMetaUpdate = Partial<{ 
+      nutritionDeactivatedAt: Date; 
+      nutritionCooldownUntil: Date; 
+      waterDeactivatedAt: Date; 
+      waterCooldownUntil: Date; 
+      sleepDeactivatedAt: Date; 
+      sleepCooldownUntil: Date; 
+      workoutDeactivatedAt: Date; 
+      workoutCooldownUntil: Date; 
+      tasksDeactivatedAt: Date; 
+      tasksCooldownUntil: Date; 
+    }>; 
+ 
+    const toggles: Array<{ 
+      key: GoalKey; 
+      provided: boolean;
+      fromEnabled: boolean; 
+      toEnabled: boolean; 
+      deactivatedAtField: keyof ToggleMetaUpdate; 
+      cooldownUntilField: keyof ToggleMetaUpdate; 
+      lockedUntilValue: Date | null | undefined; 
+    }> = [ 
+      { 
+        key: 'nutrition', 
+        provided: typeof data.nutritionEnabled === 'boolean',
+        fromEnabled: Boolean(preferences.nutritionEnabled), 
+        toEnabled:
+          typeof data.nutritionEnabled === 'boolean'
+            ? data.nutritionEnabled
+            : Boolean(preferences.nutritionEnabled),
+        deactivatedAtField: 'nutritionDeactivatedAt', 
+        cooldownUntilField: 'nutritionCooldownUntil', 
+        lockedUntilValue: preferences.nutritionCooldownUntil, 
+      }, 
+      { 
+        key: 'water', 
+        provided: typeof data.waterEnabled === 'boolean',
+        fromEnabled: Boolean(preferences.waterEnabled), 
+        toEnabled:
+          typeof data.waterEnabled === 'boolean'
+            ? data.waterEnabled
+            : Boolean(preferences.waterEnabled),
+        deactivatedAtField: 'waterDeactivatedAt', 
+        cooldownUntilField: 'waterCooldownUntil', 
+        lockedUntilValue: preferences.waterCooldownUntil, 
+      }, 
+      { 
+        key: 'sleep', 
+        provided: typeof data.sleepEnabled === 'boolean',
+        fromEnabled: Boolean(preferences.sleepEnabled), 
+        toEnabled:
+          typeof data.sleepEnabled === 'boolean'
+            ? data.sleepEnabled
+            : Boolean(preferences.sleepEnabled),
+        deactivatedAtField: 'sleepDeactivatedAt', 
+        cooldownUntilField: 'sleepCooldownUntil', 
+        lockedUntilValue: preferences.sleepCooldownUntil, 
+      }, 
+      { 
+        key: 'workout', 
+        provided: typeof data.workoutEnabled === 'boolean',
+        fromEnabled: Boolean(preferences.workoutEnabled), 
+        toEnabled:
+          typeof data.workoutEnabled === 'boolean'
+            ? data.workoutEnabled
+            : Boolean(preferences.workoutEnabled),
+        deactivatedAtField: 'workoutDeactivatedAt', 
+        cooldownUntilField: 'workoutCooldownUntil', 
+        lockedUntilValue: preferences.workoutCooldownUntil, 
+      }, 
+      { 
+        key: 'tasks', 
+        provided: typeof data.tasksEnabled === 'boolean',
+        fromEnabled: Boolean(preferences.tasksEnabled), 
+        toEnabled:
+          typeof data.tasksEnabled === 'boolean'
+            ? data.tasksEnabled
+            : Boolean(preferences.tasksEnabled),
+        deactivatedAtField: 'tasksDeactivatedAt', 
+        cooldownUntilField: 'tasksCooldownUntil', 
+        lockedUntilValue: preferences.tasksCooldownUntil, 
+      }, 
+    ]; 
+ 
+    const goalsDeactivated = toggles.filter( 
+      (toggle) => toggle.provided && toggle.fromEnabled && !toggle.toEnabled, 
+    ); 
+ 
+    const goalsReactivated = toggles.filter( 
+      (toggle) => toggle.provided && !toggle.fromEnabled && toggle.toEnabled, 
+    ); 
+
+    for (const toggle of goalsReactivated) {
+      if (
+        toggle.lockedUntilValue &&
+        now.getTime() < toggle.lockedUntilValue.getTime()
+      ) {
+        throw new ForbiddenException('server.errors.users.goal_in_cooldown');
+      }
+    }
+
+    const streakCount = Number(streak?.streakCount || 0);
+    const livesRemaining = Number(streak?.livesRemaining || 0);
+
+    const shouldCharge = streakCount > 0 && goalsReactivated.length > 0;
+    const livesCost = shouldCharge ? goalsReactivated.length * 2 : 0;
+
+    if (shouldCharge && livesRemaining < livesCost) {
+      throw new BadRequestException(
+        'server.errors.users.insufficient_lives_to_reactivate_goal',
+      );
+    }
+
+    const toggleMetaUpdate: ToggleMetaUpdate = goalsDeactivated.reduce(
+      (acc, toggle) => {
+        acc[toggle.deactivatedAtField] = now;
+        acc[toggle.cooldownUntilField] = cooldownUntil;
+        return acc;
       },
-      include: {
-        user: true,
-      },
+      {} as ToggleMetaUpdate,
+    );
+
+    return this.prisma.$transaction(async (tx) => {
+      if (livesCost > 0) {
+        await tx.userStreak.update({
+          where: { userId },
+          data: {
+            livesRemaining: livesRemaining - livesCost,
+          },
+        });
+      }
+
+      return tx.userPreferences.update({
+        where: { userId },
+        data: {
+          nutritionEnabled: data.nutritionEnabled,
+          calorieGoal: data.calorieGoal,
+          calorieTolerance: data.calorieTolerance,
+          calorieEnabled: data.calorieEnabled,
+          proteinGoal: data.proteinGoal,
+          proteinEnabled: data.proteinEnabled,
+          carbsGoal: data.carbsGoal,
+          carbsEnabled: data.carbsEnabled,
+          fatGoal: data.fatGoal,
+          fatEnabled: data.fatEnabled,
+
+          waterGoal: data.waterGoal,
+          waterTolerance: data.waterTolerance,
+          waterEnabled: data.waterEnabled,
+
+          sleepGoal: data.sleepGoal,
+          sleepTolerance: data.sleepTolerance,
+          sleepEnabled: data.sleepEnabled,
+
+          workoutTolerance: data.workoutTolerance,
+          workoutEnabled: data.workoutEnabled,
+          tasksGoal: data.tasksGoal,
+          tasksEnabled: data.tasksEnabled,
+
+          ...toggleMetaUpdate,
+        },
+        include: {
+          user: true,
+        },
+      });
     });
   }
 
