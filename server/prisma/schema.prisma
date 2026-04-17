@@ -45,15 +45,68 @@ model User {
   meals   Meal[]
   recipes Recipe[]
 
-  waterGoal Int @default(2000)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  dailyLogs               DailyFoodLog[]
+  waterLogs               WaterLog[]
+  workoutLogs             WorkoutLog[]
+  workoutPresets          WorkoutPreset[]
+  workoutSettings         WorkoutSettings?
+  userPreferences         UserPreferences?
+  foodFavorites           FoodFavorite[]
+  mealFavorites           MealFavorite[]
+  sleepLogs               SleepLog[]
+  tasks                   Task[]
+  emailVerificationTokens EmailVerificationToken[]
+  monthlyReportDispatches MonthlyReportDispatch[]
+  userStreak              UserStreak?
+}
 
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  dailyLogs       DailyFoodLog[]
-  waterLogs       WaterLog[]
-  workoutLogs     WorkoutLog[]
-  workoutPresets  WorkoutPreset[]
-  workoutSettings WorkoutSettings?
+model UserPreferences {
+  userId        String  @id @unique
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language      String  @default("en")
+  activityLevel String?
+
+  nutritionEnabled Boolean @default(true)
+  calorieGoal      Int?    @default(2200)
+  calorieTolerance Int     @default(95)
+  calorieEnabled   Boolean @default(true)
+
+  proteinGoal    Int?    @default(160)
+  proteinEnabled Boolean @default(true)
+
+  carbsGoal    Int?    @default(250)
+  carbsEnabled Boolean @default(true)
+
+  fatGoal    Int?    @default(70)
+  fatEnabled Boolean @default(true)
+
+  sodiumGoal Int @default(2300)
+  sugarGoal  Int @default(50)
+
+  waterGoal      Int     @default(2000)
+  waterTolerance Int     @default(80)
+  waterEnabled   Boolean @default(true)
+
+  sleepGoal      Float   @default(8)
+  sleepTolerance Int     @default(85)
+  sleepEnabled   Boolean @default(true)
+
+  workoutTolerance Int     @default(80)
+  workoutEnabled   Boolean @default(true)
+
+  tasksGoal    Int     @default(0)
+  tasksEnabled Boolean @default(true)
+
+  tutorialState       Json     @default("{}")
+  notificationsEmail  String?
+  avatar              String?
+  isEmailVerified     Boolean  @default(false)
+  emailAlertsEnabled  Boolean  @default(true)
+  emailReportsEnabled Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 model Food {
@@ -87,6 +140,18 @@ model Food {
   mealItems         MealItem[]
   recipeIngredients RecipeIngredient[]
   dailyLogs         DailyFoodLog[]
+  foodFavorites     FoodFavorite[]
+}
+
+model FoodFavorite {
+  id        String   @id @default(uuid())
+  userId    String
+  foodId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  food      Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, foodId])
 }
 
 model Meal {
@@ -94,11 +159,13 @@ model Meal {
   userId      String?
   name        String
   description String?
+  isPublic    Boolean @default(true)
 
   user  User?      @relation(fields: [userId], references: [id])
   items MealItem[]
 
-  createdAt DateTime @default(now())
+  createdAt     DateTime       @default(now())
+  mealFavorites MealFavorite[]
 }
 
 model MealItem {
@@ -109,6 +176,18 @@ model MealItem {
 
   meal Meal @relation(fields: [mealId], references: [id])
   food Food @relation(fields: [foodId], references: [id])
+}
+
+model MealFavorite {
+  id        String   @id @default(uuid())
+  userId    String
+  mealId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  meal Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mealId])
 }
 
 model Recipe {
@@ -159,6 +238,7 @@ model DailyFoodLog {
   user User @relation(fields: [userId], references: [id])
   food Food @relation(fields: [foodId], references: [id])
 
+  @@index([userId, date])
   @@map("DailyLog")
 }
 
@@ -169,6 +249,8 @@ model WaterLog {
   date   DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, date])
 }
 
 model WorkoutLog {
@@ -180,6 +262,41 @@ model WorkoutLog {
   date      DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, date])
+}
+
+model SleepLog {
+  id               String    @id @default(uuid())
+  userId           String
+  date             DateTime  @db.Date
+  sleptAt          DateTime?
+  wokeAt           DateTime?
+  napStart         DateTime?
+  napEnd           DateTime?
+  napDurationHours Float     @default(0)
+  durationHours    Float
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+model Task {
+  id                String    @id @default(uuid())
+  userId            String
+  title             String
+  notes             String?
+  isDaily           Boolean   @default(false)
+  targetDate        DateTime? @db.Date
+  reminderAt        DateTime?
+  lastCompletedDate DateTime? @db.Date
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model WorkoutPreset {
@@ -199,4 +316,76 @@ model WorkoutSettings {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  userId    String
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  usedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+}
+
+model MonthlyReportDispatch {
+  id       String   @id @default(uuid())
+  userId   String
+  monthKey String
+  sentAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, monthKey])
+}
+
+enum FlameLevel {
+  low
+  streak
+  max
+}
+
+model UserStreak {
+  userId String @id @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  streakCount      Int        @default(0)
+  livesRemaining   Int        @default(5)
+  maxLivesPerMonth Int        @default(5)
+  flameLevel       FlameLevel @default(low)
+
+  lastProcessedDate DateTime? @db.Date
+  livesMonthKey     String    @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  days UserStreakDay[]
+}
+
+model UserStreakDay {
+  id     String   @id @default(uuid())
+  userId String
+  date   DateTime @db.Date
+
+  contractMet Boolean @default(false)
+  missingGoals Json   @default("[]")
+  lifeUsed     Boolean @default(false)
+
+  streakBefore Int @default(0)
+  streakAfter  Int @default(0)
+  livesBefore  Int @default(0)
+  livesAfter   Int @default(0)
+
+  evaluatedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userStreak UserStreak @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
 }

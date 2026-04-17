@@ -8,6 +8,11 @@ import { MealsModule } from './meals/meals.module';
 import { RecipesModule } from './recipes/recipes.module';
 import { WorkoutsModule } from './workouts/workouts.module';
 import { WaterModule } from './water/water.module';
+import { TasksModule } from './tasks/tasks.module';
+import { SleepModule } from './sleep/sleep.module';
+import { MailModule } from './mail/mail.module';
+import { StreakModule } from './streak/streak.module';
+import { GoalsAggregatorModule } from './goals-aggregator/goals-aggregator.module';
 
 @Global()
 @Module({
@@ -20,6 +25,11 @@ import { WaterModule } from './water/water.module';
     RecipesModule,
     WorkoutsModule,
     WaterModule,
+    TasksModule,
+    SleepModule,
+    MailModule,
+    StreakModule,
+    GoalsAggregatorModule,
   ],
   providers: [PrismaService],
   exports: [PrismaService],

@@ -6,5 +6,6 @@ import { WaterController } from './water.controller';
 @Module({
   controllers: [WaterController],
   providers: [WaterService, PrismaService],
+  exports: [WaterService],
 })
 export class WaterModule {}

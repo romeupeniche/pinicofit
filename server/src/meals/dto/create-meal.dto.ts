@@ -6,5 +6,6 @@ export class CreateMealItemDto {
 export class CreateMealDto {
   name!: string;
   description?: string;
+  isPublic?: boolean;
   items!: CreateMealItemDto[];
 }

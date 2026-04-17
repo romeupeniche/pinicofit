@@ -1,6 +1,7 @@
 import {
   IsBoolean,
   IsEmail,
+  IsIn,
   IsNumber,
   IsObject,
   IsOptional,
@@ -48,6 +49,10 @@ export class UpdateUserDto {
   activityLevel?: string;
 
   @IsOptional()
+  @IsIn(['en', 'br', 'es'])
+  language?: 'en' | 'br' | 'es';
+
+  @IsOptional()
   @IsNumber()
   @Min(1000)
   calorieGoal?: number;
@@ -84,8 +89,8 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(1000)
-  stepsGoal?: number;
+  @Min(0)
+  tasksGoal?: number;
 
   @IsOptional()
   @IsEmail()
@@ -114,4 +119,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsObject()
   tutorialState?: Record<string, boolean>;
+
+  @IsOptional()
+  @IsString()
+  avatar?: string;
 }

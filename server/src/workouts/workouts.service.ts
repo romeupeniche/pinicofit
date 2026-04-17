@@ -82,7 +82,7 @@ export class WorkoutsService {
       where: { id, userId },
     });
 
-    if (!log) throw new NotFoundException('Log de treino não encontrado');
+    if (!log) throw new NotFoundException('Workout log not found');
 
     return this.prisma.workoutLog.delete({
       where: { id },
@@ -115,7 +115,7 @@ export class WorkoutsService {
     });
 
     if (!preset) {
-      throw new NotFoundException('Preset de treino nÃ£o encontrado');
+      throw new NotFoundException('Workout preset not found');
     }
 
     return this.prisma.workoutPreset.delete({
@@ -132,15 +132,28 @@ export class WorkoutsService {
   }
 
   async updateWorkoutSettings(userId: string, state: any) {
+    const existing = await this.prisma.workoutSettings.findUnique({
+      where: { userId },
+    });
+
+    const nextState =
+      existing?.state && typeof existing.state === 'object'
+        ? {
+            ...(existing.state as Record<string, unknown>),
+            ...(state as Record<string, unknown>),
+          }
+        : state;
+
     return this.prisma.workoutSettings.upsert({
       where: { userId },
       update: {
-        state: state as unknown as Prisma.InputJsonValue,
+        state: nextState as unknown as Prisma.InputJsonValue,
       },
       create: {
         userId,
-        state: state as unknown as Prisma.InputJsonValue,
+        state: nextState as unknown as Prisma.InputJsonValue,
       },
     });
   }
 }
+
