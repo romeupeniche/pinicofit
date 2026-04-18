@@ -360,13 +360,13 @@ const TasksGoal: React.FC = () => {
               scheduledTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="group/card relative flex items-center justify-between p-5 rounded-3xl bg-white border border-neutral-200 hover:border-brand-accent/40 transition-all text-left shadow-sm"
+                  className="group/card relative flex items-center justify-between p-4 rounded-3xl bg-white border border-neutral-200 hover:border-brand-accent/40 transition-all text-left shadow-sm"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-50 text-neutral-400 border border-neutral-100">
                       <CalendarDays size={20} />
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-neutral-900">{task.title}</h3>
                       {task.notes && (
                         <p className="text-sm text-neutral-500 truncate">{task.notes}</p>
@@ -377,7 +377,7 @@ const TasksGoal: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 shrink-0 ml-4">
                     <button
                       onClick={() => openEdit(task)}
                       className="cursor-pointer p-2 text-neutral-400 hover:text-brand-accent md:opacity-0 md:group-hover/card:opacity-100 transition-all"
