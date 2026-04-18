@@ -291,19 +291,15 @@ export class UsersService implements OnModuleDestroy {
         nutritionEnabled: preferences.nutritionEnabled ?? true,
         calorieGoal:
           preferences.calorieGoal ?? calculatedFallback?.calorieGoal ?? null,
-        calorieTolerance: preferences.calorieTolerance ?? 95,
-        calorieEnabled: preferences.calorieEnabled ?? true,
+        nutritionTolerance: preferences.nutritionTolerance ?? 95,
 
         proteinGoal:
           preferences.proteinGoal ?? calculatedFallback?.proteinGoal ?? null,
-        proteinEnabled: preferences.proteinEnabled ?? true,
 
         carbsGoal:
           preferences.carbsGoal ?? calculatedFallback?.carbsGoal ?? null,
-        carbsEnabled: preferences.carbsEnabled ?? true,
 
         fatGoal: preferences.fatGoal ?? calculatedFallback?.fatGoal ?? null,
-        fatEnabled: preferences.fatEnabled ?? true,
 
         sodiumGoal: preferences.sodiumGoal,
         sugarGoal: preferences.sugarGoal,
@@ -618,23 +614,19 @@ export class UsersService implements OnModuleDestroy {
         });
       }
 
-      return tx.userPreferences.update({
-        where: { userId },
-        data: {
-          nutritionEnabled: data.nutritionEnabled,
-          calorieGoal: data.calorieGoal,
-          calorieTolerance: data.calorieTolerance,
-          calorieEnabled: data.calorieEnabled,
-          proteinGoal: data.proteinGoal,
-          proteinEnabled: data.proteinEnabled,
-          carbsGoal: data.carbsGoal,
-          carbsEnabled: data.carbsEnabled,
-          fatGoal: data.fatGoal,
-          fatEnabled: data.fatEnabled,
-
-          waterGoal: data.waterGoal,
-          waterTolerance: data.waterTolerance,
-          waterEnabled: data.waterEnabled,
+      return tx.userPreferences.update({ 
+        where: { userId }, 
+        data: { 
+          nutritionEnabled: data.nutritionEnabled, 
+          calorieGoal: data.calorieGoal, 
+          nutritionTolerance: data.nutritionTolerance, 
+          proteinGoal: data.proteinGoal, 
+          carbsGoal: data.carbsGoal, 
+          fatGoal: data.fatGoal, 
+ 
+          waterGoal: data.waterGoal, 
+          waterTolerance: data.waterTolerance, 
+          waterEnabled: data.waterEnabled, 
 
           sleepGoal: data.sleepGoal,
           sleepTolerance: data.sleepTolerance,

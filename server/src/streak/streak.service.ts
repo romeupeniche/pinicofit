@@ -275,7 +275,7 @@ export class StreakService {
       const kcal = Number(nutritionSum?._sum.kcal || 0);
       const target = Math.round(
         (Number(p.calorieGoal || 0) *
-          normalizeTolerancePct(p.calorieTolerance, 95)) /
+          normalizeTolerancePct(p.nutritionTolerance, 95)) /
           100,
       );
       if (kcal < target) missingGoals.push('nutrition');
