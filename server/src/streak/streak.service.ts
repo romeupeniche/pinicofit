@@ -9,7 +9,10 @@ const DEFAULT_MAX_LIVES_PER_MONTH = 5;
 
 const toDateKey = (d: Date | string) => {
   const date = typeof d === 'string' ? new Date(d) : d;
-  return date.toISOString().slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const dateKeyToDateOnly = (dateKey: string) => new Date(dateKey.slice(0, 10));
@@ -128,7 +131,6 @@ export class StreakService {
     } else if (streak.streakCount > 0 && livesAfter > 0) {
       lifeUsed = true;
       livesAfter--;
-      streakAfter++;
     } else {
       streakAfter = 0;
       livesAfter = streak.maxLivesPerMonth;
@@ -269,6 +271,18 @@ export class StreakService {
 
     const missingGoals: GoalKey[] = [];
 
+    const anyGoalEnabled =
+      p.nutritionEnabled ||
+      p.waterEnabled ||
+      p.sleepEnabled ||
+      p.tasksEnabled ||
+      p.workoutEnabled;
+
+    if (!anyGoalEnabled) {
+      missingGoals.push('nutrition');
+      return { missingGoals };
+    }
+
     if (p.nutritionEnabled) {
       const kcal = Number(nutritionSum?._sum.kcal || 0);
       const target = Math.round(
@@ -303,9 +317,13 @@ export class StreakService {
 
     if (p.tasksEnabled && Number(p.tasksGoal || 0) > 0) {
       const completed = (tasks as any[]).filter(
-        (t) => t.lastCompletedDate?.toISOString().slice(0, 10) === dateKey,
+        (t) =>
+          t.lastCompletedDate && toDateKey(t.lastCompletedDate) === dateKey,
       ).length;
-      if (completed < Number(p.tasksGoal)) missingGoals.push('tasks');
+
+      if (completed < Number(p.tasksGoal)) {
+        missingGoals.push('tasks');
+      }
     }
 
     if (p.workoutEnabled) {
@@ -315,10 +333,12 @@ export class StreakService {
         const exercises =
           ((workoutLog as any)
             .exercises as unknown as WorkoutExerciseLogEntry[]) || [];
-        const completed = exercises.filter(
+
+        const completedExercises = exercises.filter(
           (ex) => ex?.status && ex.status !== 'failed',
         ).length;
-        if (completed === 0) missingGoals.push('workout');
+
+        if (completedExercises === 0) missingGoals.push('workout');
       }
     }
 
