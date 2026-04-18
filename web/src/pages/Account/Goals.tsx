@@ -11,6 +11,8 @@ import { useSettingsStore } from "../../store/settingsStore";
 import { api } from "../../services/api";
 import { useAccountUnsavedChanges } from "./AccountUnsavedChangesContext";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
+import GoalsConfirmSettingModal from "../../components/GoalsConfirmSettingModal";
+import { formatTextWithHighlights } from "../../utils/formatTextWithHighlights";
 
 
 type GoalsFormData = {
@@ -18,16 +20,15 @@ type GoalsFormData = {
   waterTolerance: number;
   waterEnabled: boolean;
 
-  calorieGoal: number;
-  calorieTolerance: number;
-  calorieEnabled: boolean;
-  proteinGoal: number;
-  proteinEnabled: boolean;
-  carbsGoal: number;
-  carbsEnabled: boolean;
-  fatGoal: number;
-  fatEnabled: boolean;
+  nutritionTolerance: number;
   nutritionEnabled: boolean;
+
+  calorieGoal: number;
+  proteinGoal: number;
+  carbsGoal: number;
+  fatGoal: number;
+  sodiumGoal: number;
+  sugarGoal: number;
 
   sleepGoal: number;
   sleepTolerance: number;
@@ -281,6 +282,23 @@ const GoalCard = ({
   </div>
 );
 
+const getRemainingCooldownDays = (cooldownDate: string | Date | null) => {
+  if (!cooldownDate) return 0;
+
+  const now = new Date();
+  const diffTime = new Date(cooldownDate).getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays > 0 ? diffDays : 0;
+};
+
+const cooldownKeys = {
+  waterEnabled: "waterCooldownUntil",
+  nutritionEnabled: "nutritionCooldownUntil",
+  sleepEnabled: "sleepCooldownUntil",
+  tasksEnabled: "tasksCooldownUntil",
+  workoutEnabled: "workoutCooldownUntil"
+} as const
 
 const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
   const { t } = useSettingsStore();
@@ -288,32 +306,34 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
   const { setHasUnsavedChanges } = useAccountUnsavedChanges();
   const queryClient = useQueryClient();
   const [highlighted, setHightlighted] = useState<string | null>(focusedGoal ?? null);
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<"disable_goal" | "reactivate_goal" | "cooldown_active" | null>(null);
   const [pendingField, setPendingField] = useState<keyof GoalsFormData | null>(null);
-  useBodyScrollLock(isConfirmModalOpen);
+  useBodyScrollLock(!!modalType);
   const handleToggleAttempt = (fieldName: keyof GoalsFormData, nextValue: boolean) => {
+    setPendingField(fieldName);
     if (nextValue === false) {
-      setPendingField(fieldName);
-      setIsConfirmModalOpen(true);
+      setModalType("disable_goal");
     } else {
-      setValue(fieldName, true, { shouldDirty: true });
-    }
-  };
-
-  const confirmDisable = () => {
-    if (pendingField) {
-      setValue(pendingField, false, { shouldDirty: true });
-      if (pendingField === "nutritionEnabled") {
-        setValue("calorieEnabled", false, { shouldDirty: true });
-        setValue("proteinEnabled", false, { shouldDirty: true });
-        setValue("carbsEnabled", false, { shouldDirty: true });
-        setValue("fatEnabled", false, { shouldDirty: true });
+      if (getRemainingCooldownDays(user!.preferences[cooldownKeys[fieldName as keyof typeof cooldownKeys]]) > 0) {
+        setModalType("cooldown_active");
+      } else {
+        setModalType("reactivate_goal");
       }
-
-      setIsConfirmModalOpen(false);
-      setPendingField(null);
     }
   };
+
+  const onModalConfirm = () => {
+    if (modalType === "cooldown_active") {
+      setModalType(null);
+    } else {
+      if (pendingField) {
+        setValue(pendingField, false, { shouldDirty: true });
+        setModalType(null);
+        setPendingField(null);
+      }
+    }
+  }
+
   const {
     register, handleSubmit, watch, reset, control,
     setValue,
@@ -324,19 +344,15 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
     if (user && user.preferences) {
       const p = user.preferences;
       reset({
+        nutritionEnabled: p.nutritionEnabled ?? true,
+        nutritionTolerance: p.nutritionTolerance ?? 80,
         waterGoal: p.waterGoal ?? 2000,
         waterTolerance: p.waterTolerance ?? 80,
         waterEnabled: p.waterEnabled ?? true,
         calorieGoal: p.calorieGoal ?? 2200,
-        calorieTolerance: p.calorieTolerance ?? 95,
-        calorieEnabled: p.calorieEnabled ?? true,
         proteinGoal: p.proteinGoal ?? 160,
-        proteinEnabled: p.proteinEnabled ?? true,
         carbsGoal: p.carbsGoal ?? 250,
-        carbsEnabled: p.carbsEnabled ?? true,
         fatGoal: p.fatGoal ?? 70,
-        fatEnabled: p.fatEnabled ?? true,
-        nutritionEnabled: p.nutritionEnabled ?? true,
         sleepGoal: p.sleepGoal ?? 8,
         sleepTolerance: p.sleepTolerance ?? 85,
         sleepEnabled: p.sleepEnabled ?? true,
@@ -354,6 +370,7 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
   }, [isDirty, setHasUnsavedChanges]);
 
   const values = watch();
+  console.log(values)
 
   const waterMin = values.waterGoal
     ? Math.min(50, Math.round((1500 / Number(values.waterGoal)) * 100))
@@ -393,19 +410,19 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
           <GoalCard
-            id="waterGoal" title={t("account.goals.fields.water")}
-            icon={Droplets} description="Daily goal & streak tolerance"
+            id="waterGoal" title={t("account.goals.water.title")}
+            icon={Droplets} description={t("account.goals.water.subtitle")}
             highlighted={highlighted} enabled={values.waterEnabled}
             onToggle={(v: boolean) => handleToggleAttempt("waterEnabled", v)}
           >
             <div className="space-y-5">
               <NumberInput
-                label="Daily goal" unit="ml"
+                label={t("account.goals.water.goal")} unit="ml"
                 {...register("waterGoal", { valueAsNumber: true })}
               />
               <Controller name="waterTolerance" control={control} render={({ field }: { field: ControllerRenderProps<GoalsFormData, "waterTolerance"> }) => (
                 <SmartSlider
-                  label="Streak tolerance"
+                  label={t("account.goals.streak_tolerance")}
                   value={field.value ?? 80}
                   onChange={field.onChange}
                   min={waterMin}
@@ -413,12 +430,8 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
                   disabled={!values.waterEnabled}
                   recommended={{ value: 80, label: "rec. 80%" }}
                   hint={(val) => (<>
-                    <span className="font-semibold text-neutral-500">Counts from </span>
-                    <span className="font-black text-brand-accent">
-                      {Math.round((Number(values.waterGoal || 0) * val) / 100)} ml
-                    </span>
-                    <span className="text-neutral-400"> and above</span>
-                    <span className="text-neutral-300"> · min {Math.round(Number(values.waterGoal || 0) * waterMin / 100)} ml (WHO)</span>
+                    <span className="font-semibold text-neutral-500">{formatTextWithHighlights(t("account.goals.water.tolerance_tip", { tolerance: String(Math.round((Number(values.waterGoal || 0) * val) / 100)) }), "text-brand-accent", "black")}</span>
+                    <span className="text-neutral-300">{t("account.goals.water.min_tip", { min: String(Math.round(Number(values.waterGoal || 0) * waterMin / 100)) })}</span>
                   </>)}
                 />
               )} />
@@ -426,31 +439,25 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
           </GoalCard>
 
           <GoalCard
-            id="sleepGoal" title={t("account.goals.fields.sleep")}
-            icon={Moon} description="Ideal rest duration & tolerance"
+            id="sleepGoal" title={t("account.goals.sleep.title")}
+            icon={Moon} description={t("account.goals.sleep.subtitle")}
             highlighted={highlighted} enabled={values.sleepEnabled}
             onToggle={(v: boolean) => handleToggleAttempt("sleepEnabled", v)}
           >
             <div className="space-y-5">
               <NumberInput
-                label="Duration" unit="hrs" step="0.5"
+                label={t("account.goals.sleep.duration")} unit="hrs" step="0.5"
                 {...register("sleepGoal", { valueAsNumber: true })}
               />
               <Controller name="sleepTolerance" control={control} render={({ field }: { field: ControllerRenderProps<GoalsFormData, "sleepTolerance"> }) => (
                 <SmartSlider
-                  label="Streak tolerance"
+                  label={t("account.goals.streak_tolerance")}
                   value={field.value ?? 85}
                   onChange={field.onChange}
                   min={50} max={100}
                   disabled={!values.sleepEnabled}
                   recommended={{ value: 85, label: "rec. 85%" }}
-                  hint={(val) => (<>
-                    <span className="font-semibold text-neutral-500">Counts from </span>
-                    <span className="font-black text-brand-accent">
-                      {((Number(values.sleepGoal || 0) * val) / 100).toFixed(1)} hrs
-                    </span>
-                    <span className="text-neutral-400"> and above</span>
-                  </>)}
+                  hint={(val) => <span className="font-semibold text-neutral-500">{formatTextWithHighlights(t("account.goals.sleep.tolerance_tip", { tolerance: String(((Number(values.sleepGoal || 0) * val) / 100).toFixed(1)) }), "text-brand-accent", "black")}</span>}
                 />
               )} />
             </div>
@@ -458,8 +465,8 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
         </div>
 
         <GoalCard
-          id="nutritionGoal" title="Nutrition & macros"
-          icon={Utensils} description="Calorie target and nutrient split"
+          id="nutritionGoal" title={t("account.goals.nutrition.title")}
+          icon={Utensils} description={t("account.goals.nutrition.subtitle")}
           highlighted={highlighted} enabled={values.nutritionEnabled}
           onToggle={(v: boolean) => {
             handleToggleAttempt("nutritionEnabled", v)
@@ -469,48 +476,21 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
             <div className="flex items-end gap-3">
               <div className="flex-1">
                 <NumberInput
-                  label="Calorie goal" unit="kcal"
+                  label={t("account.goals.nutrition.calorie_goal")} unit="kcal"
                   {...register("calorieGoal", { valueAsNumber: true })}
-                />
-              </div>
-              <div className="flex flex-col items-center gap-1 pb-2 shrink-0">
-                <span className="text-[9px] font-black uppercase tracking-widest text-neutral-300">streak</span>
-                <Controller
-                  name="calorieEnabled"
-                  control={control}
-                  render={({ field }: { field: ControllerRenderProps<GoalsFormData, "calorieEnabled"> }) => (
-                    <Toggle
-                      checked={field.value ?? true}
-                      onChange={(v) => handleToggleAttempt("calorieEnabled", v)}
-                      size="sm"
-                      disabled={!values.nutritionEnabled}
-                    />
-                  )}
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               {([
-                { key: "protein", enabledKey: "proteinEnabled", enabled: values.proteinEnabled },
-                { key: "carbs", enabledKey: "carbsEnabled", enabled: values.carbsEnabled },
-                { key: "fat", enabledKey: "fatEnabled", enabled: values.fatEnabled },
-              ] as const).map(({ key, enabledKey, enabled }) => (
+                "protein",
+                "carbs",
+                "fat",
+              ] as const).map((key) => (
                 <div key={key} className="space-y-1">
                   <div className="flex items-center justify-between px-0.5 mb-1">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">{key}</span>
-                    <Controller
-                      name={enabledKey}
-                      control={control}
-                      render={({ field }: { field: any }) => (
-                        <Toggle
-                          checked={field.value ?? true}
-                          onChange={(v) => handleToggleAttempt(enabledKey as keyof GoalsFormData, v)}
-                          size="sm"
-                          disabled={!values.nutritionEnabled}
-                        />
-                      )}
-                    />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">{t(`account.goals.nutrition.${key}`)}</span>
                   </div>
                   <div className="relative flex items-center">
                     <input
@@ -522,36 +502,27 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
                     />
                     <span className="absolute right-3 text-xs font-bold text-neutral-300 pointer-events-none">g</span>
                   </div>
-                  {!enabled && values.nutritionEnabled && (
-                    <p className="text-[10px] text-neutral-300 text-center">streak off</p>
-                  )}
                 </div>
               ))}
             </div>
 
             <div className="border-t border-neutral-100" />
 
-            <Controller name="calorieTolerance" control={control} render={({ field }: { field: ControllerRenderProps<GoalsFormData, "calorieTolerance"> }) => (
+            <Controller name="nutritionTolerance" control={control} render={({ field }: { field: ControllerRenderProps<GoalsFormData, "nutritionTolerance"> }) => (
               <SmartSlider
-                label="Streak accuracy"
+                label={t("account.goals.streak_tolerance")}
                 value={field.value ?? 95}
                 onChange={field.onChange}
                 min={70} max={100}
-                disabled={!values.nutritionEnabled || !values.calorieEnabled}
+                disabled={!values.nutritionEnabled}
                 recommended={{ value: 90, label: "rec. 90%" }}
-                hint={(val) => (<>
-                  <span className="font-semibold text-neutral-500">Streak counted at </span>
-                  <span className="font-black text-brand-accent">{val}%</span>
-                  <span className="text-neutral-400"> of your calorie goal</span>
-                </>)}
+                hint={(val) => <span className="font-semibold text-neutral-500">{formatTextWithHighlights(t("account.goals.nutrition.tolerance_tip", { tolerance: String(((Number(values.calorieGoal || 0) * val) / 100).toFixed(1)) }), "text-brand-accent", "black")}</span>}
               />
             )} />
 
             <div className="flex items-start gap-2 bg-brand-accent/5 rounded-2xl px-4 py-3 border border-brand-accent/10">
               <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-brand-accent/60" />
-              <span className="text-[11px] text-brand-accent/70">
-                Each macro streak is tracked independently. Turning off a macro removes it from your streak calculation.
-              </span>
+              <span className="text-[11px] text-brand-accent/70">{t("account.goals.nutrition.streak_tip")}</span>
             </div>
           </div>
         </GoalCard>
@@ -559,42 +530,35 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
           <GoalCard
-            id="workoutGoal" title="Workout"
-            icon={Dumbbell} description="Exercise completion threshold"
+            id="workoutGoal" title={t("account.goals.workout.title")}
+            icon={Dumbbell} description={t("account.goals.workout.subtitle")}
             highlighted={highlighted} enabled={values.workoutEnabled}
             onToggle={(v: boolean) => handleToggleAttempt("workoutEnabled", v)}
           >
             <div className="space-y-5">
               <Controller name="workoutTolerance" control={control} render={({ field }: { field: ControllerRenderProps<GoalsFormData, "workoutTolerance"> }) => (
                 <SmartSlider
-                  label="Minimum completion"
+                  label={t("account.goals.workout.minimum_completion")}
                   value={field.value ?? 80}
                   onChange={field.onChange}
                   min={70} max={100}
                   disabled={!values.workoutEnabled}
                   recommended={{ value: 80, label: "rec. 80%" }}
-                  hint={(val) => {
-                    const failAllowed = Math.floor(10 * (1 - val / 100));
-                    return (<>
-                      <span className="font-semibold text-neutral-500">In a 10-exercise session, you can miss </span>
-                      <span className="font-black text-brand-accent">{failAllowed}</span>
-                      <span className="text-neutral-400"> exercise{failAllowed !== 1 ? "s" : ""} and still keep your streak</span>
-                    </>);
-                  }}
+                  hint={(val) => <span className="font-semibold text-neutral-500">{formatTextWithHighlights(t("account.goals.workout.tolerance_tip", { tolerance: String(Math.floor(10 * (1 - val / 100))) }), "text-brand-accent", "black")}</span>}
                 />
               )} />
             </div>
           </GoalCard>
 
           <GoalCard
-            id="tasksGoal" title="Productivity"
-            icon={CheckCircle2} description="Daily task target"
+            id="tasksGoal" title={t("account.goals.tasks.title")}
+            icon={CheckCircle2} description={t("account.goals.tasks.subtitle")}
             highlighted={highlighted} enabled={values.tasksEnabled}
             onToggle={(v: boolean) => handleToggleAttempt("tasksEnabled", v)}
           >
             <div className="space-y-5">
               <NumberInput
-                label="Tasks per day" unit="tasks"
+                label={t("account.goals.tasks.input_label")} unit={t("account.goals.tasks.unit")}
                 {...register("tasksGoal", { valueAsNumber: true })}
               />
             </div>
@@ -613,45 +577,8 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
           {saveMutation.isPending ? t("account.goals.saving") : t("account.save_updates")}
         </button>
       </form>
-      {isConfirmModalOpen && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-neutral-900/40 backdrop-blur-sm"
-            onClick={() => setIsConfirmModalOpen(false)}
-          />
-
-          <div className="relative bg-white w-full max-w-sm rounded-4xl p-8 shadow-2xl border border-neutral-100 scale-in-center">
-            <div className="flex flex-col items-center text-center">
-              <div className="p-4 bg-red-50 text-red-500 rounded-2xl mb-4">
-                <Activity size={32} />
-              </div>
-
-              <h3 className="text-xl font-black text-neutral-800 mb-2">
-                Tem certeza?
-              </h3>
-
-              <p className="text-sm text-neutral-500 leading-relaxed mb-8">
-                Ao desabilitar essa meta, o seu <span className="text-orange-500 font-bold">streak diário</span> não será mais contabilizado para este objetivo e seu streak será rebaixado para o <span className="text-green-400 font-bold">Nível Básico</span>.
-              </p>
-
-              <div className="flex flex-col w-full gap-3">
-                <button
-                  onClick={confirmDisable}
-                  className="cursor-pointer w-full py-4 bg-red-500 text-white rounded-2xl font-bold hover:bg-red-600 transition-all"
-                >
-                  Sim, desabilitar
-                </button>
-
-                <button
-                  onClick={() => setIsConfirmModalOpen(false)}
-                  className="cursor-pointer w-full py-4 bg-neutral-100 text-neutral-600 rounded-2xl font-bold hover:bg-neutral-200 transition-all"
-                >
-                  Manter o foco
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {!!modalType && (
+        <GoalsConfirmSettingModal modalType={modalType} onConfirm={onModalConfirm} setIsModalOpen={setModalType} cooldownDays={getRemainingCooldownDays(user!.preferences[cooldownKeys[pendingField as keyof typeof cooldownKeys]])} />
       )}
     </div>
   );

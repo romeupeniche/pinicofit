@@ -32,20 +32,13 @@ export interface User {
     tasks?: boolean;
   };
   preferences: {
+    nutritionTolerance: number;
     nutritionEnabled: boolean;
+
     calorieGoal: number;
-    calorieTolerance: number;
-    calorieEnabled: boolean;
-
     proteinGoal: number;
-    proteinEnabled: boolean;
-
-    carbsGoal: number;
-    carbsEnabled: boolean;
-
     fatGoal: number;
-    fatEnabled: boolean;
-
+    carbsGoal: number;
     sodiumGoal: number;
     sugarGoal: number;
 
@@ -63,8 +56,34 @@ export interface User {
     tasksGoal: number;
     tasksEnabled: boolean;
 
-    language: string;
-    updatedAt?: string | Date;
+    nutritionDeactivatedAt: string | Date | null;
+    nutritionCooldownUntil: string | Date | null;
+
+    waterDeactivatedAt: string | Date | null;
+    waterCooldownUntil: string | Date | null;
+
+    sleepDeactivatedAt: string | Date | null;
+    sleepCooldownUntil: string | Date | null;
+
+    workoutDeactivatedAt: string | Date | null;
+    workoutCooldownUntil: string | Date | null;
+
+    tasksDeactivatedAt: string | Date | null;
+    tasksCooldownUntil: string | Date | null;
+
+    tutorialState: {
+      dashboard: boolean;
+      meals: boolean;
+      water: boolean;
+      workout: boolean;
+      sleep: boolean;
+      tasks: boolean;
+    } & Record<string, boolean>;
+    notificationsEmail: string;
+    avatar: string | null;
+    isEmailVerified: boolean;
+    emailAlertsEnabled: boolean;
+    emailReportsEnabled: boolean;
   };
   isProfileComplete: boolean;
 }

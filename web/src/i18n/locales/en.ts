@@ -77,21 +77,67 @@
     },
     goals: {
       title: "Goal Settings",
-      subtitle: "Here you can adjust your calories and macros manually.",
-      adjust_button: "Adjust Goals",
-      fields: {
-        water: "Water Goal (ml)",
-        calories: "Daily Calories (kcal)",
-        sleep: "Sleep Goal (hours)",
-        tasks: "Tasks Goal",
-        protein: "Protein (g)",
-        carbs: "Carbs (g)",
-        fat: "Fat (g)",
-        sodium: "Sodium (mg)",
-        sugar: "Sugar (g)",
+      subtitle:
+        "Manage your daily goals, streak tolerances, and contract preferences.",
+      streak_tolerance: "Streak Tolerance",
+      water: {
+        title: "Water Goal",
+        subtitle: "Daily goal & streak tolerance",
+        tolerance_tip: "Counts from {{{tolerance}} ml} and above",
+        min_tip: " · min {{min}} ml (WHO)",
+        goal: "Daily Goal",
       },
-      macro_title: "Nutrition & limits",
+      sleep: {
+        title: "Sleep Goal",
+        subtitle: "Ideal rest duration & tolerance",
+        tolerance_tip: "Counts from {{{tolerance}} hrs} and above",
+        duration: "Duration",
+      },
+      nutrition: {
+        title: "Nutrition & macros",
+        subtitle: "Calorie target and nutrient split",
+        calorie_goal: "Calorie Goal",
+        protein: "Protein",
+        carbs: "Carbs",
+        fat: "Fat",
+        tolerance_tip: "Streak counted at {{{tolerance}} kcal} and above",
+        streak_tip:
+          "Only calories count toward your streak, but stay mindful of your macros for a balanced and complete nutrition.",
+      },
+      workout: {
+        title: "Workout Goal",
+        subtitle: "Exercise completion threshold",
+        minimum_completion: "Minimum Completion",
+        tolerance_tip:
+          "In a 10-exercise session, you can miss {{{tolerance}}} exercise(s) and still keep your streak",
+      },
+      tasks: {
+        title: "Tasks Goal",
+        subtitle: "Daily task target",
+        input_label: "Tasks per day",
+        unit: "tasks",
+      },
       saving: "Saving goals...",
+      reactivate_goal: {
+        title: "Reactivate Goal",
+        description:
+          "To reactivate this goal with an active streak, the contract requires a sacrifice of {2 lives}. This action is immediate and cannot be undone.",
+        confirm: "Pay 2 lives",
+        cancel: "Not now",
+      },
+      disable_goal: {
+        title: "Are you sure?",
+        description:
+          "By deactivating this goal, it will no longer count toward your contract. Additionally, you will be blocked from reactivating it for {7 days}, and reactivation will cost {2 lives} if your streak is active.",
+        confirm: "Yes, deactivate",
+        cancel: "Stay focused",
+      },
+      cooldown_active: {
+        title: "Goal Locked",
+        description:
+          "This goal is in a cooldown period to prevent streak abuse. You will be able to reactivate it in { {{days}} days}.",
+        confirm: "Understood",
+      },
     },
     preferences: {
       title: "Preferences",

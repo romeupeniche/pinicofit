@@ -198,8 +198,8 @@ const Dashboard: React.FC = () => {
   const isTodayPerfect = useMemo(() => {
     const goalsMet = [];
 
-    if (p?.calorieEnabled) {
-      const target = (p.calorieGoal * (p.calorieTolerance ?? 95)) / 100;
+    if (p?.nutritionEnabled) {
+      const target = (p.calorieGoal * (p.nutritionTolerance ?? 95)) / 100;
       goalsMet.push(nutritionStats.kcal >= target);
     }
     if (p?.waterEnabled) {
@@ -327,14 +327,14 @@ const Dashboard: React.FC = () => {
   const mainCenterX = 128;
   const mainCenterY = 128;
 
-  const calorieTolerance = p?.calorieTolerance ?? 95;
-  const calorieStreakPercent = calorieTolerance;
+  const nutritionTolerance = p?.nutritionTolerance ?? 95;
+  const nutritionStreakPercent = nutritionTolerance;
 
-  const mainAngle = (calorieStreakPercent / 100) * 360 - 90;
+  const mainAngle = (nutritionStreakPercent / 100) * 360 - 90;
   const mainFlameX = mainCenterX + mainRadius * Math.cos((mainAngle * Math.PI) / 180);
   const mainFlameY = mainCenterY + mainRadius * Math.sin((mainAngle * Math.PI) / 180);
 
-  const isCalorieStreakReached = progressPercent >= calorieStreakPercent;
+  const isNutritionStreakReached = progressPercent >= nutritionStreakPercent;
 
   return (
     <div className="min-h-screen text-neutral-900 relative overflow-hidden">
@@ -442,16 +442,16 @@ const Dashboard: React.FC = () => {
                 transform: 'translate(-50%, -50%)',
               }}
             >
-              <div className={`p-1 rounded-full border-2 shadow-md transition-colors ${isCalorieStreakReached
+              <div className={`p-1 rounded-full border-2 shadow-md transition-colors ${isNutritionStreakReached
                 ? "bg-orange-500 border-orange-600 text-white animate-pulse"
                 : "bg-white border-neutral-200 text-neutral-400"
                 }`}>
-                <Flame size={16} fill={isCalorieStreakReached ? "currentColor" : "none"} />
+                <Flame size={16} fill={isNutritionStreakReached ? "currentColor" : "none"} />
               </div>
             </div>
 
             <div className="absolute flex flex-col items-center">
-              <span className={`text-5xl font-black ${progressPercent === 100 && caloriesLeft < 0 ? "text-red-600" : progressPercent === 100 ? "text-green-500" : isCalorieStreakReached ? "text-orange-500" : "text-black"}`}>{caloriesLeft}</span>
+              <span className={`text-5xl font-black ${progressPercent === 100 && caloriesLeft < 0 ? "text-red-600" : progressPercent === 100 ? "text-green-500" : isNutritionStreakReached ? "text-orange-500" : "text-black"}`}>{caloriesLeft}</span>
               <span className="text-neutral-500 uppercase text-xs font-bold tracking-widest">
                 {t("dashboard.remaining")}
               </span>
@@ -510,21 +510,21 @@ const Dashboard: React.FC = () => {
                 current: nutritionStats.protein,
                 goal: macroGoals.protein,
                 color: "bg-brand-accent",
-                tolerance: p?.calorieTolerance
+                tolerance: p?.nutritionTolerance
               },
               {
                 key: "carbs",
                 current: nutritionStats.carbs,
                 goal: macroGoals.carbs,
                 color: "bg-brand-pink",
-                tolerance: p?.calorieTolerance
+                tolerance: p?.nutritionTolerance
               },
               {
                 key: "fats",
                 current: nutritionStats.fat,
                 goal: macroGoals.fat,
                 color: "bg-yellow-400",
-                tolerance: p?.calorieTolerance
+                tolerance: p?.nutritionTolerance
               },
             ].map((macro) => {
               const progress = Math.min((macro.current / macro.goal) * 100, 100);

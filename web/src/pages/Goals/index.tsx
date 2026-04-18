@@ -35,6 +35,7 @@ import type {
 } from "../../types/goals";
 import type { TaskItem } from "../../types/tasks";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
+import { formatTextWithHighlights } from "../../utils/formatTextWithHighlights";
 
 type HelpKey =
   | "main"
@@ -65,22 +66,6 @@ type GoalsDailySummaryResponse = {
 
 const MAX_LIVES_PER_MONTH = 5;
 
-const formatTextWithRedHighlights = (text: string) => {
-  const parts = text.split(/({.*?})/g);
-
-  return parts.map((part, index) => {
-    if (part.startsWith('{') && part.endsWith('}')) {
-      const content = part.slice(1, -1);
-      return (
-        <span key={index} className="text-red-500 font-bold font-mono">
-          {content}
-        </span>
-      );
-    }
-    return part;
-  });
-};
-
 const GoalsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -104,7 +89,7 @@ const GoalsPage = () => {
   const sleepToday = dailySummaryQuery.data?.sleep;
   const workoutState = dailySummaryQuery.data?.workoutSettings;
 
-  const nutritionEnabled = Boolean(p?.nutritionEnabled && p?.calorieEnabled);
+  const nutritionEnabled = Boolean(p?.nutritionEnabled && p?.nutritionEnabled);
   const waterEnabled = Boolean(p?.waterEnabled);
   const sleepEnabled = Boolean(p?.sleepEnabled);
   const workoutEnabled = Boolean(p?.workoutEnabled);
@@ -185,9 +170,9 @@ const GoalsPage = () => {
   const waterToleranceMet = !waterEnabled || (waterToday?.total || 0) >= waterToleranceMl;
 
   const calorieGoal = Number(p?.calorieGoal ?? 0);
-  const calorieTolerancePct = Number(p?.calorieTolerance ?? 95);
-  const calorieToleranceKcal = Math.round((calorieGoal * calorieTolerancePct) / 100);
-  const nutritionToleranceMet = !nutritionEnabled || calorieGoal <= 0 || nutritionStats.kcal >= calorieToleranceKcal;
+  const nutritionTolerancePct = Number(p?.nutritionTolerance ?? 95);
+  const nutritionToleranceKcal = Math.round((calorieGoal * nutritionTolerancePct) / 100);
+  const nutritionToleranceMet = !nutritionEnabled || calorieGoal <= 0 || nutritionStats.kcal >= nutritionToleranceKcal;
 
   const sleepGoalHours = Number(p?.sleepGoal ?? 0);
   const sleepTolerancePct = Number(p?.sleepTolerance ?? 85);
@@ -212,13 +197,13 @@ const GoalsPage = () => {
   const progressPercent = (completedCount / totalCount) * 100;
   const allTolerancesAre100 = useMemo(() => {
     const targets = [
-      { enabled: nutritionEnabled, tolerance: calorieTolerancePct },
+      { enabled: nutritionEnabled, tolerance: nutritionTolerancePct },
       { enabled: waterEnabled, tolerance: waterTolerancePct },
       { enabled: sleepEnabled, tolerance: sleepTolerancePct },
       { enabled: workoutEnabled, tolerance: workoutTolerancePct },
     ];
     return targets.filter((t) => t.enabled).every((t) => t.tolerance >= 100);
-  }, [calorieTolerancePct, nutritionEnabled, sleepEnabled, waterEnabled, workoutEnabled, sleepTolerancePct, waterTolerancePct, workoutTolerancePct]);
+  }, [nutritionTolerancePct, nutritionEnabled, sleepEnabled, waterEnabled, workoutEnabled, sleepTolerancePct, waterTolerancePct, workoutTolerancePct]);
 
   const canMaxFlame = allGoalsEnabled && allTolerancesAre100;
   const allGoalsDisabled = totalCount == disabledGoalsCount
@@ -394,7 +379,7 @@ const GoalsPage = () => {
               />
               <div
                 className="absolute top-1/2 -translate-y-1/2 -mt-0.5"
-                style={{ left: `${p?.calorieTolerance ?? 95}%` }}
+                style={{ left: `${p?.nutritionTolerance ?? 95}%` }}
               >
                 <Flame
                   className={`w-4 h-4 -translate-x-1/2 ${!nutritionEnabled ? "text-zinc-700" : nutritionToleranceMet ? "text-orange-400 fill-orange-500" : "text-zinc-700"}`}
@@ -733,7 +718,7 @@ const GoalsPage = () => {
                         key: "nutrition",
                         label: t("goals.help_modal.main.rows.nutrition"),
                         met: contract.nutrition,
-                        details: `${formatKcal(calorieToleranceKcal)} / ${formatKcal(calorieGoal)} (${calorieTolerancePct}%)`,
+                        details: `${formatKcal(nutritionToleranceKcal)} / ${formatKcal(calorieGoal)} (${nutritionTolerancePct}%)`,
                         now: formatKcal(nutritionStats.kcal),
                         nowNumber: nutritionStats.kcal,
                         goalNumber: calorieGoal,
@@ -856,7 +841,7 @@ const GoalsPage = () => {
                     </span>
                   </div>
                   <div className="flex justify-between border-b border-zinc-800 pb-2"><span className="text-zinc-400">{t("goals.help_modal.nutrition.status.ideal")}</span><span className="font-mono font-bold">{formatKcal(calorieGoal)}</span></div>
-                  <div className="flex justify-between"><span className="text-zinc-400">{t("goals.help_modal.nutrition.status.minimum", { pct: String(calorieTolerancePct) })}</span><span className="font-mono font-bold text-orange-500">{formatKcal(calorieToleranceKcal)}</span></div>
+                  <div className="flex justify-between"><span className="text-zinc-400">{t("goals.help_modal.nutrition.status.minimum", { pct: String(nutritionTolerancePct) })}</span><span className="font-mono font-bold text-orange-500">{formatKcal(nutritionToleranceKcal)}</span></div>
                 </div>
                 <button
                   onClick={() => { setHelpOpen(null); navigate("/meals") }}
@@ -865,7 +850,7 @@ const GoalsPage = () => {
                   {(nutritionStats.kcal >= calorieGoal) || !nutritionEnabled ? (
                     <><span>{!nutritionEnabled ? t("goals.help_modal.nutrition.button.disabled") : t("goals.help_modal.nutrition.button.completed")}</span>{nutritionEnabled && <CheckCircle2 className="w-5 h-5" />}</>
                   ) : (
-                    <><span>{nutritionStats.kcal >= calorieToleranceKcal ? t("goals.help_modal.nutrition.button.adjust") : t("goals.help_modal.nutrition.button.log")}</span><Apple className="w-5 h-5" /></>
+                    <><span>{nutritionStats.kcal >= nutritionToleranceKcal ? t("goals.help_modal.nutrition.button.adjust") : t("goals.help_modal.nutrition.button.log")}</span><Apple className="w-5 h-5" /></>
                   )}
                 </button>
               </div>
@@ -956,7 +941,7 @@ const GoalsPage = () => {
               <div className="mt-6 space-y-6">
                 <div className="bg-zinc-800/40 border border-zinc-700 rounded-2xl p-5 text-xs text-zinc-300 leading-relaxed">
                   <p className="mb-2 font-bold text-zinc-100 uppercase text-[14px] tracking-wider">{t("goals.help_modal.streak_shield.how_it_works.title")}</p>
-                  {formatTextWithRedHighlights(t("goals.help_modal.streak_shield.how_it_works.description"))}
+                  {formatTextWithHighlights(t("goals.help_modal.streak_shield.how_it_works.description"), "text-red-500")}
                 </div>
 
                 <div className="space-y-4">
@@ -976,7 +961,7 @@ const GoalsPage = () => {
                     </div>
                     <div>
                       <h4 className="text-sm font-bold text-zinc-100">{t("goals.help_modal.streak_shield.death.title")}</h4>
-                      <p className="text-[11px] text-zinc-500 leading-snug">{formatTextWithRedHighlights(t("goals.help_modal.streak_shield.death.description"))}</p>
+                      <p className="text-[11px] text-zinc-500 leading-snug">{formatTextWithHighlights(t("goals.help_modal.streak_shield.death.description"), "text-red-500")}</p>
                     </div>
                   </div>
 

@@ -148,12 +148,12 @@ export const br = {
         confirm: "Entendido",
       },
     },
-
     preferences: {
-      teste: {
-        macro_title: "Nutrição e limites",
-        saving: "Salvando metas...",
-        title: "Escolha o idioma preferido",
+      ...en.account.preferences,
+      title: "Preferências",
+      language: {
+        title: "Idioma do app",
+        subtitle: "Escolha o idioma preferido",
         options: {
           en: "English (US)",
           br: "Português (BR)",

@@ -87,21 +87,65 @@ export const es = {
       ...en.account.goals,
       title: "Configuración de metas",
       subtitle: "Ajusta agua, calorías, macronutrientes y límites diarios.",
-      adjust_button: "Ajustar metas",
-      fields: {
-        ...en.account.goals.fields,
-        water: "Meta de agua (ml)",
-        calories: "Calorías diarias (kcal)",
-        sleep: "Meta de sueño (horas)",
-        tasks: "Meta de tareas",
-        protein: "Proteína (g)",
-        carbs: "Carbohidratos (g)",
-        fat: "Grasas (g)",
-        sodium: "Sodio (mg)",
-        sugar: "Azúcar (g)",
+      streak_tolerance: "Tolerancia de racha",
+      water: {
+        title: "Meta de Agua",
+        subtitle: "Objetivo diario y tolerancia de racha",
+        tolerance_tip: "Cuenta a partir de {{{tolerance}} ml}",
+        min_tip: " · mín. {{min}} ml (OMS)",
+        goal: "Meta Diaria",
       },
-      macro_title: "Nutrición y límites",
+      sleep: {
+        title: "Meta de Sueño",
+        subtitle: "Duración ideal de descanso y tolerancia",
+        tolerance_tip: "Cuenta a partir de {{{tolerance}} hrs}",
+        duration: "Duración",
+      },
+      nutrition: {
+        title: "Nutrición y Macros",
+        subtitle: "Objetivo de calorías y división de nutrientes",
+        calorie_goal: "Meta de Calorías",
+        protein: "Proteína",
+        carbs: "Carbos",
+        fat: "Grasa",
+        tolerance_tip: "Racha contabilizada a partir de {{{tolerance}} kcal}",
+        streak_tip:
+          "Solo las calorías cuentan para tu racha, pero mantén el equilibrio de tus macros para una nutrición completa.",
+      },
+      workout: {
+        title: "Meta de Entrenamiento",
+        subtitle: "Umbral de finalización de ejercicios",
+        minimum_completion: "Conclusión Mínima",
+        tolerance_tip:
+          "En una sesión de 10 ejercicios, puedes perder {{{tolerance}}} y aún así mantener tu racha",
+      },
+      tasks: {
+        title: "Meta de Tareas",
+        subtitle: "Objetivo diario de productividad",
+        input_label: "Tareas por día",
+        unit: "tareas",
+      },
       saving: "Guardando metas...",
+      reactivate_goal: {
+        title: "Reactivate Goal",
+        description:
+          "To reactivate this goal with an active streak, the contract requires a sacrifice of {2 lives}. This action is immediate and cannot be undone.",
+        confirm: "Pay 2 lives",
+        cancel: "Not now",
+      },
+      disable_goal: {
+        title: "Are you sure?",
+        description:
+          "By deactivating this goal, it will no longer count toward your contract. Additionally, you will be blocked from reactivating it for {7 days}, and reactivation will cost {2 lives} if your streak is active.",
+        confirm: "Yes, deactivate",
+        cancel: "Stay focused",
+      },
+      cooldown_active: {
+        title: "Meta Bloqueada",
+        description:
+          "Esta meta está en periodo de descanso para evitar abusos en la racha. Podrás reactivarla en { {{days}} días}.",
+        confirm: "Entendido",
+      },
     },
     preferences: {
       ...en.account.preferences,

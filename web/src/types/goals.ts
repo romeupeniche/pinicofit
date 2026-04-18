@@ -20,19 +20,13 @@ export interface GoalsPreferences {
   language: string;
   activityLevel: string | null;
 
+  nutritionTolerance: number;
   nutritionEnabled: boolean;
+
   calorieGoal: number;
-  calorieTolerance: number;
-  calorieEnabled: boolean;
-
   proteinGoal: number | null;
-  proteinEnabled: boolean;
-
   carbsGoal: number | null;
-  carbsEnabled: boolean;
-
   fatGoal: number | null;
-  fatEnabled: boolean;
 
   sodiumGoal: number;
   sugarGoal: number;
@@ -61,19 +55,14 @@ export interface GoalsPreferences {
 
 export interface UpdateGoalsRequest {
   nutritionEnabled: boolean;
+  nutritionTolerance: number;
 
   calorieGoal: number | null;
-  calorieTolerance: number;
-  calorieEnabled: boolean;
-
   proteinGoal: number | null;
-  proteinEnabled: boolean;
-
   carbsGoal: number | null;
-  carbsEnabled: boolean;
-
   fatGoal: number | null;
-  fatEnabled: boolean;
+  sodiumGoal: number;
+  sugarGoal: number;
 
   waterGoal: number;
   waterTolerance: number;
