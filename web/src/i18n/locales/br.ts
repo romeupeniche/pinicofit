@@ -86,29 +86,74 @@ export const br = {
     goals: {
       ...en.account.goals,
       title: "Configurações de metas",
-      subtitle: "Ajuste água, calorias, macronutrientes e limites diários.",
-      adjust_button: "Ajustar metas",
-      fields: {
-        ...en.account.goals.fields,
-        water: "Meta de água (ml)",
-        calories: "Calorias diárias (kcal)",
-        sleep: "Meta de sono (horas)",
-        tasks: "Meta de tasks",
-        protein: "Proteína (g)",
-        carbs: "Carboidratos (g)",
-        fat: "Gorduras (g)",
-        sodium: "Sódio (mg)",
-        sugar: "Açúcar (g)",
+      subtitle:
+        "Gerencie suas metas diárias, as tolerâncias do seu streak e preferências do contrato.",
+      streak_tolerance: "Tolerância de Streak",
+      water: {
+        title: "Meta de Água",
+        subtitle: "Alvo diário e tolerância de streak",
+        tolerance_tip: "Conta a partir de {{{tolerance}} ml}",
+        min_tip: " · mín. {{min}} ml (OMS)",
+        goal: "Meta Diária",
       },
-      macro_title: "Nutrição e limites",
+      sleep: {
+        title: "Meta de Sono",
+        subtitle: "Duração de descanso e tolerância",
+        tolerance_tip: "Conta a partir de {{{tolerance}} hrs}",
+        duration: "Duração",
+      },
+      nutrition: {
+        title: "Nutrição e Macros",
+        subtitle: "Alvo de calorias e divisão de nutrientes",
+        calorie_goal: "Meta de Calorias",
+        protein: "Proteína",
+        carbs: "Carbos",
+        fat: "Gordura",
+        tolerance_tip: "Streak contabilizado a partir de {{{tolerance}} kcal}",
+        streak_tip:
+          "Apenas as calorias contam para o seu streak, mas mantenha o equilíbrio dos seus macros para uma nutrição completa.",
+      },
+      workout: {
+        title: "Meta de Treino",
+        subtitle: "Limite de conclusão de exercícios",
+        minimum_completion: "Conclusão Mínima",
+        tolerance_tip:
+          "Em um treino de 10 exercícios, você pode perder {{{tolerance}}} e ainda manter seu streak",
+      },
+      tasks: {
+        title: "Meta de Tarefas",
+        subtitle: "Alvo diário de produtividade",
+        input_label: "Tarefas por dia",
+        unit: "tarefas",
+      },
       saving: "Salvando metas...",
+      reactivate_goal: {
+        title: "Reativar Meta",
+        description:
+          "Para reativar este objetivo com um streak ativo, o contrato exige um sacrifício de {2 vidas}. Esta ação é imediata e não pode ser desfeita.",
+        confirm: "Pagar 2 vidas",
+        cancel: "Agora não",
+      },
+      disable_goal: {
+        title: "Tem certeza?",
+        description:
+          "Ao desativar esta meta, ela não contará para o seu contrato. Além disso, você ficará bloqueado de reativá-la por {7 dias} e a reativação custará {2 vidas} caso seu streak esteja ativo.",
+        confirm: "Sim, desativar",
+        cancel: "Manter o foco",
+      },
+      cooldown_active: {
+        title: "Meta Bloqueada",
+        description:
+          "Esta meta está em período de descanso para evitar abusos no streak. Você poderá reativá-la em { {{days}} dias}.",
+        confirm: "Entendido",
+      },
     },
+
     preferences: {
-      ...en.account.preferences,
-      title: "Preferências",
-      language: {
-        title: "Idioma do app",
-        subtitle: "Escolha o idioma preferido",
+      teste: {
+        macro_title: "Nutrição e limites",
+        saving: "Salvando metas...",
+        title: "Escolha o idioma preferido",
         options: {
           en: "English (US)",
           br: "Português (BR)",

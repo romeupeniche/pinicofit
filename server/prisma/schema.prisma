@@ -70,17 +70,13 @@ model UserPreferences {
 
   nutritionEnabled Boolean @default(true)
   calorieGoal      Int?    @default(2200)
-  calorieTolerance Int     @default(95)
-  calorieEnabled   Boolean @default(true)
+  nutritionTolerance Int   @default(95)
 
   proteinGoal    Int?    @default(160)
-  proteinEnabled Boolean @default(true)
 
   carbsGoal    Int?    @default(250)
-  carbsEnabled Boolean @default(true)
 
   fatGoal    Int?    @default(70)
-  fatEnabled Boolean @default(true)
 
   sodiumGoal Int @default(2300)
   sugarGoal  Int @default(50)
