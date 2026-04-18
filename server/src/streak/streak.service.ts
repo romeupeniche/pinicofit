@@ -37,7 +37,6 @@ export class StreakService {
 
     let streak = await this.prisma.userStreak.findUnique({ where: { userId } });
 
-    // Inicialização do Streak se não existir
     if (!streak) {
       streak = await this.prisma.userStreak.create({
         data: {
@@ -51,7 +50,6 @@ export class StreakService {
       });
     }
 
-    // Reset mensal de vidas
     if (streak.livesMonthKey !== todayMonthKey) {
       streak = await this.prisma.userStreak.update({
         where: { userId },

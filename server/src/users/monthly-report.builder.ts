@@ -370,6 +370,5 @@ export const buildMonthlyReportEmail = (
       </body>
     </html>
   `;
-  console.log(htmlReturn);
   return htmlReturn;
 };
