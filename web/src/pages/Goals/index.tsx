@@ -195,7 +195,7 @@ const GoalsPage = () => {
 
   const completedCount = Object.values(contract).filter(Boolean).length;
   const totalCount = Object.keys(contract).length;
-  const progressPercent = (completedCount / totalCount) * 100;
+  const progressPercent = ((completedCount - disabledGoalsCount) / (totalCount - disabledGoalsCount)) * 100;
   const allTolerancesAre100 = useMemo(() => {
     const targets = [
       { enabled: nutritionEnabled, tolerance: nutritionTolerancePct },
