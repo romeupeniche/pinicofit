@@ -21,17 +21,13 @@ export type UserPreferencesResponse = {
 
   nutritionEnabled: boolean;
   calorieGoal: number | null;
-  calorieTolerance: number;
-  calorieEnabled: boolean;
+  nutritionTolerance: number;
 
   proteinGoal: number | null;
-  proteinEnabled: boolean;
 
   carbsGoal: number | null;
-  carbsEnabled: boolean;
 
   fatGoal: number | null;
-  fatEnabled: boolean;
 
   sodiumGoal: number;
   sugarGoal: number;
@@ -107,14 +103,12 @@ export type UpdateUserRequest = {
 export type UpdateGoalsRequest = {
   nutritionEnabled: boolean;
   calorieGoal: number;
-  calorieTolerance: number;
-  calorieEnabled: boolean;
+  nutritionTolerance: number;
   proteinGoal: number;
-  proteinEnabled: boolean;
   carbsGoal: number;
-  carbsEnabled: boolean;
   fatGoal: number;
-  fatEnabled: boolean;
+  sodiumGoal: number;
+  sugarGoal: number;
   waterGoal: number;
   waterTolerance: number;
   waterEnabled: boolean;
