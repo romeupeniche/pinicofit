@@ -17,6 +17,18 @@
   }
 }
 
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+}
+
+input[type="date"]::-webkit-datetime-edit {
+    cursor: pointer;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    cursor: pointer;
+}
+
 input::-ms-reveal,
 input::-ms-clear {
   display: none;

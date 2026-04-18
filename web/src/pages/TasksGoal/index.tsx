@@ -413,7 +413,7 @@ const TasksGoal: React.FC = () => {
               <h2 className="text-2xl font-black text-neutral-900 tracking-tight">
                 {editingTask ? t("goals.tasks.edit_task") : t("goals.tasks.new_task")}
               </h2>
-              <button onClick={closeModal} className="p-2 bg-neutral-100 rounded-full text-neutral-500 hover:text-neutral-900 transition-colors">
+              <button onClick={closeModal} className="cursor-pointer p-2 bg-neutral-100 rounded-full text-neutral-500 hover:text-neutral-900 transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -468,7 +468,7 @@ const TasksGoal: React.FC = () => {
 
                 {!form.isDaily && (
                   <div className="space-y-2">
-                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-neutral-400 ml-1">
+                    <label htmlFor="targetDate" className="text-[11px] font-black uppercase tracking-[0.2em] text-neutral-400 ml-1">
                       {t("goals.tasks.target_date")}
                     </label>
                     <label className="relative flex items-center group cursor-pointer active:scale-[0.99] transition-transform">
@@ -477,6 +477,8 @@ const TasksGoal: React.FC = () => {
                         size={20}
                       />
                       <input
+                        id="targetDate"
+                        name="targetDate"
                         type="date"
                         value={form.targetDate}
                         onClick={(e) => e.currentTarget.showPicker()}
