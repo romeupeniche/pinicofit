@@ -18,6 +18,7 @@ import { useAuthStore } from "../../store/authStore";
 import FeatureTutorialModal from "../../components/FeatureTutorialModal";
 import { useSettingsStore } from "../../store/settingsStore";
 import { getLocalDateKey } from "../../utils/date";
+import CustomLoadingSpinner from "../../components/CustomLoadingSpinner";
 
 const hoursBetween = (start: string, end: string) => {
   const [startHour, startMinute] = start.split(":").map(Number);
@@ -504,7 +505,7 @@ const SleepGoal: React.FC = () => {
                         className="cursor-pointer rounded-2xl border border-neutral-200 bg-neutral-50 p-2 text-red-500"
                       >
                         {deleteMutation.isPending ? (
-                          <div className="h-[14px w-14px animate-spin rounded-full border-2 border-red-500/30 border-t-red-500" />
+                          <CustomLoadingSpinner className="h-3.5 w-3.5" />
                         ) : (
                           <Trash2 size={14} />
                         )}

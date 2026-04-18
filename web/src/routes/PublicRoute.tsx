@@ -1,8 +1,11 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import AppLoadingScreen from "../components/AppLoadingScreen";
+import { useSettingsStore } from "../store/settingsStore";
 
 export const PublicRoute = () => {
   const { user, token, _hasHydrated } = useAuthStore();
+  const { t } = useSettingsStore();
 
   const storageRaw = localStorage.getItem("auth-storage");
   const hasTokenInStorage = storageRaw
@@ -11,9 +14,10 @@ export const PublicRoute = () => {
 
   if (!_hasHydrated || (!token && hasTokenInStorage)) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-zinc-950">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-accent"></div>
-      </div>
+      <AppLoadingScreen
+        title={t("app_loading.syncing_title")}
+        subtitle=""
+      />
     );
   }
 

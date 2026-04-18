@@ -960,6 +960,33 @@
   tutorials: {
     close: "Start using the app",
     do_not_show_again: "Don't show again",
+    dashboard: {
+      title: "Mastering your Dashboard",
+      subtitle:
+        "Track your daily evolution, manage your goals, and keep your flame burning.",
+      steps: {
+        streak: {
+          title: "Keep the flame alive",
+          description:
+            "Your streak counter at the top shows your consistency. Complete daily goals to upgrade your flame level and avoid losing lives.",
+        },
+        nutrition: {
+          title: "Macronutrient Control",
+          description:
+            "View your remaining calories and the distribution of Proteins, Carbs, and Fats. Click 'Add meal' to log your intake.",
+        },
+        goals: {
+          title: "Quick Goals",
+          description:
+            "Track Water, Workout, Tasks, and Sleep in real-time. Each card shows current progress versus the target set in your settings.",
+        },
+        summary: {
+          title: "Today's Evolution",
+          description:
+            "The central chart summarizes your day. See total kcal consumed, number of meals, and how workouts impact your calorie balance.",
+        },
+      },
+    },
     workout: {
       title: "How workout works",
       subtitle:

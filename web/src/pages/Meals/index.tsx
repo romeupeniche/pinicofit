@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
-import { Coffee, Flame, Moon, Plus, Settings, Sparkles, Sun, Utensils } from "lucide-react";
+import { ChevronLeft, Coffee, Flame, Info, Moon, Plus, Settings, Sparkles, Sun, Utensils } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import AddModal from "./AddModal";
 import AppLoadingScreen from "../../components/AppLoadingScreen";
@@ -260,22 +260,35 @@ const MealPage: React.FC = () => {
     <div className="min-h-screen pb-32">
       <section className="border border-white/5 rounded-[40px] p-6 mb-6 shadow-2xl">
         <div className="flex justify-between items-center mb-6 gap-4">
-          <div>
-            <p className="text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">
-              {t("meals.remaining_calories")}
-            </p>
-            <h1 className="text-5xl font-black tracking-tighter">
-              {Math.max(Math.round(calorieGoal - meta.consumedKcal), 0)}
-              <span className="text-brand-accent text-lg ml-2 font-bold">kcal</span>
-            </h1>
+          <div className="flex gap-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-white/50 rounded-xl transition-colors cursor-pointer hover:text-brand-accent"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <div>
+              <p className="text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">
+                {t("meals.remaining_calories")}
+              </p>
+              <h1 className="text-5xl font-black tracking-tighter">
+                {Math.max(Math.round(calorieGoal - meta.consumedKcal), 0)}
+                <span className="text-brand-accent text-lg ml-2 font-bold">kcal</span>
+              </h1>
+            </div>
           </div>
-          <div className="flex gap-4 items-start">
+          <div className="flex gap-4">
             <div className="md:flex hidden h-16 w-16 rounded-3xl bg-brand-accent/10 border border-brand-accent/20 items-center justify-center">
               <Flame size={30} className="text-brand-accent" />
             </div>
-            <button onClick={() => navigate("/account", { state: { tab: "goals", section: "nutritionGoal" }, })} className="cursor-pointer hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
-              <Settings size={24} className="justify-self-center text-inherit" />
-            </button>
+            <aside className="flex md:flex-col flex-row-reverse justify-between md:gap-0 gap-4 flex-1 md:py-1">
+              <button onClick={() => navigate("/account", { state: { tab: "goals", section: "nutritionGoal" }, })} className="cursor-pointer hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+                <Settings size={24} className="justify-self-center text-inherit" />
+              </button>
+              <button onClick={() => setShowTutorial(true)} className="cursor-pointer hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+                <Info size={24} className="justify-self-center text-inherit" />
+              </button>
+            </aside>
           </div>
         </div>
 
@@ -315,7 +328,7 @@ const MealPage: React.FC = () => {
             </p>
           </div>
         </div>
-      </section>
+      </section >
 
       <div className="mb-6">
         <h2 className="text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4 px-2">
@@ -406,88 +419,96 @@ const MealPage: React.FC = () => {
         <Plus size={36} className="text-black" strokeWidth={3} />
       </button>
 
-      {isAddModalOpen ? (
-        <AddModal
-          onClose={() => {
-            setIsAddModalOpen(false);
-            setAddTargetDate(undefined);
-          }}
-          targetDate={addTargetDate || buildCurrentTimeTargetDate()}
-          onLogged={() => {
-            setSelectedBucket(null);
-            setAddTargetDate(undefined);
-          }}
-        />
-      ) : null}
+      {
+        isAddModalOpen ? (
+          <AddModal
+            onClose={() => {
+              setIsAddModalOpen(false);
+              setAddTargetDate(undefined);
+            }}
+            targetDate={addTargetDate || buildCurrentTimeTargetDate()}
+            onLogged={() => {
+              setSelectedBucket(null);
+              setAddTargetDate(undefined);
+            }}
+          />
+        ) : null
+      }
 
-      {selectedBucket ? (
-        <MealBucketModal
-          title={mealDefinitions[selectedBucket].title}
-          logs={groupedMeals[selectedBucket]}
-          onClose={() => setSelectedBucket(null)}
-          onDelete={(id) => deleteMutation.mutate(id)}
-          deletingId={deleteMutation.variables ?? null}
-          onAdd={() => {
-            setAddTargetDate(buildBucketDate(selectedBucket));
-            setSelectedBucket(null);
-            setIsAddModalOpen(true);
-          }}
-          onEdit={(log) => setEditingLog(log)}
-        />
-      ) : null}
+      {
+        selectedBucket ? (
+          <MealBucketModal
+            title={mealDefinitions[selectedBucket].title}
+            logs={groupedMeals[selectedBucket]}
+            onClose={() => setSelectedBucket(null)}
+            onDelete={(id) => deleteMutation.mutate(id)}
+            deletingId={deleteMutation.variables ?? null}
+            onAdd={() => {
+              setAddTargetDate(buildBucketDate(selectedBucket));
+              setSelectedBucket(null);
+              setIsAddModalOpen(true);
+            }}
+            onEdit={(log) => setEditingLog(log)}
+          />
+        ) : null
+      }
 
-      {editingLog ? (
-        <MeasurementSelector
-          foodName={getFoodDisplayName(editingLog.food)}
-          selectedItem={editingLog.food}
-          initialQuantity={editingLog.quantity}
-          initialMeasure={editingLog.measure as AllowedMeasuresLabels}
-          confirmLabel={t("meals.measurement.confirm_save")}
-          onClose={() => setEditingLog(null)}
-          onConfirm={(data) => {
-            updateMutation.mutate({
-              logId: editingLog.id,
-              foodId: editingLog.food.id,
-              quantity: data.quantity,
-              measure: data.measure,
-              kcal: data.kcal,
-              protein: data.protein,
-              carbs: data.carbs,
-              fat: data.fat,
-              date: editingLog.date,
-            });
-          }}
-        />
-      ) : null}
+      {
+        editingLog ? (
+          <MeasurementSelector
+            foodName={getFoodDisplayName(editingLog.food)}
+            selectedItem={editingLog.food}
+            initialQuantity={editingLog.quantity}
+            initialMeasure={editingLog.measure as AllowedMeasuresLabels}
+            confirmLabel={t("meals.measurement.confirm_save")}
+            onClose={() => setEditingLog(null)}
+            onConfirm={(data) => {
+              updateMutation.mutate({
+                logId: editingLog.id,
+                foodId: editingLog.food.id,
+                quantity: data.quantity,
+                measure: data.measure,
+                kcal: data.kcal,
+                protein: data.protein,
+                carbs: data.carbs,
+                fat: data.fat,
+                date: editingLog.date,
+              });
+            }}
+          />
+        ) : null
+      }
 
-      {showTutorial ? (
-        <FeatureTutorialModal
-          title={t("tutorials.meals.title")}
-          subtitle={t("tutorials.meals.subtitle")}
-          closeLabel={t("tutorials.close")}
-          dontShowAgainLabel={t("tutorials.do_not_show_again")}
-          steps={[
-            {
-              title: t("tutorials.meals.steps.add.title"),
-              description: t("tutorials.meals.steps.add.description"),
-            },
-            {
-              title: t("tutorials.meals.steps.measure.title"),
-              description: t("tutorials.meals.steps.measure.description"),
-            },
-            {
-              title: t("tutorials.meals.steps.warning.title"),
-              description: t("tutorials.meals.steps.warning.description"),
-            },
-            {
-              title: t("tutorials.meals.steps.dashboard.title"),
-              description: t("tutorials.meals.steps.dashboard.description"),
-            },
-          ]}
-          onContinue={closeTutorial}
-        />
-      ) : null}
-    </div>
+      {
+        showTutorial ? (
+          <FeatureTutorialModal
+            title={t("tutorials.meals.title")}
+            subtitle={t("tutorials.meals.subtitle")}
+            closeLabel={t("tutorials.close")}
+            dontShowAgainLabel={t("tutorials.do_not_show_again")}
+            steps={[
+              {
+                title: t("tutorials.meals.steps.add.title"),
+                description: t("tutorials.meals.steps.add.description"),
+              },
+              {
+                title: t("tutorials.meals.steps.measure.title"),
+                description: t("tutorials.meals.steps.measure.description"),
+              },
+              {
+                title: t("tutorials.meals.steps.warning.title"),
+                description: t("tutorials.meals.steps.warning.description"),
+              },
+              {
+                title: t("tutorials.meals.steps.dashboard.title"),
+                description: t("tutorials.meals.steps.dashboard.description"),
+              },
+            ]}
+            onContinue={closeTutorial}
+          />
+        ) : null
+      }
+    </div >
   );
 };
 

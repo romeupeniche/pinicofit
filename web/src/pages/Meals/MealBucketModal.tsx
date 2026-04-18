@@ -3,6 +3,7 @@ import { Pencil, Plus, Trash2, X } from "lucide-react";
 import type { BackendFood } from "../../types/food";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import { useSettingsStore } from "../../store/settingsStore";
+import CustomLoadingSpinner from "../../components/CustomLoadingSpinner";
 
 interface DailyMealLog {
   id: string;
@@ -111,7 +112,7 @@ const MealBucketModal: React.FC<MealBucketModalProps> = ({
                       className="rounded-2xl bg-white p-3 text-red-500 cursor-pointer"
                     >
                       {deletingId === log.id ? (
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500/30 border-t-red-500" />
+                        <CustomLoadingSpinner className="w-4 h-4 text-zinc-400" />
                       ) : (
                         <Trash2 size={16} />
                       )}

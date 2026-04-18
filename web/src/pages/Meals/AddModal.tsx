@@ -26,6 +26,7 @@ import FoodEditorModal from "./FoodEditorModal";
 import MealEditorModal from "./MealEditorModal";
 import MeasurementSelector from "./MeasurementSelector";
 import SourceFilter from "./SourceFilter";
+import CustomLoadingSpinner from "../../components/CustomLoadingSpinner";
 
 interface AddModalProps {
   onClose: () => void;
@@ -674,7 +675,7 @@ const AddModal: React.FC<AddModalProps> = ({ onClose, targetDate, onLogged }) =>
 
                 {loading ? (
                   <div className="flex justify-center py-6">
-                    <div className="w-6 h-6 border-2 border-brand-accent/20 border-t-brand-accent rounded-full animate-spin" />
+                    <CustomLoadingSpinner />
                   </div>
                 ) : null}
 

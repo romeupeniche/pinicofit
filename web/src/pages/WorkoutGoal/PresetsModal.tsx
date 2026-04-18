@@ -6,10 +6,11 @@ import {
   type IWorkoutPreset,
 } from "../../store/goals/workoutStore";
 import { useSettingsStore } from "../../store/settingsStore";
-import { Library, Plus, Trash2, X, Zap, Loader2 } from "lucide-react";
+import { Library, Plus, Trash2, X, Zap } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../services/api";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
+import CustomLoadingSpinner from "../../components/CustomLoadingSpinner";
 
 interface IProps {
   cycle: ICycleStep[];
@@ -154,7 +155,7 @@ const PresetsModal: React.FC<IProps> = ({
                       className="p-2 text-neutral-300 hover:text-red-500 transition-colors cursor-pointer disabled:opacity-50"
                     >
                       {deleteMutation.isPending ? (
-                        <Loader2 size={18} className="animate-spin" />
+                        <CustomLoadingSpinner className="w-4.5 h-4.5" />
                       ) : (
                         <Trash2 size={18} />
                       )}

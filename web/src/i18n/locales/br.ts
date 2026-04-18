@@ -1001,6 +1001,33 @@ export const br = {
     ...en.tutorials,
     close: "Continuar",
     do_not_show_again: "Não mostrar novamente",
+    dashboard: {
+      title: "Dominando o seu Dashboard",
+      subtitle:
+        "Acompanhe sua evolução diária, gerencie suas metas e mantenha sua chama acesa.",
+      steps: {
+        streak: {
+          title: "Mantenha o fogo aceso",
+          description:
+            "Seu contador de streak no topo mostra sua constância. Complete suas metas diárias para evoluir o nível da chama e não perder vidas.",
+        },
+        nutrition: {
+          title: "Controle de Macronutrientes",
+          description:
+            "Visualize suas calorias restantes e a distribuição de Proteínas, Carbos e Gorduras. Clique em 'Adicionar refeição' para registrar seu consumo.",
+        },
+        goals: {
+          title: "Metas Rápidas",
+          description:
+            "Monitore Água, Treino, Tarefas e Sono em tempo real. Cada card compara seu progresso atual com a meta definida.",
+        },
+        summary: {
+          title: "Evolução de Hoje",
+          description:
+            "O gráfico central resume seu dia. Veja o total de kcal consumidas, número de refeições e o impacto do treino no seu gasto calórico.",
+        },
+      },
+    },
     workout: {
       title: "Como o workout funciona",
       subtitle:

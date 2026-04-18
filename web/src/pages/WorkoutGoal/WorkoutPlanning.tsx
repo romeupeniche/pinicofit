@@ -3,7 +3,6 @@ import {
   Plus,
   Moon,
   CheckCircle2,
-  Loader2,
   Coffee,
   LayoutList,
   Library,
@@ -44,6 +43,7 @@ import ConfirmExitModal from "./ConfirmExitModal";
 import SortableStep from "./SortableStep";
 import type { TranslationKeys } from "../../types/i18n";
 import { localizeWorkoutName } from "../../utils/workoutLocalization";
+import CustomLoadingSpinner from "../../components/CustomLoadingSpinner";
 
 const getWorkoutLabel = (index: number): string => {
   let label = "";
@@ -309,12 +309,12 @@ const WorkoutPlanning: React.FC = () => {
           <button
             onClick={() => saveChanges(true)}
             disabled={isLoading || !allWorkoutsConfigured}
-            className={`flex items-center gap-3 px-8 py-4 rounded-full shadow-2xl border transition-all active:scale-95 group ${allWorkoutsConfigured
+            className={`flex shrink-0 items-center gap-3 px-8 py-4 rounded-full shadow-2xl border transition-all active:scale-95 group ${allWorkoutsConfigured
               ? "bg-brand-accent text-white border-transparent hover:scale-105 cursor-pointer shadow-brand-accent/20"
               : "bg-neutral-800 text-neutral-500 border-neutral-700 cursor-not-allowed"
               }`}
           >
-            {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} className="group-hover:rotate-90 transition-transform" />}
+            {isLoading ? <CustomLoadingSpinner className="w-4.5 h-4.5 text-white" /> : <Plus size={18} className="group-hover:rotate-90 transition-transform" />}
             <span className="md:block hidden text-[10px] font-black uppercase tracking-[0.2em]">
               {isLoading ? t("goals.workout.plan_window.saving") : t("goals.workout.plan_window.cycle_structure.actions.new_cycle")}
             </span>
@@ -323,7 +323,7 @@ const WorkoutPlanning: React.FC = () => {
           {!isLoading && allWorkoutsConfigured && (
             <button
               onClick={() => saveChanges(false)}
-              className="flex items-center gap-3 px-6 py-4 rounded-full shadow-2xl border border-blue-500/10 bg-blue-500/20 backdrop-blur-md text-blue-500 hover:bg-blue-500 hover:text-white transition-all active:scale-95 cursor-pointer"
+              className="flex shrink-0 items-center gap-3 px-6 py-4 rounded-full shadow-2xl border border-blue-500/10 bg-blue-500/20 backdrop-blur-md text-blue-500 hover:bg-blue-500 hover:text-white transition-all active:scale-95 cursor-pointer"
             >
               <Edit3 size={18} />
               <span className="md:block hidden text-[10px] font-black uppercase tracking-[0.2em]">{t("goals.workout.plan_window.cycle_structure.actions.quick_edit")}</span>
@@ -333,7 +333,7 @@ const WorkoutPlanning: React.FC = () => {
           {!isLoading && (
             <button
               onClick={rollbackChanges}
-              className="cursor-pointer flex items-center gap-3 px-6 py-4 rounded-full backdrop-blur-md shadow-xl border border-red-500/20 bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 group"
+              className="cursor-pointer shrink-0 flex items-center gap-3 px-6 py-4 rounded-full backdrop-blur-md shadow-xl border border-red-500/20 bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 group"
             >
               <RotateCcw size={16} className="group-hover:-rotate-180 duration-300 transition-transform" />
               <span className="md:block hidden text-[10px] font-black uppercase tracking-[0.2em]">{t("goals.workout.plan_window.cycle_structure.actions.discard")}</span>

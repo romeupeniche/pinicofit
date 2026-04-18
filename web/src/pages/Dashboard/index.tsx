@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Flame,
   Utensils,
@@ -24,6 +24,7 @@ import type { TaskItem } from "../../types/tasks";
 import type { SleepLog } from "../../types/sleep";
 import { getLocalDateKey } from "../../utils/date";
 import type { DailyFoodLogEntry, MeResponse } from "../../types/goals";
+import FeatureTutorialModal from "../../components/FeatureTutorialModal";
 
 type StreakMeResponse = {
   streak: number;
@@ -112,6 +113,26 @@ const Dashboard: React.FC = () => {
     (query) => query.isLoading,
   );
 
+  const [showTutorial, setShowTutorial] = useState(
+    !user?.tutorialState?.dashboard,
+  );
+  const closeTutorial = async (dontShowAgain: boolean) => {
+    setShowTutorial(false);
+
+    if (!dontShowAgain || !user?.id || user.tutorialState?.dashboard) {
+      return;
+    }
+
+    const tutorialState = {
+      ...user.tutorialState,
+      dashboard: true,
+    };
+
+    const { data } = await api.patch(`/users/${user.id}`, {
+      tutorialState,
+    });
+    useAuthStore.getState().updateProfile(data);
+  };
   const profile: MeResponse = meQuery.data || user;
   if (!profile) return null;
   const streakData = streakQuery.data;
@@ -691,6 +712,34 @@ const Dashboard: React.FC = () => {
           },
         )}
       </footer>
+
+      {showTutorial && (
+        <FeatureTutorialModal
+          title={t("tutorials.dashboard.title")}
+          subtitle={t("tutorials.dashboard.subtitle")}
+          closeLabel={t("tutorials.close")}
+          steps={[
+            {
+              title: t("tutorials.dashboard.steps.streak.title"),
+              description: t("tutorials.dashboard.steps.streak.description"),
+            },
+            {
+              title: t("tutorials.dashboard.steps.nutrition.title"),
+              description: t("tutorials.dashboard.steps.nutrition.description"),
+            },
+            {
+              title: t("tutorials.dashboard.steps.goals.title"),
+              description: t("tutorials.dashboard.steps.goals.description"),
+            },
+            {
+              title: t("tutorials.dashboard.steps.summary.title"),
+              description: t("tutorials.dashboard.steps.summary.description"),
+            },
+          ]}
+          dontShowAgainLabel={t("tutorials.do_not_show_again")}
+          onContinue={closeTutorial}
+        />
+      )}
     </div>
   );
 };

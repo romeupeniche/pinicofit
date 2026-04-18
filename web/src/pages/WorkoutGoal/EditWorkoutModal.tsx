@@ -10,7 +10,7 @@ import {
   useWorkoutStore,
   type ICycleStep,
 } from "../../store/goals/workoutStore";
-import { Library, Plus, Save, X, Loader2 } from "lucide-react";
+import { Library, Plus, Save, X } from "lucide-react";
 import { useSettingsStore } from "../../store/settingsStore";
 import { EXERCISE_CATEGORIES } from "../../constants/workout-metrics";
 import type { TranslationKeys } from "../../types/i18n";
@@ -18,6 +18,7 @@ import { convertFromKg, convertToKg } from "../../utils/weightUnitConverter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../services/api";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
+import CustomLoadingSpinner from "../../components/CustomLoadingSpinner";
 
 interface IProps {
   editingId: string | null;
@@ -202,7 +203,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
                 `}
             >
               {presetMutation.isPending ? (
-                <Loader2 size={24} className="animate-spin" />
+                <CustomLoadingSpinner className="w-6 h-6" />
               ) : (
                 <Library size={24} />
               )}

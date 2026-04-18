@@ -11,6 +11,7 @@ import {
 import type { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { useSettingsStore } from "../../store/settingsStore.ts";
+import CustomLoadingSpinner from "../../components/CustomLoadingSpinner.tsx";
 
 export function Onboarding() {
   const { user, token, _hasHydrated, updateProfile, logout } = useAuthStore();
@@ -42,7 +43,7 @@ export function Onboarding() {
   if (!_hasHydrated)
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-zinc-950">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-accent"></div>
+        <CustomLoadingSpinner />
       </div>
     );
   const onSubmit = async (data: CompleteProfileFormData) => {

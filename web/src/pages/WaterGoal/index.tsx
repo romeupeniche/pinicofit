@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import {
   Droplets, Plus, History, ChevronLeft, Trash2, Clock, GlassWater, CupSoda, Pencil,
   Settings,
+  Info,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { goalsSchema, type GoalsFormData } from "../../schemas/Goals";
@@ -16,6 +17,7 @@ import { api } from "../../services/api";
 import AppLoadingScreen from "../../components/AppLoadingScreen";
 import FeatureTutorialModal from "../../components/FeatureTutorialModal";
 import { useAuthStore } from "../../store/authStore";
+import CustomLoadingSpinner from "../../components/CustomLoadingSpinner";
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -43,7 +45,7 @@ const WaterGoal: React.FC = () => {
     refetchInterval: 60000,
   });
 
-  const { data: historyData } = useQuery({
+  const { data: historyData, isPending: loadingHistory } = useQuery({
     queryKey: ["water-history", activeTab],
     queryFn: async () => {
       const res = await api.get("/water/history", {
@@ -172,9 +174,14 @@ const WaterGoal: React.FC = () => {
             <h1 className="text-2xl font-bold tracking-tighter text-brand-accent">
               {t("goals.water.title")}
             </h1>
-            <button onClick={() => navigate("/account", { state: { tab: "goals", section: "waterGoal" }, })} className="cursor-pointer md:h-12 md:w-12 w-9 h-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors ml-auto">
-              <Settings className="w-6 h-6 justify-self-center text-inherit" />
-            </button>
+            <aside className="ml-auto flex gap-2">
+              <button onClick={() => navigate("/account", { state: { tab: "goals", section: "waterGoal" }, })} className="cursor-pointer md:h-12 md:w-12 w-9 h-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+                <Settings className="w-6 h-6 justify-self-center text-inherit" />
+              </button>
+              <button onClick={() => setShowTutorial(true)} className="cursor-pointer md:h-12 md:w-12 w-9 h-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+                <Info className="w-6 h-6 justify-self-center text-inherit" />
+              </button>
+            </aside>
           </header>
           <section className="border border-neutral-200/50 flex-1 flex flex-col justify-center items-center bg-white/40 rounded-3xl p-8 text-center">
             <div className="relative inline-flex items-center justify-center mb-6">
@@ -366,6 +373,12 @@ const WaterGoal: React.FC = () => {
                   </div>
                 );
               })()}
+
+              {activeTab !== "today" && loadingHistory && (
+                <div className="w-full h-full flex justify-center items-center">
+                  <CustomLoadingSpinner />
+                </div>
+              )}
             </div>
           </section>
         </div>

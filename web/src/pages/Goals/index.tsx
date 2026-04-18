@@ -17,6 +17,7 @@ import {
   Apple,
   Zap,
   CircleMinus,
+  ChevronLeft,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AnimatedFlame } from "../../components/AnimatedFlame";
@@ -253,11 +254,19 @@ const GoalsPage = () => {
   return (
     <div className="min-h-screen text-zinc-100 p-4 md:p-8 pb-32">
       <div className="flex md:flex-row flex-col justify-between items-center mb-10 gap-4">
-        <div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase md:text-start text-center">
-            {t("goals.title").split(" ")[0]} <span className="text-orange-500">{t("goals.title").split(" ")[1]}</span>
-          </h1>
-          <p className="text-zinc-500 text-sm mt-1">{t("goals.subtitle")}</p>
+        <div className="flex gap-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 hover:bg-white/10 rounded-xl transition-colors cursor-pointer hover:text-brand-accent"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <div>
+            <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase md:text-start text-center">
+              {t("goals.title").split(" ")[0]} <span className="text-orange-500">{t("goals.title").split(" ")[1]}</span>
+            </h1>
+            <p className="text-zinc-500 text-sm mt-1">{t("goals.subtitle")}</p>
+          </div>
         </div>
 
         <div className="flex gap-3">
