@@ -6,7 +6,8 @@ export interface TaskItem {
   targetDate?: string | null;
   reminderAt?: string | null;
   lastCompletedDate?: string | null;
-  completed?: boolean;
   createdAt: string;
   updatedAt: string;
+  completed?: boolean;
+  isOverdue?: boolean;
 }
