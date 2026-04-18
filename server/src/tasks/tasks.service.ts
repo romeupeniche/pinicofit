@@ -24,17 +24,27 @@ export class TasksService {
     const tasks = await this.prisma.task.findMany({
       where: {
         userId,
-        OR: [{ isDaily: true }, { targetDate: targetDate }],
+        OR: [{ isDaily: true }, { targetDate: { lte: targetDate } }],
       },
       orderBy: [{ isDaily: 'desc' }, { createdAt: 'asc' }],
     });
 
-    return tasks.map((task) => ({
-      ...task,
-      completed:
+    return tasks.map((task) => {
+      const isCompleted =
         task.lastCompletedDate?.toISOString().slice(0, 10) ===
-        date.slice(0, 10),
-    }));
+        date.slice(0, 10);
+      const isOverdue =
+        !task.isDaily &&
+        task.targetDate &&
+        task.targetDate.toISOString().slice(0, 10) < date.slice(0, 10) &&
+        !isCompleted;
+
+      return {
+        ...task,
+        completed: isCompleted,
+        isOverdue: isOverdue,
+      };
+    });
   }
 
   async create(userId: string, data: CreateTaskDto) {
@@ -44,7 +54,9 @@ export class TasksService {
         title: data.title,
         notes: data.notes,
         isDaily: data.isDaily ?? false,
-        targetDate: data.targetDate ? new Date(data.targetDate) : null,
+        targetDate: data.targetDate
+          ? new Date(data.targetDate.slice(0, 10))
+          : null,
         reminderAt: data.reminderAt ? new Date(data.reminderAt) : null,
       },
     });
@@ -60,6 +72,7 @@ export class TasksService {
     }
 
     let lastCompletedDate = existing.lastCompletedDate;
+
     if (data.completed === true) {
       lastCompletedDate = new Date(
         (data.date || new Date().toISOString()).slice(0, 10),
@@ -68,18 +81,19 @@ export class TasksService {
       lastCompletedDate = null;
     }
 
+    const isDaily = data.isDaily ?? existing.isDaily;
+
     return this.prisma.task.update({
       where: { id },
       data: {
         title: data.title ?? existing.title,
         notes: data.notes ?? existing.notes,
-        isDaily: data.isDaily ?? existing.isDaily,
-        targetDate:
-          (data.isDaily ?? existing.isDaily)
-            ? null
-            : data.targetDate
-              ? new Date(data.targetDate)
-              : existing.targetDate,
+        isDaily: isDaily,
+        targetDate: isDaily
+          ? null
+          : data.targetDate
+            ? new Date(data.targetDate.slice(0, 10))
+            : existing.targetDate,
         reminderAt:
           data.reminderAt === ''
             ? null
