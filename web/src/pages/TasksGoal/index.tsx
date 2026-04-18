@@ -4,6 +4,7 @@ import {
   Check,
   CheckSquare2,
   ChevronLeft,
+  Info,
   Pencil,
   Plus,
   RefreshCcw,
@@ -292,6 +293,9 @@ const TasksGoal: React.FC = () => {
           </button>
           <button onClick={() => navigate("/account", { state: { tab: "goals", section: "tasksGoal" }, })} className="cursor-pointer h-10.5 w-10.5 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
             <Settings className="w-6 h-6 justify-self-center text-inherit" />
+          </button>
+          <button onClick={() => setShowTutorial(true)} className="cursor-pointer h-10.5 w-10.5 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+            <Info className="w-6 h-6 justify-self-center text-inherit" />
           </button>
         </div>
       </header>

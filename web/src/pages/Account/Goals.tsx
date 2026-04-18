@@ -370,7 +370,6 @@ const Goals: React.FC<{ focusedGoal?: string }> = ({ focusedGoal }) => {
   }, [isDirty, setHasUnsavedChanges]);
 
   const values = watch();
-  console.log(values)
 
   const waterMin = values.waterGoal
     ? Math.min(50, Math.round((1500 / Number(values.waterGoal)) * 100))

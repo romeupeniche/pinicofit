@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useState } from "react";
-import { Globe, Bell, LifeBuoy, LogOut, User, Activity, Fingerprint } from "lucide-react";
+import { Globe, Bell, LifeBuoy, LogOut, User, Activity, Fingerprint, ChevronLeft } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import Profile from "./Profile";
 import Goals from "./Goals";
@@ -9,12 +9,13 @@ import Help from "./Help";
 import NavItem from "./NavItem";
 import { useSettingsStore } from "../../store/settingsStore";
 import { AccountUnsavedChangesProvider } from "./AccountUnsavedChangesContext";
-import { useBlocker, useLocation } from "react-router-dom";
+import { useBlocker, useLocation, useNavigate } from "react-router-dom";
 import About from "./About";
 
 const Account: React.FC = () => {
   const { user, logout } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
   const data = location.state;
   const { t } = useSettingsStore();
   const [activeTab, setActiveTab] = useState(data?.tab || "profile");
@@ -119,12 +120,20 @@ const Account: React.FC = () => {
       <div className="min-h-screen text-neutral-900 relative overflow-hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
           <aside className="space-y-6">
-            <div className="px-4">
-              <h1 className="text-2xl font-bold tracking-tight">
-                {t("account.title")}
-              </h1>
-              <p className="text-sm text-neutral-500">{t("account.subtitle")}</p>
-            </div>
+            <header className="flex items-center">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 hover:bg-white/50 rounded-xl transition-colors cursor-pointer hover:text-brand-accent"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <div className="px-4">
+                <h1 className="text-2xl font-bold tracking-tight">
+                  {t("account.title")}
+                </h1>
+                <p className="text-sm text-neutral-500">{t("account.subtitle")}</p>
+              </div>
+            </header>
 
             <nav className="space-y-1">
               {menuItems.map((item) => (

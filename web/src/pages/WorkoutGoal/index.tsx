@@ -5,6 +5,7 @@ import {
   Dumbbell,
   type LucideIcon,
   Settings,
+  Info,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSettingsStore } from "../../store/settingsStore";
@@ -112,6 +113,9 @@ const WorkoutGoal: React.FC = () => {
             <h1 className="text-2xl font-bold tracking-tighter text-brand-accent">
               {t(titles[activeTab].title)}
             </h1>
+            <button onClick={() => navigate("/account", { state: { tab: "goals", section: "workoutGoal" } })} className="md:hidden block cursor-pointer ml-auto mr-1 h-9 w-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+              <Settings className="w-6 h-6 justify-self-center text-inherit" />
+            </button>
           </div>
           <div className="flex p-1 rounded-2xl gap-2">
             {(["workout", "plan"] as const).map((tab) => (
@@ -128,13 +132,16 @@ const WorkoutGoal: React.FC = () => {
                   : t("goals.workout.plan_window.badge_title")}
               </button>
             ))}
-            <button onClick={() => navigate("/account", { state: { tab: "goals", section: "workoutGoal" }, })} className="md:hidden block cursor-pointer h-9 w-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
-              <Settings className="w-6 h-6 justify-self-center text-inherit" />
+            <button onClick={() => setShowTutorial(true)} className="md:hidden block cursor-pointer h-9 w-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+              <Info className="w-6 h-6 justify-self-center text-inherit" />
             </button>
           </div>
         </div>
-        <button onClick={() => navigate("/account", { state: { tab: "goals", section: "workoutGoal" }, })} className="md:block hidden cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+        <button onClick={() => navigate("/account", { state: { tab: "goals", section: "workoutGoal" } })} className="md:block hidden cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
           <Settings className="w-6 h-6 justify-self-center text-inherit" />
+        </button>
+        <button onClick={() => setShowTutorial(true)} className="md:block hidden cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+          <Info className="w-6 h-6 justify-self-center text-inherit" />
         </button>
       </header>
 

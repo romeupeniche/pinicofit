@@ -8,6 +8,7 @@ import {
   Pencil,
   Trash2,
   Settings,
+  Info,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -248,9 +249,14 @@ const SleepGoal: React.FC = () => {
             {t("goals.sleep.target")}: {sleepGoal}h
           </p>
         </div>
-        <button onClick={() => navigate("/account", { state: { tab: "goals", section: "sleepGoal" }, })} className="cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors ml-auto">
-          <Settings className="w-6 h-6 justify-self-center text-inherit" />
-        </button>
+        <aside className="flex ml-auto gap-4">
+          <button onClick={() => navigate("/account", { state: { tab: "goals", section: "sleepGoal" }, })} className="cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+            <Settings className="w-6 h-6 justify-self-center text-inherit" />
+          </button>
+          <button onClick={() => setShowTutorial(true)} className="cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+            <Info className="w-6 h-6 justify-self-center text-inherit" />
+          </button>
+        </aside>
       </header>
 
       <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">

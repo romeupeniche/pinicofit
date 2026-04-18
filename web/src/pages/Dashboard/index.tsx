@@ -358,8 +358,8 @@ const Dashboard: React.FC = () => {
   const isNutritionStreakReached = progressPercent >= nutritionStreakPercent;
 
   return (
-    <div className="min-h-screen text-neutral-900 relative overflow-hidden">
-      <header className="flex justify-between items-center md:items-end mb-12 flex-col md:flex-row gap-4 md:gap-0">
+    <div className="min-h-screen text-neutral-900 relative">
+      <header className="flex justify-between items-center mb-12 flex-col md:flex-row gap-4 md:gap-0">
         <div className="flex justify-between sm:flex-row flex-col items-center w-full md:w-auto">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">
@@ -372,26 +372,28 @@ const Dashboard: React.FC = () => {
 
           <button
             onClick={() => navigate("/goals")}
-            className="cursor-pointer group relative flex items-center gap-3 bg-white/40 border border-white/40 p-2 pr-5 rounded-full hover:bg-orange-500 hover:border-orange-400 transition-all duration-300 active:scale-95 md:ml-6"
+            className={`
+              ${flameLevel === "streak" ? "hover:bg-orange-500 hover:border-orange-400" : flameLevel === "low" ? "hover:bg-zinc-500 hover:border-zinc-400" : "hover:bg-blue-500 hover:border-blue-400"}
+              cursor-pointer group relative flex items-center gap-3 md:bg-white/40 border border-white lg:border-white/40 lg:p-2 lg:pr-5 rounded-full transition-all duration-300 active:scale-95 md:ml-6`}
           >
-            <div className="relative bg-orange-500/10 p-2 rounded-full group-hover:bg-white/20 transition-colors">
+            <div className="relative bg-transparent p-2 rounded-full group-hover:bg-white/20 transition-colors">
               <AnimatedFlame
                 level={flameLevel}
                 size={38}
               />
-              <div className="absolute inset-0 bg-orange-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
+              <div className={`absolute inset-0 ${flameLevel === "streak" ? "bg-orange-500" : flameLevel === "low" ? "" : "bg-blue-500 opacity-40"} blur-lg opacity-20 group-hover:opacity-40 transition-opacity`} />
             </div>
 
-            <div className="flex-col items-start hidden md:flex">
+            <div className="flex-col items-start hidden lg:flex">
               <span className="text-xl font-black text-neutral-800 group-hover:text-white leading-none transition-colors">
                 {displayStreak}
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-tighter text-neutral-500 group-hover:text-orange-100 transition-colors">
+              <span className="text-[10px] font-bold uppercase tracking-tighter text-neutral-500 group-hover:text-white transition-colors">
                 Check-in
               </span>
             </div>
 
-            <div className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+            <div className="hidden lg:block opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
               <ChevronRight size={20} className="text-white" />
             </div>
           </button>
