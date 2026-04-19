@@ -38,7 +38,7 @@ This server follows conventional NestJS layering:
 - **AuthGuard** enforces JWT authentication and attaches `req.user.sub` for ownership-safe operations.
 - **PrismaService** provides a shared Prisma Client instance across modules.
 
-Key modules in `server/src/`:
+Key modules in `src/`:
 
 - `auth/`: sign-in + JWT generation and verification guard.
 - `users/`: user profile + preferences (goals toggles, tolerances, email verification, reporting hooks).
@@ -55,14 +55,14 @@ Key modules in `server/src/`:
 
 Implemented security primitives:
 
-- **JWT Bearer auth**: the guard reads `Authorization: Bearer <token>` and verifies using `JWT_SECRET` (`server/src/auth/auth.guard.ts`).
+- **JWT Bearer auth**: the guard reads `Authorization: Bearer <token>` and verifies using `JWT_SECRET` (`src/auth/auth.guard.ts`).
 - **Ownership-scoped reads/writes**: controllers/services use `req.user.sub` consistently to isolate user data.
-- **Input validation**: Nest global `ValidationPipe({ transform: true })` + class-validator DTOs (`server/src/main.ts`).
+- **Input validation**: Nest global `ValidationPipe({ transform: true })` + class-validator DTOs (`src/main.ts`).
 - **i18n-style error keys**: many exceptions throw structured keys (e.g. `server.errors.*`) intended for frontend translation.
 
 ### Database (Prisma + PostgreSQL)
 
-Prisma schema is defined in `server/prisma/schema.prisma` and models a “daily logs” domain:
+Prisma schema is defined in `prisma/schema.prisma` and models a “daily logs” domain:
 
 - `User` (root aggregate)
   - 1:1 `UserPreferences` (goals/tolerances/toggles + onboarding-driven targets)
@@ -98,7 +98,7 @@ The Goals dashboard needs many pieces of data at once (profile/preferences, stre
 
 `GET /goals/daily-summary?date=YYYY-MM-DD`
 
-Implemented in `server/src/goals-aggregator/` and designed to:
+Implemented in `src/goals-aggregator/` and designed to:
 
 - **Fetch in parallel** via `Promise.all()`
 - **Reuse existing services** without changing their business logic
@@ -106,13 +106,13 @@ Implemented in `server/src/goals-aggregator/` and designed to:
 
 ### Health checks & deployment notes (Render)
 
-- **Health endpoint**: `GET /health` returns `{ status: "ok", timestamp }` (`server/src/health/health.controller.ts`).
+- **Health endpoint**: `GET /health` returns `{ status: "ok", timestamp }` (`src/health/health.controller.ts`).
 - Designed to run cleanly on platforms like **Render** where a simple HTTP probe is required.
-- By default, the app listens on **port 3000** (`server/src/main.ts`). Ensure your hosting service routes traffic accordingly.
+- By default, the app listens on **port 3000** (`src/main.ts`). Ensure your hosting service routes traffic accordingly.
 
 ### API documentation overview
 
-This repository is intentionally “code-first”: endpoints are easy to audit by reading controllers in `server/src/**/**.controller.ts`.
+This repository is intentionally “code-first”: endpoints are easy to audit by reading controllers in `src/**/**.controller.ts`.
 
 Common patterns:
 
@@ -149,7 +149,7 @@ npm install
 
 #### Environment
 
-Create `server/.env` with (examples only):
+Create `.env` with (examples only):
 
 ```bash
 DATABASE_URL="postgresql://..."
@@ -169,7 +169,7 @@ MAIL_FROM="PinicoFit <no-reply@your-domain>"
 ```bash
 cd server
 npx prisma generate
-npx prisma migrate dev
+npx prisma migrate deploy
 ```
 
 #### Run
@@ -200,7 +200,7 @@ O backend segue o padrão clássico do NestJS:
 - **AuthGuard** aplica JWT e injeta `req.user.sub` para operações seguras por usuário.
 - **PrismaService** fornece um Prisma Client único e compartilhado.
 
-Módulos principais em `server/src/`:
+Módulos principais em `src/`:
 
 - `auth/`: login e autenticação via JWT.
 - `users/`: perfil e preferências (metas, tolerâncias e verificação de e-mail).
@@ -215,14 +215,14 @@ Módulos principais em `server/src/`:
 
 ### Segurança & validação
 
-- **JWT Bearer**: `Authorization: Bearer <token>` com validação via `JWT_SECRET` (`server/src/auth/auth.guard.ts`).
+- **JWT Bearer**: `Authorization: Bearer <token>` com validação via `JWT_SECRET` (`src/auth/auth.guard.ts`).
 - **Isolamento por usuário**: uso consistente de `req.user.sub` para garantir ownership.
-- **Validação**: `ValidationPipe({ transform: true })` + DTOs com class-validator (`server/src/main.ts`).
+- **Validação**: `ValidationPipe({ transform: true })` + DTOs com class-validator (`src/main.ts`).
 - **Erros com chaves i18n**: exceptions retornam chaves `server.errors.*` para tradução no frontend.
 
 ### Banco de dados (Prisma + PostgreSQL)
 
-O schema Prisma (`server/prisma/schema.prisma`) modela um domínio centrado em **logs diários**, com `User` como raiz, `UserPreferences` e `UserStreak` em relações 1:1 e múltiplas entidades de log por domínio (alimentação, água, sono, treino e tarefas).
+O schema Prisma (`prisma/schema.prisma`) modela um domínio centrado em **logs diários**, com `User` como raiz, `UserPreferences` e `UserStreak` em relações 1:1 e múltiplas entidades de log por domínio (alimentação, água, sono, treino e tarefas).
 
 ### Endpoint BFF (Goals aggregator)
 
@@ -239,7 +239,7 @@ Características:
 ### Infra (Render) e health check
 
 - `GET /health` retorna `{ status: "ok", timestamp }` e é ideal para monitoramento.
-- O servidor escuta **porta 3000** por padrão (`server/src/main.ts`); configure o serviço (ex.: Render) para rotear para essa porta.
+- O servidor escuta **porta 3000** por padrão (`src/main.ts`); configure o serviço (ex.: Render) para rotear para essa porta.
 
 ### Setup / Instalação
 
@@ -247,7 +247,7 @@ Características:
 cd server
 npm install
 npx prisma generate
-npx prisma migrate dev
+npx prisma migrate deploy
 npm run dev
 ```
 

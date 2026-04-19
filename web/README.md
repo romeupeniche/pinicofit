@@ -6,7 +6,7 @@ Fitness + productivity dashboard built with a **fast Vite + React** stack and a 
 
 <!-- Badges -->
 <p>
-  <img alt="React" src="https://img.shields.io/badge/React-19-149eca?style=for-the-badge&logo=react&logoColor=white" />
+  <img alt="React" src="https://img.shields.io/badge/React-18-149eca?style=for-the-badge&logo=react&logoColor=white" />
   <img alt="Vite" src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
   <img alt="TailwindCSS" src="https://img.shields.io/badge/TailwindCSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
@@ -40,16 +40,16 @@ PinicoFit Web is a **single-page application** that turns daily data (meals, wat
 
 Key UX highlights grounded in the codebase:
 
-- **Auth-first navigation** using route guards (`web/src/routes/ProtectedRoute.tsx`) and JWT-based sessions.
-- **Local “hydration” gate**: Zustand `persist` stores auth state in `localStorage` and exposes `_hasHydrated` to avoid UI flicker during bootstrap (`web/src/store/authStore.ts`).
-- **Fast data access** with TanStack Query and an Axios client that injects the Bearer token and auto-logs out on `401` (`web/src/services/api.ts`).
-- **Goals + Streak visual language** including the animated flame with levels (`low | streak | max`) (`web/src/components/AnimatedFlame.tsx`).
+- **Auth-first navigation** using route guards (`src/routes/ProtectedRoute.tsx`) and JWT-based sessions.
+- **Local “hydration” gate**: Zustand `persist` stores auth state in `localStorage` and exposes `_hasHydrated` to avoid UI flicker during bootstrap (`src/store/authStore.ts`).
+- **Fast data access** with TanStack Query and an Axios client that injects the Bearer token and auto-logs out on `401` (`src/services/api.ts`).
+- **Goals + Streak visual language** including the animated flame with levels (`low | streak | max`) (`src/components/AnimatedFlame.tsx`).
 - **Theme & presentation controls** in goal-related surfaces (e.g. dark-mode styling for the Goals experience and a theme switcher inside the Workout summary modal).
-- **Mobile-first responsiveness** via Tailwind utility classes and helper hooks (e.g. `web/src/hooks/useIsMobile.ts`).
+- **Mobile-first responsiveness** via Tailwind utility classes and helper hooks (e.g. `src/hooks/useIsMobile.ts`).
 
 ### Architecture overview
 
-High-level layout (real folder names from `web/src/`):
+High-level layout (real folder names from `src/`):
 
 - `pages/`: route-level screens (`Dashboard`, `Goals`, `Meals`, `WaterGoal`, `SleepGoal`, `WorkoutGoal`, `TasksGoal`, `Account`, `Onboarding`, auth pages).
 - `routes/`: routing + access control (`ProtectedRoute`, `PublicRoute`, `router` setup).
@@ -64,7 +64,7 @@ High-level layout (real folder names from `web/src/`):
 
 ### Data flow (how the app stays “snappy”)
 
-- **Bootstrap on protected routes**: after store hydration, the app runs a set of parallel queries (me, workout settings/presets, and daily logs) and hydrates stores accordingly (`web/src/routes/ProtectedRoute.tsx`).
+- **Bootstrap on protected routes**: after store hydration, the app runs a set of parallel queries (me, workout settings/presets, and daily logs) and hydrates stores accordingly (`src/routes/ProtectedRoute.tsx`).
 - **GoalsPage consolidation**: the backend exposes a BFF endpoint `GET /goals/daily-summary?date=YYYY-MM-DD` to allow the Goals view to fetch a single payload instead of many (see backend README for details).
 
 ### Setup / Installation
@@ -83,10 +83,10 @@ npm install
 
 #### Environment
 
-The app uses `VITE_API_URL` (see `web/.env`) to point at the backend:
+The app uses `VITE_API_URL` (see `.env`) to point at the backend:
 
 ```bash
-# web/.env
+# .env
 VITE_API_URL="http://localhost:3000"
 ```
 
@@ -120,15 +120,15 @@ O PinicoFit Web é uma **SPA (Single Page Application)** que transforma dados do
 
 Destaques de UX (com base no código atual):
 
-- **Navegação com proteção de rotas** e sessão via JWT (`web/src/routes/ProtectedRoute.tsx`).
-- **“Hidratação” do estado local**: o Zustand persiste a sessão no `localStorage` e expõe `_hasHydrated` para evitar “piscadas” na interface durante a inicialização (`web/src/store/authStore.ts`).
-- **Busca de dados eficiente** com TanStack Query + Axios com interceptor de token e logout automático em `401` (`web/src/services/api.ts`).
-- **Linguagem visual do streak/metas** com a chama animada em três níveis (`low | streak | max`) (`web/src/components/AnimatedFlame.tsx`).
-- **Responsividade mobile-first** com Tailwind e hooks utilitários (ex.: `web/src/hooks/useIsMobile.ts`).
+- **Navegação com proteção de rotas** e sessão via JWT (`src/routes/ProtectedRoute.tsx`).
+- **“Hidratação” do estado local**: o Zustand persiste a sessão no `localStorage` e expõe `_hasHydrated` para evitar “piscadas” na interface durante a inicialização (`src/store/authStore.ts`).
+- **Busca de dados eficiente** com TanStack Query + Axios com interceptor de token e logout automático em `401` (`src/services/api.ts`).
+- **Linguagem visual do streak/metas** com a chama animada em três níveis (`low | streak | max`) (`src/components/AnimatedFlame.tsx`).
+- **Responsividade mobile-first** com Tailwind e hooks utilitários (ex.: `src/hooks/useIsMobile.ts`).
 
 ### Visão de arquitetura
 
-Estrutura principal (pastas reais em `web/src/`):
+Estrutura principal (pastas reais em `src/`):
 
 - `pages/`: telas por rota (`Dashboard`, `Goals`, `Meals`, `WaterGoal`, `SleepGoal`, `WorkoutGoal`, `TasksGoal`, `Account`, `Onboarding` e autenticação).
 - `routes/`: roteamento e controle de acesso (rotas públicas/privadas).
@@ -143,8 +143,8 @@ Estrutura principal (pastas reais em `web/src/`):
 
 ### Fluxo de dados (por que a app é rápida)
 
-- **Bootstrap em rotas protegidas**: após a hidratação do store, a app dispara buscas paralelas (me, settings/presets de treino e logs do dia) e sincroniza o estado (`web/src/routes/ProtectedRoute.tsx`).
-- **Consolidação do GoalsPage**: o backend expõe `GET /goals/daily-summary?date=YYYY-MM-DD` para reduzir múltiplas chamadas em uma só resposta.
+- **Bootstrap em rotas protegidas**: após a hidratação do store, a app dispara buscas paralelas (me, settings/presets de treino e logs do dia) e sincroniza o estado (`src/routes/ProtectedRoute.tsx`).
+- **Consolidação do GoalsPage**: o backend expõe `GET /goals/daily-summary?date=YYYY-MM-DD` para consolidar múltiplas requisições em um único payload, otimizando o carregamento inicial.
 
 ### Setup / Instalação
 
@@ -162,7 +162,7 @@ npm install
 
 #### Ambiente
 
-Configure `VITE_API_URL` para o backend (ver `web/.env`):
+Configure `VITE_API_URL` para o backend (ver `.env`):
 
 ```bash
 VITE_API_URL="http://localhost:3000"
