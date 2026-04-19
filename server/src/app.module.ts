@@ -13,6 +13,7 @@ import { SleepModule } from './sleep/sleep.module';
 import { MailModule } from './mail/mail.module';
 import { StreakModule } from './streak/streak.module';
 import { GoalsAggregatorModule } from './goals-aggregator/goals-aggregator.module';
+import { HealthModule } from './health/health.module';
 
 @Global()
 @Module({
@@ -30,6 +31,7 @@ import { GoalsAggregatorModule } from './goals-aggregator/goals-aggregator.modul
     MailModule,
     StreakModule,
     GoalsAggregatorModule,
+    HealthModule,
   ],
   providers: [PrismaService],
   exports: [PrismaService],
