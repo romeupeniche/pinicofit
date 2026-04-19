@@ -1,98 +1,253 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+<div align="center">
+
+# PinicoFit — Server (Backend)
+
+NestJS + Prisma backend powering the PinicoFit fitness/productivity experience: authentication, daily logs, streak logic, and a BFF “aggregator” endpoint optimized for the Goals dashboard.
+
+<!-- Badges -->
+<p>
+  <img alt="NestJS" src="https://img.shields.io/badge/NestJS-11-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" />
+  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-runtime-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img alt="Prisma" src="https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma&logoColor=white" />
+</p>
+<p>
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-db-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" />
+  <img alt="JWT" src="https://img.shields.io/badge/JWT-auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
+  <img alt="class-validator" src="https://img.shields.io/badge/class--validator-validation-0F172A?style=for-the-badge" />
+  <img alt="Jest" src="https://img.shields.io/badge/Jest-tests-C21325?style=for-the-badge&logo=jest&logoColor=white" />
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+</div>
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Quick Access
 
-## Description
+[🇺🇸 English](#en-us) • [🇧🇷 Português](#pt-br)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## <a id="en-us"></a>🇺🇸 English
 
-```bash
-$ npm install
+### High-level architecture
+
+This server follows conventional NestJS layering:
+
+- **Controllers** expose REST routes (e.g. `meals`, `water`, `sleep`, `tasks`, `workouts`, `streak`, and `goals/daily-summary`).
+- **Services** implement business logic and orchestrate Prisma queries.
+- **DTOs** + **global ValidationPipe** enforce request validation and type transformation.
+- **AuthGuard** enforces JWT authentication and attaches `req.user.sub` for ownership-safe operations.
+- **PrismaService** provides a shared Prisma Client instance across modules.
+
+Key modules in `server/src/`:
+
+- `auth/`: sign-in + JWT generation and verification guard.
+- `users/`: user profile + preferences (goals toggles, tolerances, email verification, reporting hooks).
+- `meals/`, `foods/`, `recipes/`: nutrition domain (food library, meals, recipes, daily food logs).
+- `water/`: water logging + history (weekly/month).
+- `sleep/`: sleep logging (including naps) + history.
+- `workouts/`: workout settings, presets, daily workout, logs, history.
+- `tasks/`: daily tasks and dated tasks.
+- `streak/`: cross-domain “contract” evaluation for the day (uses preferences + daily logs).
+- `goals-aggregator/`: BFF endpoint that consolidates daily data for the frontend Goals dashboard.
+- `health/`: health endpoint for uptime checks and platform probes.
+
+### Security & validation
+
+Implemented security primitives:
+
+- **JWT Bearer auth**: the guard reads `Authorization: Bearer <token>` and verifies using `JWT_SECRET` (`server/src/auth/auth.guard.ts`).
+- **Ownership-scoped reads/writes**: controllers/services use `req.user.sub` consistently to isolate user data.
+- **Input validation**: Nest global `ValidationPipe({ transform: true })` + class-validator DTOs (`server/src/main.ts`).
+- **i18n-style error keys**: many exceptions throw structured keys (e.g. `server.errors.*`) intended for frontend translation.
+
+### Database (Prisma + PostgreSQL)
+
+Prisma schema is defined in `server/prisma/schema.prisma` and models a “daily logs” domain:
+
+- `User` (root aggregate)
+  - 1:1 `UserPreferences` (goals/tolerances/toggles + onboarding-driven targets)
+  - 1:1 `UserStreak` (+ `UserStreakDay` tracking)
+  - 1:N domain entities:
+    - nutrition: `DailyFoodLog`, `Meal`, `MealItem`, `Recipe`, `RecipeIngredient`, `Food` + favorites
+    - water: `WaterLog`
+    - sleep: `SleepLog`
+    - workouts: `WorkoutLog`, `WorkoutPreset`, `WorkoutSettings`
+    - tasks: `Task`
+    - comms: `EmailVerificationToken`, `MonthlyReportDispatch`
+
+#### ERD overview (simplified)
+
+```mermaid
+erDiagram
+  User ||--|| UserPreferences : has
+  User ||--|| UserStreak : has
+  User ||--o{ DailyFoodLog : logs
+  User ||--o{ WaterLog : logs
+  User ||--o{ SleepLog : logs
+  User ||--o{ WorkoutLog : logs
+  User ||--o{ Task : owns
+  User ||--o{ Meal : owns
+  Meal ||--o{ MealItem : contains
+  User ||--o{ Recipe : owns
+  Recipe ||--o{ RecipeIngredient : contains
 ```
 
-## Compile and run the project
+### Performance-focused API: Goals aggregator (BFF)
+
+The Goals dashboard needs many pieces of data at once (profile/preferences, streak, water, meals, workout settings, tasks, sleep). To avoid “N separate requests”, the backend exposes:
+
+`GET /goals/daily-summary?date=YYYY-MM-DD`
+
+Implemented in `server/src/goals-aggregator/` and designed to:
+
+- **Fetch in parallel** via `Promise.all()`
+- **Reuse existing services** without changing their business logic
+- **Normalize dates to ISO strings** in the aggregated payload
+
+### Health checks & deployment notes (Render)
+
+- **Health endpoint**: `GET /health` returns `{ status: "ok", timestamp }` (`server/src/health/health.controller.ts`).
+- Designed to run cleanly on platforms like **Render** where a simple HTTP probe is required.
+- By default, the app listens on **port 3000** (`server/src/main.ts`). Ensure your hosting service routes traffic accordingly.
+
+### API documentation overview
+
+This repository is intentionally “code-first”: endpoints are easy to audit by reading controllers in `server/src/**/**.controller.ts`.
+
+Common patterns:
+
+- Auth:
+  - `POST /auth/signin`
+- User:
+  - `GET /users/me`
+  - `PATCH /users/:id`
+  - `PATCH /users/preferences/goals`
+- Daily logs:
+  - Meals: `GET /meals/log?date=...`, `POST /meals/log`
+  - Water: `GET /water/today`, `POST /water/log`, `GET /water/history`
+  - Sleep: `GET /sleep/today?date=...`, `POST /sleep/log`, `GET /sleep/history`
+  - Workouts: `GET /workouts/today?date=...`, `POST /workouts/log`, `GET/PATCH /workouts/settings`, presets, history
+  - Tasks: `GET /tasks/today?date=...`, CRUD under `/tasks`
+- Streak:
+  - `GET /streak/me?date=...`
+- Aggregator:
+  - `GET /goals/daily-summary?date=...`
+
+### Setup / Installation
+
+#### Prerequisites
+
+- Node.js **18+** recommended
+- PostgreSQL database
+
+#### Install
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cd server
+npm install
 ```
 
-## Run tests
+#### Environment
+
+Create `server/.env` with (examples only):
 
 ```bash
-# unit tests
-$ npm run test
+DATABASE_URL="postgresql://..."
+JWT_SECRET="..."
+APP_URL="http://localhost:5173"
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# optional (email verification / reporting)
+SMTP_HOST="..."
+SMTP_PORT="..."
+SMTP_USER="..."
+SMTP_PASS="..."
+MAIL_FROM="PinicoFit <no-reply@your-domain>"
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+#### Prisma
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+cd server
+npx prisma generate
+npx prisma migrate dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+#### Run
 
-## Resources
+```bash
+cd server
+npm run dev
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+#### Tests
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+cd server
+npm test
+```
 
-## Support
+<hr />
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## <a id="pt-br"></a>🇧🇷 Português
 
-## Stay in touch
+### Arquitetura (visão geral)
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+O backend segue o padrão clássico do NestJS:
 
-## License
+- **Controllers** expõem rotas REST (ex.: `meals`, `water`, `sleep`, `tasks`, `workouts`, `streak` e `goals/daily-summary`).
+- **Services** concentram a lógica e orquestram consultas Prisma.
+- **DTOs** + **ValidationPipe global** validam requisições e fazem transformação de tipos.
+- **AuthGuard** aplica JWT e injeta `req.user.sub` para operações seguras por usuário.
+- **PrismaService** fornece um Prisma Client único e compartilhado.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Módulos principais em `server/src/`:
+
+- `auth/`: login e autenticação via JWT.
+- `users/`: perfil e preferências (metas, tolerâncias e verificação de e-mail).
+- `meals/`, `foods/`, `recipes/`: alimentação (biblioteca, refeições, receitas e logs diários).
+- `water/`: registros de água + histórico.
+- `sleep/`: registro de sono (inclui cochilos) + histórico.
+- `workouts/`: settings, presets, treino do dia e logs.
+- `tasks/`: tarefas diárias e por data.
+- `streak/`: avaliação do “contrato do dia” cruzando preferências e logs.
+- `goals-aggregator/`: endpoint BFF que consolida dados diários para o GoalsPage.
+- `health/`: endpoint de saúde para monitoramento.
+
+### Segurança & validação
+
+- **JWT Bearer**: `Authorization: Bearer <token>` com validação via `JWT_SECRET` (`server/src/auth/auth.guard.ts`).
+- **Isolamento por usuário**: uso consistente de `req.user.sub` para garantir ownership.
+- **Validação**: `ValidationPipe({ transform: true })` + DTOs com class-validator (`server/src/main.ts`).
+- **Erros com chaves i18n**: exceptions retornam chaves `server.errors.*` para tradução no frontend.
+
+### Banco de dados (Prisma + PostgreSQL)
+
+O schema Prisma (`server/prisma/schema.prisma`) modela um domínio centrado em **logs diários**, com `User` como raiz, `UserPreferences` e `UserStreak` em relações 1:1 e múltiplas entidades de log por domínio (alimentação, água, sono, treino e tarefas).
+
+### Endpoint BFF (Goals aggregator)
+
+Para reduzir latência no GoalsPage, existe:
+
+`GET /goals/daily-summary?date=YYYY-MM-DD`
+
+Características:
+
+- **Paralelismo** com `Promise.all()`
+- **Reuso** dos services originais (sem duplicar regra de negócio)
+- **Normalização** de datas para ISO strings
+
+### Infra (Render) e health check
+
+- `GET /health` retorna `{ status: "ok", timestamp }` e é ideal para monitoramento.
+- O servidor escuta **porta 3000** por padrão (`server/src/main.ts`); configure o serviço (ex.: Render) para rotear para essa porta.
+
+### Setup / Instalação
+
+```bash
+cd server
+npm install
+npx prisma generate
+npx prisma migrate dev
+npm run dev
+```
+
