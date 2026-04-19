@@ -8,7 +8,6 @@ import {
   Pencil,
   Trash2,
   Settings,
-  Info,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -19,7 +18,6 @@ import { useAuthStore } from "../../store/authStore";
 import FeatureTutorialModal from "../../components/FeatureTutorialModal";
 import { useSettingsStore } from "../../store/settingsStore";
 import { getLocalDateKey } from "../../utils/date";
-import CustomLoadingSpinner from "../../components/CustomLoadingSpinner";
 
 const hoursBetween = (start: string, end: string) => {
   const [startHour, startMinute] = start.split(":").map(Number);
@@ -249,14 +247,9 @@ const SleepGoal: React.FC = () => {
             {t("goals.sleep.target")}: {sleepGoal}h
           </p>
         </div>
-        <aside className="flex ml-auto gap-4">
-          <button onClick={() => navigate("/account", { state: { tab: "goals", section: "sleepGoal" }, })} className="cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
-            <Settings className="w-6 h-6 justify-self-center text-inherit" />
-          </button>
-          <button onClick={() => setShowTutorial(true)} className="cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
-            <Info className="w-6 h-6 justify-self-center text-inherit" />
-          </button>
-        </aside>
+        <button onClick={() => navigate("/account", { state: { tab: "goals", section: "sleepGoal" }, })} className="cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors ml-auto">
+          <Settings className="w-6 h-6 justify-self-center text-inherit" />
+        </button>
       </header>
 
       <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -511,7 +504,7 @@ const SleepGoal: React.FC = () => {
                         className="cursor-pointer rounded-2xl border border-neutral-200 bg-neutral-50 p-2 text-red-500"
                       >
                         {deleteMutation.isPending ? (
-                          <CustomLoadingSpinner className="h-3.5 w-3.5" />
+                          <div className="h-[14px w-14px animate-spin rounded-full border-2 border-red-500/30 border-t-red-500" />
                         ) : (
                           <Trash2 size={14} />
                         )}

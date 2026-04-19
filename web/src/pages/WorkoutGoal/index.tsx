@@ -113,7 +113,7 @@ const WorkoutGoal: React.FC = () => {
             <h1 className="text-2xl font-bold tracking-tighter text-brand-accent">
               {t(titles[activeTab].title)}
             </h1>
-            <button onClick={() => navigate("/account", { state: { tab: "goals", section: "workoutGoal" } })} className="md:hidden block cursor-pointer ml-auto mr-1 h-9 w-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+            <button onClick={() => navigate("/account", { state: { tab: "goals", section: "workoutGoal" } })} className="flex justify-center items-center md:hidden cursor-pointer ml-auto mr-1 h-9 w-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
               <Settings className="w-6 h-6 justify-self-center text-inherit" />
             </button>
           </div>
@@ -132,16 +132,16 @@ const WorkoutGoal: React.FC = () => {
                   : t("goals.workout.plan_window.badge_title")}
               </button>
             ))}
-            <button onClick={() => setShowTutorial(true)} className="md:hidden block cursor-pointer h-9 w-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+            <button onClick={() => setShowTutorial(true)} className="flex justify-center items-center md:hidden cursor-pointer h-9 w-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
               <Info className="w-6 h-6 justify-self-center text-inherit" />
             </button>
           </div>
         </div>
-        <button onClick={() => navigate("/account", { state: { tab: "goals", section: "workoutGoal" } })} className="md:block hidden cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
-          <Settings className="w-6 h-6 justify-self-center text-inherit" />
+        <button onClick={() => navigate("/account", { state: { tab: "goals", section: "workoutGoal" } })} className="hidden md:block cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+          <Settings className="w-6 h-6 justify-self-center text-inherit mx-auto" />
         </button>
-        <button onClick={() => setShowTutorial(true)} className="md:block hidden cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
-          <Info className="w-6 h-6 justify-self-center text-inherit" />
+        <button onClick={() => setShowTutorial(true)} className="hidden md:block cursor-pointer h-12 w-12 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
+          <Info className="w-6 h-6 justify-self-center text-inherit mx-auto" />
         </button>
       </header>
 

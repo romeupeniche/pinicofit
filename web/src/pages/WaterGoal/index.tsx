@@ -176,10 +176,10 @@ const WaterGoal: React.FC = () => {
             </h1>
             <aside className="ml-auto flex gap-2">
               <button onClick={() => navigate("/account", { state: { tab: "goals", section: "waterGoal" }, })} className="cursor-pointer md:h-12 md:w-12 w-9 h-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
-                <Settings className="w-6 h-6 justify-self-center text-inherit" />
+                <Settings className="w-6 h-6 justify-self-center text-inherit mx-auto" />
               </button>
               <button onClick={() => setShowTutorial(true)} className="cursor-pointer md:h-12 md:w-12 w-9 h-9 border border-white hover:border-brand-accent hover:text-brand-accent text-zinc-400 rounded-2xl transition-colors">
-                <Info className="w-6 h-6 justify-self-center text-inherit" />
+                <Info className="w-6 h-6 justify-self-center text-inherit mx-auto" />
               </button>
             </aside>
           </header>
@@ -246,14 +246,16 @@ const WaterGoal: React.FC = () => {
               <Pencil size={20} />
               <div className="flex lg:text-[1rem] text-2xl">
                 <input
-                  type="number"
-                  {...register("customAmount")}
-                  onInput={(e) => {
-                    if (e.currentTarget.value.length > 4) e.currentTarget.value = e.currentTarget.value.slice(0, 4);
-                  }}
-                  placeholder="250"
-                  className="w-20 lg:w-16 text-right"
+                  type="text"
                   inputMode="numeric"
+                  placeholder="250"
+                  className="w-20 lg:w-16 text-right outline-none bg-transparent mr-4"
+                  {...register("customAmount", {
+                    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      e.target.value = value.slice(0, 4);
+                    }
+                  })}
                 />
                 <span>ml</span>
               </div>

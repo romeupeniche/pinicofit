@@ -298,7 +298,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
                     </select>
                   </div>
                 </div>
-                <div className="grid grid-cols-6 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <div className="space-y-1">
                     <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
                       {t(
@@ -309,7 +309,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
                       {...register(`exercises.${index}.sets`)}
                       inputMode="numeric"
                       placeholder="0"
-                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
+                      className="w-full h-11.5 bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
                       onChange={(e) => {
                         e.target.value = maskOnlyNumbers(e.target.value);
                         register(`exercises.${index}.sets`).onChange(e);
@@ -326,7 +326,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
                       {...register(`exercises.${index}.reps`)}
                       inputMode="numeric"
                       placeholder="0"
-                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
+                      className="w-full h-11.5 bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
                       onChange={(e) => {
                         e.target.value = maskOnlyNumbers(e.target.value);
                         register(`exercises.${index}.reps`).onChange(e);
@@ -344,7 +344,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
                       {...register(`exercises.${index}.weight`)}
                       inputMode="decimal"
                       placeholder="0.0"
-                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
+                      className="w-full h-11.5 bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
                       onChange={(e) => {
                         e.target.value = maskOnlyNumbers(e.target.value);
                         register(`exercises.${index}.weight`).onChange(e);
@@ -355,14 +355,14 @@ const EditWorkoutModal: React.FC<IProps> = ({
                     <label className="text-[8px] font-black text-neutral-400 uppercase ml-1">
                       {t(
                         "goals.workout.plan_window.edit_workout_modal.inputs.rest",
-                      )}{" "}
+                      )}
                     </label>
                     <input
                       {...register(`exercises.${index}.rest`)}
                       placeholder="0:00"
                       title={t("goals.workout.plan_window.edit_workout_modal.inputs.rest_format")}
                       inputMode="numeric"
-                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
+                      className="w-full h-11.5 bg-white border border-neutral-200 p-3 rounded-xl md:text-sm text-xs md:font-bold font-semibold text-center"
                       onChange={(e) => {
                         const masked = maskRestTime(e.target.value);
                         e.target.value = masked;
@@ -378,7 +378,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
                     </label>
                     <select
                       {...register(`exercises.${index}.category`)}
-                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-[9px] font-black uppercase outline-none appearance-none cursor-pointer"
+                      className="w-full h-11.5 bg-white border border-neutral-200 p-3 rounded-xl text-[9px] font-black uppercase outline-none appearance-none cursor-pointer"
                     >
                       <option value="exercise">
                         {t(
@@ -400,7 +400,7 @@ const EditWorkoutModal: React.FC<IProps> = ({
                     </label>
                     <select
                       {...register(`exercises.${index}.technique`)}
-                      className="w-full bg-white border border-neutral-200 p-3 rounded-xl text-[9px] font-black uppercase outline-none appearance-none cursor-pointer"
+                      className="w-full h-11.5 bg-white border border-neutral-200 p-3 rounded-xl text-[9px] font-black uppercase outline-none appearance-none cursor-pointer"
                     >
                       <option value="standard">
                         {t(
