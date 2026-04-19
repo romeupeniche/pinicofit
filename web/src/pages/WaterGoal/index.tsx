@@ -29,7 +29,7 @@ const WaterGoal: React.FC = () => {
   const { t, lang } = useSettingsStore();
   const { user, updateProfile } = useAuthStore();
   const [activeTab, setActiveTab] = useState<"today" | "week" | "month">("today");
-  const [showTutorial, setShowTutorial] = useState(!user?.tutorialState?.water);
+  const [showTutorial, setShowTutorial] = useState(!user?.preferences.tutorialState?.water);
 
   const { register, handleSubmit, reset } = useForm<GoalsFormData>({
     resolver: zodResolver(goalsSchema),
@@ -136,11 +136,11 @@ const WaterGoal: React.FC = () => {
   const closeTutorial = async (dontShowAgain: boolean) => {
     setShowTutorial(false);
 
-    if (!dontShowAgain || !user?.id || user.tutorialState?.water) return;
+    if (!dontShowAgain || !user?.id || user.preferences.tutorialState?.water) return;
 
     const { data } = await api.patch(`/users/${user.id}`, {
       tutorialState: {
-        ...user.tutorialState,
+        ...user.preferences.tutorialState,
         water: true,
       },
     });

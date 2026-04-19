@@ -50,7 +50,7 @@ const SleepGoal: React.FC = () => {
   const queryClient = useQueryClient();
   const { user, updateProfile } = useAuthStore();
   const { t } = useSettingsStore();
-  const [showTutorial, setShowTutorial] = useState(!user?.tutorialState?.sleep);
+  const [showTutorial, setShowTutorial] = useState(!user?.preferences.tutorialState?.sleep);
   const [mainDuration, setMainDuration] = useState("8");
   const [sleptAt, setSleptAt] = useState("01:00");
   const [wokeAt, setWokeAt] = useState("09:00");
@@ -204,13 +204,13 @@ const SleepGoal: React.FC = () => {
   const closeTutorial = async (dontShowAgain: boolean) => {
     setShowTutorial(false);
 
-    if (!dontShowAgain || !user?.id || user.tutorialState?.sleep) {
+    if (!dontShowAgain || !user?.id || user.preferences.tutorialState?.sleep) {
       return;
     }
 
     const { data } = await api.patch(`/users/${user.id}`, {
       tutorialState: {
-        ...user.tutorialState,
+        ...user.preferences.tutorialState,
         sleep: true,
       },
     });

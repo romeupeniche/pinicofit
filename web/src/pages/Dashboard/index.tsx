@@ -114,17 +114,17 @@ const Dashboard: React.FC = () => {
   );
 
   const [showTutorial, setShowTutorial] = useState(
-    !user?.tutorialState?.dashboard,
+    !user?.preferences.tutorialState.dashboard,
   );
   const closeTutorial = async (dontShowAgain: boolean) => {
     setShowTutorial(false);
 
-    if (!dontShowAgain || !user?.id || user.tutorialState?.dashboard) {
+    if (!dontShowAgain || !user?.id || user.preferences.tutorialState?.dashboard) {
       return;
     }
 
     const tutorialState = {
-      ...user.tutorialState,
+      ...user.preferences.tutorialState,
       dashboard: true,
     };
 

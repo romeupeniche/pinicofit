@@ -48,7 +48,7 @@ const TasksGoal: React.FC = () => {
   const { t, lang } = useSettingsStore();
 
   const [activeTab, setActiveTab] = useState<"today" | "scheduled">("today");
-  const [showTutorial, setShowTutorial] = useState(!user?.tutorialState?.tasks);
+  const [showTutorial, setShowTutorial] = useState(!user?.preferences.tutorialState?.tasks);
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskItem | null>(null);
   const [form, setForm] = useState<TaskFormState>(emptyTaskForm);
@@ -183,9 +183,9 @@ const TasksGoal: React.FC = () => {
 
   const closeTutorial = async (dontShowAgain: boolean) => {
     setShowTutorial(false);
-    if (!dontShowAgain || !user?.id || user.tutorialState?.tasks) return;
+    if (!dontShowAgain || !user?.id || user.preferences.tutorialState?.tasks) return;
     const { data } = await api.patch(`/users/${user.id}`, {
-      tutorialState: { ...user.tutorialState, tasks: true },
+      tutorialState: { ...user.preferences.tutorialState, tasks: true },
     });
     updateProfile(data);
   };

@@ -80,7 +80,7 @@ const MealPage: React.FC = () => {
   yesterdayDate.setDate(yesterdayDate.getDate() - 1);
   const yesterdayKey = getLocalDateKey(yesterdayDate);
   const selectedDateKey = activeDateView === "today" ? todayKey : yesterdayKey;
-  const [showTutorial, setShowTutorial] = useState(!user?.tutorialState?.meals);
+  const [showTutorial, setShowTutorial] = useState(!user?.preferences.tutorialState?.meals);
   const [currentBucketBasedOnHour, setCurrentBucketBasedOnHour] = useState<MealBucket | null>(null);
 
   useEffect(() => {
@@ -223,11 +223,11 @@ const MealPage: React.FC = () => {
 
   const closeTutorial = async (dontShowAgain: boolean) => {
     setShowTutorial(false);
-    if (!dontShowAgain || !user?.id || user.tutorialState?.meals) return;
+    if (!dontShowAgain || !user?.id || user.preferences.tutorialState?.meals) return;
 
     const { data } = await api.patch(`/users/${user.id}`, {
       tutorialState: {
-        ...user.tutorialState,
+        ...user.preferences.tutorialState,
         meals: true,
       },
     });

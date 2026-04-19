@@ -41,14 +41,14 @@ const WorkoutGoal: React.FC = () => {
   const [showExitAlert, setShowExitAlert] = useState(false);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(
-    !user?.tutorialState?.workout,
+    !user?.preferences.tutorialState?.workout,
   );
 
   const TitleIcon = titles[activeTab].icon;
 
   useEffect(() => {
-    setShowTutorial(!user?.tutorialState?.workout);
-  }, [user?.tutorialState?.workout]);
+    setShowTutorial(!user?.preferences.tutorialState?.workout);
+  }, [user?.preferences.tutorialState?.workout]);
 
   useEffect(() => {
     checkAndMarkFailed();
@@ -81,12 +81,12 @@ const WorkoutGoal: React.FC = () => {
   const closeTutorial = async (dontShowAgain: boolean) => {
     setShowTutorial(false);
 
-    if (!dontShowAgain || !user?.id || user.tutorialState?.workout) {
+    if (!dontShowAgain || !user?.id || user.preferences.tutorialState?.workout) {
       return;
     }
 
     const tutorialState = {
-      ...user.tutorialState,
+      ...user.preferences.tutorialState,
       workout: true,
     };
 
