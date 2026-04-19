@@ -32,18 +32,22 @@ export const useAuthStore = create<AuthState>()(
       updateProfile: (data) =>
         set((state) => {
           if (!state.user) return { user: null };
-          const updatedUser = { ...state.user };
-
-          if (data.preferences) {
-            updatedUser.preferences = {
-              ...updatedUser.preferences,
-              ...data.preferences,
-            };
-          } else {
-            Object.assign(updatedUser, data);
-          }
-
-          return { user: updatedUser };
+          return {
+            user: {
+              ...state.user,
+              ...data,
+              preferences: data.preferences
+                ? {
+                    ...state.user.preferences,
+                    ...data.preferences,
+                    tutorialState: {
+                      ...state.user.preferences?.tutorialState,
+                      ...data.preferences.tutorialState,
+                    },
+                  }
+                : state.user.preferences,
+            },
+          };
         }),
     }),
     {
