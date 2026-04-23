@@ -97,4 +97,9 @@ export class UsersController {
   ) {
     return this.usersService.updateGoals(req.user.sub, goalsData);
   }
+
+  @Post('onboarding/preview')
+  async previewGoals(@Body() data: any) {
+    return this.usersService.calculateGoals(data);
+  }
 }

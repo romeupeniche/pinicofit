@@ -182,7 +182,7 @@ export class UsersService implements OnModuleDestroy {
     };
   }
 
-  private calculateGoals(data: {
+  public calculateGoals(data: {
     age?: number | null;
     weight?: number | null;
     height?: number | null;
