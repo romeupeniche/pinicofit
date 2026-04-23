@@ -26,6 +26,7 @@ export interface Summary {
   duration: number;
   tonnage: number;
   workoutName: string;
+  workoutLabel?: string;
   exercises: SummaryExercises;
 }
 
@@ -80,6 +81,7 @@ const processPendingSummaries = ({
     duration: dayTotalDuration,
     tonnage: dayTotalTonnage,
     workoutName: activeWorkout.name,
+    workoutLabel: activeWorkout.label,
     exercises: completedExercises,
   };
 };

@@ -30,7 +30,7 @@ const buildFormState = (user: User): ProfileFormState => ({
   gender: (user?.gender as Gender) || "other",
   goal: (user?.goal as Goal) || "maintain",
   activityLevel: (user?.activityLevel as ActivityLevel) || "moderate",
-  avatar: user?.avatar || "",
+  avatar: user?.preferences.avatar || "",
 });
 
 const Profile: React.FC<{ user: User }> = ({ user }) => {
@@ -47,17 +47,6 @@ const Profile: React.FC<{ user: User }> = ({ user }) => {
     { value: "active", label: t("onboarding.activity_level.options.active") },
     { value: "intense", label: t("onboarding.activity_level.options.intense") },
   ];
-
-  useEffect(() => {
-    setForm(buildFormState(user));
-  }, [user]);
-
-  useEffect(() => {
-    const initial = buildFormState(user);
-    const isDirty = JSON.stringify(form) !== JSON.stringify(initial);
-    setHasUnsavedChanges(isDirty);
-    return () => setHasUnsavedChanges(false);
-  }, [form, setHasUnsavedChanges, user]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -76,10 +65,35 @@ const Profile: React.FC<{ user: User }> = ({ user }) => {
     },
     onSuccess: (data) => {
       updateProfile(data);
-      queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.setQueryData(["me"], data);
+      setForm(buildFormState(data));
       setHasUnsavedChanges(false);
     },
   });
+
+  useEffect(() => {
+    const initial = buildFormState(user);
+
+    const isDirty =
+      form.name !== initial.name ||
+      form.age !== initial.age ||
+      form.weight !== initial.weight ||
+      form.height !== initial.height ||
+      form.gender !== initial.gender ||
+      form.goal !== initial.goal ||
+      form.activityLevel !== initial.activityLevel ||
+      form.avatar !== initial.avatar;
+
+    setHasUnsavedChanges(isDirty);
+
+    return () => setHasUnsavedChanges(false);
+  }, [form, user, setHasUnsavedChanges]);
+
+  useEffect(() => {
+    if (saveMutation.isSuccess) {
+      setForm(buildFormState(user));
+    }
+  }, [saveMutation.isSuccess, user]);
 
   const previewAvatar = useMemo(() => {
     if (form.avatar) return form.avatar;

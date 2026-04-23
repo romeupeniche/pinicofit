@@ -761,11 +761,22 @@ const archiveCycleHistory = ({
 export const getWorkoutForDateFromState = (
   state: WorkoutServerState,
   date: Date,
-) => {
-  const cycle = state.cycle || [];
-  const history = state.history || [];
-  const startDate = state.startDate;
+): ICycleStep | null => {
+  const { cycle = [], history = [], summaries = [], startDate } = state;
   const targetDate = startOfDay(date);
+  const targetDateIso = format(targetDate, "yyyy-MM-dd");
+
+  const daySummary = summaries.find((s) => s.date === targetDateIso);
+  if (daySummary) {
+    return {
+      id: `summary-${targetDateIso}`,
+      type: "workout",
+      name: daySummary.workoutName,
+      label: daySummary.workoutLabel || "A",
+      exercises: daySummary.exercises,
+      isConfigured: true,
+    };
+  }
 
   for (const entry of history) {
     const start = startOfDay(parseISO(entry.startDate));
@@ -778,9 +789,9 @@ export const getWorkoutForDateFromState = (
   }
 
   if (!cycle.length || !startDate) return null;
-
   const currentStart = startOfDay(parseISO(startDate));
   const diffCurrent = differenceInDays(targetDate, currentStart);
+
   return diffCurrent >= 0 ? cycle[diffCurrent % cycle.length] : null;
 };
 
@@ -905,8 +916,11 @@ export const useWorkoutStore = create<WorkoutState>()(
       },
 
       getWorkoutForDate: (date: Date) => {
-        const { cycle, startDate, history } = get();
-        return getWorkoutForDateFromState({ cycle, startDate, history }, date);
+        const { cycle, startDate, history, summaries } = get();
+        return getWorkoutForDateFromState(
+          { cycle, startDate, history, summaries },
+          date,
+        );
       },
 
       checkAndMarkFailed: () => {
