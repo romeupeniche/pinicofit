@@ -464,14 +464,14 @@ export class UsersService implements OnModuleDestroy {
     return this.findById(id);
   }
 
-  async updateGoals(userId: string, data: any) { 
-    const preferences = await this.prisma.userPreferences.findUnique({ 
-      where: { userId }, 
-    }); 
- 
-    if (!preferences) { 
-      throw new NotFoundException('server.errors.users.not_found'); 
-    } 
+  async updateGoals(userId: string, data: any) {
+    const preferences = await this.prisma.userPreferences.findUnique({
+      where: { userId },
+    });
+
+    if (!preferences) {
+      throw new NotFoundException('server.errors.users.not_found');
+    }
 
     const streak = await this.prisma.userStreak.findUnique({
       where: { userId },
@@ -482,97 +482,97 @@ export class UsersService implements OnModuleDestroy {
 
     type GoalKey = 'nutrition' | 'water' | 'sleep' | 'workout' | 'tasks';
 
-    type ToggleMetaUpdate = Partial<{ 
-      nutritionDeactivatedAt: Date; 
-      nutritionCooldownUntil: Date; 
-      waterDeactivatedAt: Date; 
-      waterCooldownUntil: Date; 
-      sleepDeactivatedAt: Date; 
-      sleepCooldownUntil: Date; 
-      workoutDeactivatedAt: Date; 
-      workoutCooldownUntil: Date; 
-      tasksDeactivatedAt: Date; 
-      tasksCooldownUntil: Date; 
-    }>; 
- 
-    const toggles: Array<{ 
-      key: GoalKey; 
+    type ToggleMetaUpdate = Partial<{
+      nutritionDeactivatedAt: Date;
+      nutritionCooldownUntil: Date;
+      waterDeactivatedAt: Date;
+      waterCooldownUntil: Date;
+      sleepDeactivatedAt: Date;
+      sleepCooldownUntil: Date;
+      workoutDeactivatedAt: Date;
+      workoutCooldownUntil: Date;
+      tasksDeactivatedAt: Date;
+      tasksCooldownUntil: Date;
+    }>;
+
+    const toggles: Array<{
+      key: GoalKey;
       provided: boolean;
-      fromEnabled: boolean; 
-      toEnabled: boolean; 
-      deactivatedAtField: keyof ToggleMetaUpdate; 
-      cooldownUntilField: keyof ToggleMetaUpdate; 
-      lockedUntilValue: Date | null | undefined; 
-    }> = [ 
-      { 
-        key: 'nutrition', 
+      fromEnabled: boolean;
+      toEnabled: boolean;
+      deactivatedAtField: keyof ToggleMetaUpdate;
+      cooldownUntilField: keyof ToggleMetaUpdate;
+      lockedUntilValue: Date | null | undefined;
+    }> = [
+      {
+        key: 'nutrition',
         provided: typeof data.nutritionEnabled === 'boolean',
-        fromEnabled: Boolean(preferences.nutritionEnabled), 
+        fromEnabled: Boolean(preferences.nutritionEnabled),
         toEnabled:
           typeof data.nutritionEnabled === 'boolean'
             ? data.nutritionEnabled
             : Boolean(preferences.nutritionEnabled),
-        deactivatedAtField: 'nutritionDeactivatedAt', 
-        cooldownUntilField: 'nutritionCooldownUntil', 
-        lockedUntilValue: preferences.nutritionCooldownUntil, 
-      }, 
-      { 
-        key: 'water', 
+        deactivatedAtField: 'nutritionDeactivatedAt',
+        cooldownUntilField: 'nutritionCooldownUntil',
+        lockedUntilValue: preferences.nutritionCooldownUntil,
+      },
+      {
+        key: 'water',
         provided: typeof data.waterEnabled === 'boolean',
-        fromEnabled: Boolean(preferences.waterEnabled), 
+        fromEnabled: Boolean(preferences.waterEnabled),
         toEnabled:
           typeof data.waterEnabled === 'boolean'
             ? data.waterEnabled
             : Boolean(preferences.waterEnabled),
-        deactivatedAtField: 'waterDeactivatedAt', 
-        cooldownUntilField: 'waterCooldownUntil', 
-        lockedUntilValue: preferences.waterCooldownUntil, 
-      }, 
-      { 
-        key: 'sleep', 
+        deactivatedAtField: 'waterDeactivatedAt',
+        cooldownUntilField: 'waterCooldownUntil',
+        lockedUntilValue: preferences.waterCooldownUntil,
+      },
+      {
+        key: 'sleep',
         provided: typeof data.sleepEnabled === 'boolean',
-        fromEnabled: Boolean(preferences.sleepEnabled), 
+        fromEnabled: Boolean(preferences.sleepEnabled),
         toEnabled:
           typeof data.sleepEnabled === 'boolean'
             ? data.sleepEnabled
             : Boolean(preferences.sleepEnabled),
-        deactivatedAtField: 'sleepDeactivatedAt', 
-        cooldownUntilField: 'sleepCooldownUntil', 
-        lockedUntilValue: preferences.sleepCooldownUntil, 
-      }, 
-      { 
-        key: 'workout', 
+        deactivatedAtField: 'sleepDeactivatedAt',
+        cooldownUntilField: 'sleepCooldownUntil',
+        lockedUntilValue: preferences.sleepCooldownUntil,
+      },
+      {
+        key: 'workout',
         provided: typeof data.workoutEnabled === 'boolean',
-        fromEnabled: Boolean(preferences.workoutEnabled), 
+        fromEnabled: Boolean(preferences.workoutEnabled),
         toEnabled:
           typeof data.workoutEnabled === 'boolean'
             ? data.workoutEnabled
             : Boolean(preferences.workoutEnabled),
-        deactivatedAtField: 'workoutDeactivatedAt', 
-        cooldownUntilField: 'workoutCooldownUntil', 
-        lockedUntilValue: preferences.workoutCooldownUntil, 
-      }, 
-      { 
-        key: 'tasks', 
+        deactivatedAtField: 'workoutDeactivatedAt',
+        cooldownUntilField: 'workoutCooldownUntil',
+        lockedUntilValue: preferences.workoutCooldownUntil,
+      },
+      {
+        key: 'tasks',
         provided: typeof data.tasksEnabled === 'boolean',
-        fromEnabled: Boolean(preferences.tasksEnabled), 
+        fromEnabled: Boolean(preferences.tasksEnabled),
         toEnabled:
           typeof data.tasksEnabled === 'boolean'
             ? data.tasksEnabled
             : Boolean(preferences.tasksEnabled),
-        deactivatedAtField: 'tasksDeactivatedAt', 
-        cooldownUntilField: 'tasksCooldownUntil', 
-        lockedUntilValue: preferences.tasksCooldownUntil, 
-      }, 
-    ]; 
- 
-    const goalsDeactivated = toggles.filter( 
-      (toggle) => toggle.provided && toggle.fromEnabled && !toggle.toEnabled, 
-    ); 
- 
-    const goalsReactivated = toggles.filter( 
-      (toggle) => toggle.provided && !toggle.fromEnabled && toggle.toEnabled, 
-    ); 
+        deactivatedAtField: 'tasksDeactivatedAt',
+        cooldownUntilField: 'tasksCooldownUntil',
+        lockedUntilValue: preferences.tasksCooldownUntil,
+      },
+    ];
+
+    const goalsDeactivated = toggles.filter(
+      (toggle) => toggle.provided && toggle.fromEnabled && !toggle.toEnabled,
+    );
+
+    const goalsReactivated = toggles.filter(
+      (toggle) => toggle.provided && !toggle.fromEnabled && toggle.toEnabled,
+    );
 
     for (const toggle of goalsReactivated) {
       if (
@@ -614,19 +614,19 @@ export class UsersService implements OnModuleDestroy {
         });
       }
 
-      return tx.userPreferences.update({ 
-        where: { userId }, 
-        data: { 
-          nutritionEnabled: data.nutritionEnabled, 
-          calorieGoal: data.calorieGoal, 
-          nutritionTolerance: data.nutritionTolerance, 
-          proteinGoal: data.proteinGoal, 
-          carbsGoal: data.carbsGoal, 
-          fatGoal: data.fatGoal, 
- 
-          waterGoal: data.waterGoal, 
-          waterTolerance: data.waterTolerance, 
-          waterEnabled: data.waterEnabled, 
+      return tx.userPreferences.update({
+        where: { userId },
+        data: {
+          nutritionEnabled: data.nutritionEnabled,
+          calorieGoal: data.calorieGoal,
+          nutritionTolerance: data.nutritionTolerance,
+          proteinGoal: data.proteinGoal,
+          carbsGoal: data.carbsGoal,
+          fatGoal: data.fatGoal,
+
+          waterGoal: data.waterGoal,
+          waterTolerance: data.waterTolerance,
+          waterEnabled: data.waterEnabled,
 
           sleepGoal: data.sleepGoal,
           sleepTolerance: data.sleepTolerance,
@@ -665,7 +665,11 @@ export class UsersService implements OnModuleDestroy {
   }
 
   private getAppUrl() {
-    return process.env.APP_URL || 'https://pinicofit.netlify.app';
+    const isDevelopment = process.env.NODE_ENV === 'development';
+
+    return isDevelopment
+      ? 'http://localhost:5173'
+      : process.env.APP_URL || 'https://pinicofit.netlify.app';
   }
 
   private getMailCopy(lang?: MailLang) {
