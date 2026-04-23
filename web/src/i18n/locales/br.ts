@@ -280,6 +280,7 @@ export const br = {
     },
     select_placeholder: "Selecione...",
     finalize_button: "Finalizar perfil",
+    calculate_button: "Calcular Metas",
     loading: "Salvando informações...",
     logout_button: "Entrou na conta errada? Sair",
     placeholders: {
@@ -289,6 +290,15 @@ export const br = {
     },
     user_missing: "Usuário não encontrado. Faça login novamente.",
     unexpected_error: "Erro inesperado ao salvar perfil",
+    review_title: "Suas Metas",
+    review_subtitle: "Ajuste os valores calculados se necessário:",
+    calories_label: "Calorias Diárias (kcal)",
+    protein_label: "Prot (g)",
+    carbs_label: "Carb (g)",
+    fat_label: "Gord (g)",
+    water_label: "Água (ml)",
+    max_limit: "O máximo é {{max}}",
+    back_button: "Voltar e ajustar dados",
   },
   meals: {
     loading_title: "Carregando refeições",

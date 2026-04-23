@@ -265,6 +265,7 @@
     },
     select_placeholder: "Select...",
     finalize_button: "Complete Profile",
+    calculate_button: "Calculate Goals",
     loading: "Saving Information...",
     logout_button: "Wrong account? Sign out",
     placeholders: {
@@ -274,6 +275,15 @@
     },
     user_missing: "User not found. Please sign in again.",
     unexpected_error: "Unexpected error while saving your profile",
+    review_title: "Your Goals",
+    review_subtitle: "Adjust the calculated values if needed:",
+    calories_label: "Daily Calories (kcal)",
+    protein_label: "Prot (g)",
+    carbs_label: "Carb (g)",
+    fat_label: "Fat (g)",
+    water_label: "Water (ml)",
+    max_limit: "Maximum is {{max}}",
+    back_button: "Back and adjust data",
   },
   meals: {
     loading_title: "Loading meals",
